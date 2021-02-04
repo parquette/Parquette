@@ -2,12 +2,14 @@ name: Commit
 
 on:
   push:
-    branches: [master]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   Build:
-    runs-on: macos-11
-    timeout-minutes: 15
+    runs-on: macos-latest
+    timeout-minutes: 30
     steps:
       - name: "Checkout Project"
         uses: actions/checkout@v2
