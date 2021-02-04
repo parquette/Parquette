@@ -1,0 +1,28 @@
+name: Commit
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  Build:
+    runs-on: macos-11
+    timeout-minutes: 15
+    steps:
+      - name: "Checkout Project"
+        uses: actions/checkout@v2
+
+      - name: "Select Latest Xcode 12 Stable"
+        uses: st3fan/xcode-select@main
+        with:
+          version: "12"
+
+      #- name: "Import Certificate: Development"
+      #  uses: devbotsxyz/import-signing-certificate@v1
+      #  with:
+      #    certificate-data: ${{ secrets.DEVELOPMENT_CERTIFICATE_DATA }}
+      #    certificate-passphrase: ${{ secrets.DEVELOPMENT_CERTIFICATE_PASSPHRASE }}
+      #    keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+      - name: "Build & Archive"
+        uses: devbotsxyz/xcode-archive@v1
