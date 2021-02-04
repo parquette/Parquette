@@ -1,0 +1,3 @@
+[submodule "arcolyte"]
+	path = arcolyte
+	url = git@github.com:parquette/arcolyte.git
