@@ -13,6 +13,7 @@
 		49175EFC25BF6267003E9FEF /* SwiftArrow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49175EFB25BF6267003E9FEF /* SwiftArrow.swift */; };
 		492E72A225CCAF43003C8D58 /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 492E72A125CCAF43003C8D58 /* arcolyte.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		492E72AA25CCAF86003C8D58 /* libarcolyte.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 492E72A925CCAF86003C8D58 /* libarcolyte.a */; };
+		492E72B025CCBD57003C8D58 /* buildrust.sh in Resources */ = {isa = PBXBuildFile; fileRef = 492E72AF25CCBD57003C8D58 /* buildrust.sh */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +49,7 @@
 		49175F0F25BFC4EF003E9FEF /* SwiftArrow.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = SwiftArrow.modulemap; sourceTree = "<group>"; };
 		492E72A125CCAF43003C8D58 /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = arcolyte.h; path = arcolyte/target/arcolyte.h; sourceTree = SOURCE_ROOT; };
 		492E72A925CCAF86003C8D58 /* libarcolyte.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libarcolyte.a; path = arcolyte/target/libarcolyte.a; sourceTree = "<group>"; };
+		492E72AF25CCBD57003C8D58 /* buildrust.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = buildrust.sh; sourceTree = "<group>"; };
 		497CA76F25CCAB7C00180E77 /* arcolyte */ = {isa = PBXFileReference; lastKnownFileType = folder; path = arcolyte; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -94,6 +96,7 @@
 		49175ED125BF6138003E9FEF /* SwiftArrow */ = {
 			isa = PBXGroup;
 			children = (
+				492E72AF25CCBD57003C8D58 /* buildrust.sh */,
 				492E72A125CCAF43003C8D58 /* arcolyte.h */,
 				49175EFB25BF6267003E9FEF /* SwiftArrow.swift */,
 				49175ED325BF6138003E9FEF /* Info.plist */,
@@ -215,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				492E72B025CCBD57003C8D58 /* buildrust.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -244,7 +248,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = "/bin/sh -e";
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\ncd arcolyte\n./buildrust.sh \nln -fv target/arcolyte.h ../SwiftArrow/\n";
+			shellScript = "${SRCROOT}/${TARGET_NAME}/buildrust.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
