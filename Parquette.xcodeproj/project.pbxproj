@@ -45,7 +45,6 @@
 		49175EDF25BF6139003E9FEF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		49175EFB25BF6267003E9FEF /* SwiftArrow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftArrow.swift; sourceTree = "<group>"; };
 		49175F0F25BFC4EF003E9FEF /* SwiftArrow.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = SwiftArrow.modulemap; sourceTree = "<group>"; };
-		49175F3425C05161003E9FEF /* anvil */ = {isa = PBXFileReference; lastKnownFileType = folder; path = anvil; sourceTree = "<group>"; };
 		497CA76F25CCAB7C00180E77 /* arcolyte */ = {isa = PBXFileReference; lastKnownFileType = folder; path = arcolyte; sourceTree = "<group>"; };
 		498CFCE125C0556400047E65 /* libanvil.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libanvil.a; path = anvil/target/libanvil.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -74,7 +73,6 @@
 			isa = PBXGroup;
 			children = (
 				497CA76F25CCAB7C00180E77 /* arcolyte */,
-				49175F3425C05161003E9FEF /* anvil */,
 				49175ED125BF6138003E9FEF /* SwiftArrow */,
 				49175EDC25BF6139003E9FEF /* SwiftArrowTests */,
 				49175ED025BF6138003E9FEF /* Products */,
