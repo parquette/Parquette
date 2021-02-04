@@ -10,19 +10,8 @@ import XCTest
 
 class SwiftArrowTests: XCTestCase {
 
-    func testRequest() throws {
-        initRustLogging()
-
-        XCTAssertNoThrow(try RustRequest(url: "http://www.httpbin.org/status/200").send())
-
-        XCTAssertThrowsError(try RustRequest(url: "http://httpbin.org/status/404").send()) { error in
-            XCTAssertEqual("generic(Optional(\"Sending request failed.\"))", String(describing: error))
-        }
-    }
-
     func sampleFile(ext: String, _ index: Int = 1) -> URL {
-//        #warning("TODO: integrate samples")
-        URL(fileURLWithPath: "/opt/src/github/kylo/samples/sample-data/\(ext)/userdata\(index).\(ext)")
+        URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("../../arcolyte/test/data/\(ext)/userdata\(index).\(ext)")
     }
 
     func testLoadArrow() throws {

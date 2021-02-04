@@ -41,34 +41,6 @@ func JSONToArrow(arrow: NSDictionary, JSONFile: URL, arrowFile: URL) throws -> D
 }
 
 
-class RustRequest {
-    let ptr: OpaquePointer
-
-    init(url: UnsafePointer<Int8>!) {
-        ptr = request_create(url)
-    }
-
-    deinit {
-        request_destroy(ptr)
-    }
-
-    func send() throws -> RustResponse {
-        RustResponse(ptr: try SwiftRustError.checking(request_send(ptr)))
-    }
-}
-
-class RustResponse {
-    let ptr: OpaquePointer
-
-    fileprivate init(ptr: OpaquePointer) {
-        self.ptr = ptr
-    }
-
-    deinit {
-        response_destroy(ptr)
-    }
-}
-
 enum SwiftRustError : Error {
     case generic(String?)
 

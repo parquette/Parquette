@@ -11,7 +11,8 @@
 		49175EDE25BF6139003E9FEF /* SwiftArrowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49175EDD25BF6139003E9FEF /* SwiftArrowTests.swift */; };
 		49175EE025BF6139003E9FEF /* SwiftArrow.h in Headers */ = {isa = PBXBuildFile; fileRef = 49175ED225BF6138003E9FEF /* SwiftArrow.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49175EFC25BF6267003E9FEF /* SwiftArrow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49175EFB25BF6267003E9FEF /* SwiftArrow.swift */; };
-		498CFD1025C060D200047E65 /* libanvil.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 498CFCE125C0556400047E65 /* libanvil.a */; };
+		492E72A225CCAF43003C8D58 /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 492E72A125CCAF43003C8D58 /* arcolyte.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		492E72AA25CCAF86003C8D58 /* libarcolyte.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 492E72A925CCAF86003C8D58 /* libarcolyte.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,8 +46,9 @@
 		49175EDF25BF6139003E9FEF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		49175EFB25BF6267003E9FEF /* SwiftArrow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftArrow.swift; sourceTree = "<group>"; };
 		49175F0F25BFC4EF003E9FEF /* SwiftArrow.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = SwiftArrow.modulemap; sourceTree = "<group>"; };
+		492E72A125CCAF43003C8D58 /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = arcolyte.h; path = arcolyte/target/arcolyte.h; sourceTree = SOURCE_ROOT; };
+		492E72A925CCAF86003C8D58 /* libarcolyte.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libarcolyte.a; path = arcolyte/target/libarcolyte.a; sourceTree = "<group>"; };
 		497CA76F25CCAB7C00180E77 /* arcolyte */ = {isa = PBXFileReference; lastKnownFileType = folder; path = arcolyte; sourceTree = "<group>"; };
-		498CFCE125C0556400047E65 /* libanvil.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libanvil.a; path = anvil/target/libanvil.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,7 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				498CFD1025C060D200047E65 /* libanvil.a in Frameworks */,
+				492E72AA25CCAF86003C8D58 /* libarcolyte.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +94,7 @@
 		49175ED125BF6138003E9FEF /* SwiftArrow */ = {
 			isa = PBXGroup;
 			children = (
+				492E72A125CCAF43003C8D58 /* arcolyte.h */,
 				49175EFB25BF6267003E9FEF /* SwiftArrow.swift */,
 				49175ED325BF6138003E9FEF /* Info.plist */,
 				49175F0F25BFC4EF003E9FEF /* SwiftArrow.modulemap */,
@@ -112,7 +115,7 @@
 		498CFCE025C0556400047E65 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				498CFCE125C0556400047E65 /* libanvil.a */,
+				492E72A925CCAF86003C8D58 /* libarcolyte.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -125,6 +128,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49175EE025BF6139003E9FEF /* SwiftArrow.h in Headers */,
+				492E72A225CCAF43003C8D58 /* arcolyte.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
