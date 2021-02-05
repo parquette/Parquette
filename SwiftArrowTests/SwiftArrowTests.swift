@@ -8,17 +8,29 @@
 import XCTest
 @testable import SwiftArrow
 
+public enum ParquetteError : Error {
+    case missingFileError(url: URL)
+}
+
 class SwiftArrowTests: XCTestCase {
 
-    func sampleFile(ext: String, _ index: Int = 1) -> URL {
-        URL(fileURLWithPath: #file)
+    func sampleFile(ext: String, _ index: Int = 1) throws -> URL {
+        let url = URL(fileURLWithPath: #file)
             .deletingLastPathComponent()
             .appendingPathComponent("../../arcolyte/test/data/\(ext)/userdata\(index).\(ext)")
+        return try checkURL(url)
+    }
+
+    func checkURL(_ url: URL) throws -> URL {
+        if !FileManager.default.fileExists(atPath: url.path) {
+            throw ParquetteError.missingFileError(url: url)
+        }
+        return url
     }
 
     func testLoadArrow() throws {
         for i in 1...5 {
-            let url = sampleFile(ext: "csv", i)
+            let url = try sampleFile(ext: "csv", i)
             print("loading url:", url.lastPathComponent)
             XCTAssertNoThrow(try ArrowCSV(fileURL: url).load())
         }

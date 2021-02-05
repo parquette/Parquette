@@ -23,8 +23,6 @@ extension UTType {
 
 final class ParquetteDocument: ReferenceFileDocument {
     static var readableContentTypes: [UTType] { [.parquette_parquet] }
-    typealias Snapshot = Never
-
     @Published var data: Data
 
     init(data: Data = .init()) {
@@ -39,11 +37,11 @@ final class ParquetteDocument: ReferenceFileDocument {
         self.data = data
     }
 
-    func snapshot(contentType: UTType) throws -> Never {
-        fatalError("never")
+    func snapshot(contentType: UTType) throws -> Data {
+        data
     }
 
-    func fileWrapper(snapshot: Never, configuration: WriteConfiguration) throws -> FileWrapper {
-        .init(regularFileWithContents: self.data)
+    func fileWrapper(snapshot: Data, configuration: WriteConfiguration) throws -> FileWrapper {
+        .init(regularFileWithContents: snapshot)
     }
 }
