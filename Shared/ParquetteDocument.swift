@@ -9,6 +9,10 @@ import SwiftUI
 import UniformTypeIdentifiers
 import SwiftArrow
 
+public enum ParquetteError : Error {
+    case writeNotSupported
+}
+
 extension UTType {
     static var parquette_parquet: UTType {
         UTType(importedAs: "net.parquette.format.parquet")
@@ -17,31 +21,30 @@ extension UTType {
     static var parquette_csv: UTType {
         UTType(importedAs: "net.parquette.format.csv")
     }
-
 }
-
 
 final class ParquetteDocument: ReferenceFileDocument {
     static var readableContentTypes: [UTType] { [.parquette_parquet] }
-    @Published var data: Data
 
-    init(data: Data = .init()) {
-        self.data = data
+    let ctx = DFExecutionContext()
+    let tableName = "table"
+
+    init() {
     }
-
 
     required init(configuration: ReadConfiguration) throws {
-        guard let data = configuration.file.regularFileContents else {
+        guard let filename = configuration.file.filename else {
             throw CocoaError(.fileReadCorruptFile)
         }
-        self.data = data
+
+        print("opening file", filename)
+        // ctx.register(parquet: configuration.file.filename, tableName: tableName)
     }
 
-    func snapshot(contentType: UTType) throws -> Data {
-        data
+    func snapshot(contentType: UTType) throws -> Void {
     }
 
-    func fileWrapper(snapshot: Data, configuration: WriteConfiguration) throws -> FileWrapper {
-        .init(regularFileWithContents: snapshot)
+    func fileWrapper(snapshot: Void, configuration: WriteConfiguration) throws -> FileWrapper {
+        throw ParquetteError.writeNotSupported
     }
 }

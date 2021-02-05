@@ -8,10 +8,6 @@
 import XCTest
 @testable import SwiftArrow
 
-public enum ParquetteError : Error {
-    case missingFileError(url: URL)
-}
-
 class SwiftArrowTests: XCTestCase {
 
     func sampleFile(ext: String, _ index: Int = 1) throws -> URL {
@@ -23,7 +19,7 @@ class SwiftArrowTests: XCTestCase {
 
     func checkURL(_ url: URL) throws -> URL {
         if !FileManager.default.fileExists(atPath: url.path) {
-            throw ParquetteError.missingFileError(url: url)
+            throw SwiftArrowError.missingFileError(url: url)
         }
         return url
     }

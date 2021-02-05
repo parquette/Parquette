@@ -7,6 +7,11 @@
 
 import Foundation
 
+public enum SwiftArrowError : Error {
+    case missingFileError(url: URL)
+}
+
+
 /// Setup Rust logging. This can be called multiple times, from multiple threads.
 func initRustLogging() {
     initialize_logging()
@@ -40,7 +45,6 @@ func JSONToArrow(arrow: NSDictionary, JSONFile: URL, arrowFile: URL) throws -> D
     return arrowData
 }
 
-
 enum SwiftRustError : Error {
     case generic(String?)
 
@@ -58,10 +62,7 @@ enum SwiftRustError : Error {
 
         return value
     }
-
 }
-
-
 
 extension ArrowSchemaArray {
     func roundTrip() -> ArrowSchemaArray {
@@ -76,11 +77,6 @@ extension ArrowArray {
         arrow_array_ffi_arg_param_demo(self, param)
     }
 }
-
-//datafusion_demo()
-
-
-
 
 class ArrowCSV {
     private let fileURL: URL
@@ -131,10 +127,10 @@ public func invokeCallbackInt64(millis: UInt64, value: Int64, closure: @escaping
     callback_int64_after(millis, value, completion)
 }
 
-class DFExecutionContext {
+public class DFExecutionContext {
     let ptr: OpaquePointer
 
-    init() {
+    public init() {
         ptr = datafusion_context_create()
     }
 
@@ -142,28 +138,28 @@ class DFExecutionContext {
         datafusion_context_destroy(ptr)
     }
 
-    func register(parquet: URL, tableName: String) throws {
+    public func register(parquet: URL, tableName: String) throws {
         try SwiftRustError.checking(datafusion_context_register_parquet(ptr, parquet.path, tableName))
     }
 
-    func register(csv: URL, tableName: String) throws {
+    public func register(csv: URL, tableName: String) throws {
         try SwiftRustError.checking(datafusion_context_register_csv(ptr, csv.path, tableName))
     }
 
-    func load(parquet: URL) throws -> DFDataFrame? {
+    public func load(parquet: URL) throws -> DFDataFrame? {
         try DFDataFrame(checking: datafusion_context_read_parquet(ptr, parquet.path))
     }
 
-    func load(csv: URL) throws -> DFDataFrame? {
+    public func load(csv: URL) throws -> DFDataFrame? {
         try DFDataFrame(checking: datafusion_context_read_csv(ptr, csv.path))
     }
 
-    func query(sql: String) throws -> DFDataFrame? {
+    public func query(sql: String) throws -> DFDataFrame? {
         try DFDataFrame(checking: datafusion_context_execute_sql(ptr, sql))
     }
 }
 
-class DFDataFrame {
+public class DFDataFrame {
     let ptr: OpaquePointer
 
     init(ptr: OpaquePointer) {
@@ -179,12 +175,12 @@ class DFDataFrame {
         datafusion_dataframe_destroy(ptr)
     }
 
-    func limit(count: UInt) throws -> DFDataFrame {
+    public func limit(count: UInt) throws -> DFDataFrame {
         DFDataFrame(ptr: try SwiftRustError.checking(datafusion_dataframe_limit(ptr, count)))
     }
 
     /// Executes the DataFrame and returns the count
-    func collectionCount() throws -> UInt {
+    public func collectionCount() throws -> UInt {
         try SwiftRustError.checking(datafusion_dataframe_collect_count(ptr))
     }
 

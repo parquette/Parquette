@@ -11,12 +11,12 @@ struct ContentView: View {
     @ObservedObject var document: ParquetteDocument
 
     var body: some View {
-        ParquetViewer(data: $document.data)
+        ParquetViewer(document: document)
     }
 }
 
 struct ParquetViewer: View {
-    @Binding var data: Data
+    @ObservedObject var document: ParquetteDocument
 
     var body: some View {
         TextEditor(text: .constant("Parquet data"))
