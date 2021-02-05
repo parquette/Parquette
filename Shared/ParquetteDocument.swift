@@ -9,8 +9,27 @@ import SwiftUI
 import UniformTypeIdentifiers
 import SwiftArrow
 
-public enum ParquetteError : Error {
+public enum ParquetteError : LocalizedError {
     case writeNotSupported
+    case unknownContentType(UTType)
+
+    public var failureReason: String? {
+        switch self {
+        case .writeNotSupported:
+            return NSLocalizedString("Write is not supported", comment: "")
+        case .unknownContentType:
+            return NSLocalizedString("Unknown content type", comment: "")
+        }
+    }
+
+    public var recoverySuggestion: String? {
+        switch self {
+        case .writeNotSupported:
+            return NSLocalizedString("Parquette currently only supports reading files", comment: "")
+        case .unknownContentType:
+            return NSLocalizedString("Save as a supported content type", comment: "")
+        }
+    }
 }
 
 extension UTType {
@@ -24,7 +43,8 @@ extension UTType {
 }
 
 final class ParquetteDocument: ReferenceFileDocument {
-    static var readableContentTypes: [UTType] { [.parquette_parquet] }
+    static var readableContentTypes: [UTType] { [.parquette_parquet, .parquette_csv] }
+    static var writableContentTypes: [UTType] { [] }
 
     let ctx = DFExecutionContext()
     let tableName = "table"
@@ -33,12 +53,24 @@ final class ParquetteDocument: ReferenceFileDocument {
     }
 
     required init(configuration: ReadConfiguration) throws {
+
         guard let filename = configuration.file.filename else {
             throw CocoaError(.fileReadCorruptFile)
         }
 
-        print("opening file", filename)
-        // ctx.register(parquet: configuration.file.filename, tableName: tableName)
+        let url: URL! = nil
+        print("opening file", configuration, configuration.file) // , NSApp.currentEvent?.window?.windowController?.document)
+
+        if let url = url {
+            switch configuration.contentType {
+            case .parquette_parquet:
+                try ctx.register(parquet: url, tableName: tableName)
+            case .parquette_csv:
+                try ctx.register(csv: url, tableName: tableName)
+            default:
+                throw ParquetteError.unknownContentType(configuration.contentType)
+            }
+        }
     }
 
     func snapshot(contentType: UTType) throws -> Void {
