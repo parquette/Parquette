@@ -7,34 +7,43 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import SwiftArrow
 
 extension UTType {
-    static var parquet: UTType {
+    static var parquette_parquet: UTType {
         UTType(importedAs: "net.parquette.format.parquet")
     }
+
+    static var parquette_csv: UTType {
+        UTType(importedAs: "net.parquette.format.csv")
+    }
+
 }
 
 
-struct ParquetteDocument: FileDocument {
-    var text: String
+final class ParquetteDocument: ReferenceFileDocument {
+    static var readableContentTypes: [UTType] { [.parquette_parquet] }
+    typealias Snapshot = Never
 
-    init(text: String = "Hello, world!") {
-        self.text = text
+    @Published var data: Data
+
+    init(data: Data = .init()) {
+        self.data = data
     }
 
-    static var readableContentTypes: [UTType] { [.parquet] }
 
-    init(configuration: ReadConfiguration) throws {
-        guard let data = configuration.file.regularFileContents,
-              let string = String(data: data, encoding: .utf8)
-        else {
+    required init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else {
             throw CocoaError(.fileReadCorruptFile)
         }
-        text = string
+        self.data = data
     }
-    
-    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        let data = text.data(using: .utf8)!
-        return .init(regularFileWithContents: data)
+
+    func snapshot(contentType: UTType) throws -> Never {
+        fatalError("never")
+    }
+
+    func fileWrapper(snapshot: Never, configuration: WriteConfiguration) throws -> FileWrapper {
+        .init(regularFileWithContents: self.data)
     }
 }
