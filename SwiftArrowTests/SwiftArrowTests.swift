@@ -17,7 +17,7 @@ class SwiftArrowTests: XCTestCase {
     func sampleFile(ext: String, _ index: Int = 1) throws -> URL {
         let url = URL(fileURLWithPath: #file)
             .deletingLastPathComponent()
-            .appendingPathComponent("../../arcolyte/test/data/\(ext)/userdata\(index).\(ext)")
+            .appendingPathComponent("../arcolyte/test/data/\(ext)/userdata\(index).\(ext)")
         return try checkURL(url)
     }
 
