@@ -11,7 +11,6 @@ public enum SwiftArrowError : Error {
     case missingFileError(url: URL)
 }
 
-
 /// Setup Rust logging. This can be called multiple times, from multiple threads.
 func initRustLogging() {
     initialize_logging()
@@ -138,22 +137,27 @@ public class DFExecutionContext {
         datafusion_context_destroy(ptr)
     }
 
+    /// Registers the given URL to a `.parquet` file as the given table name
     public func register(parquet: URL, tableName: String) throws {
         try SwiftRustError.checking(datafusion_context_register_parquet(ptr, parquet.path, tableName))
     }
 
+    /// Registers the given URL to a `.csv` file as the given table name
     public func register(csv: URL, tableName: String) throws {
         try SwiftRustError.checking(datafusion_context_register_csv(ptr, csv.path, tableName))
     }
 
+    /// Registers the given `.parquet` file directly
     public func load(parquet: URL) throws -> DFDataFrame? {
         try DFDataFrame(checking: datafusion_context_read_parquet(ptr, parquet.path))
     }
 
+    /// Registers the given `.csv` file directly
     public func load(csv: URL) throws -> DFDataFrame? {
         try DFDataFrame(checking: datafusion_context_read_csv(ptr, csv.path))
     }
 
+    /// Issues a SQL query against the context
     public func query(sql: String) throws -> DFDataFrame? {
         try DFDataFrame(checking: datafusion_context_execute_sql(ptr, sql))
     }

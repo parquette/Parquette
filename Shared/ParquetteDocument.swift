@@ -46,6 +46,8 @@ final class ParquetteDocument: ReferenceFileDocument {
     static var readableContentTypes: [UTType] { [.parquette_parquet, .parquette_csv] }
     static var writableContentTypes: [UTType] { [] }
 
+    @Published var groupTitle = ""
+
     let ctx = DFExecutionContext()
     let tableName = "table"
 
@@ -58,8 +60,10 @@ final class ParquetteDocument: ReferenceFileDocument {
             throw CocoaError(.fileReadCorruptFile)
         }
 
+        groupTitle = filename
         let url: URL! = nil
-        print("opening file", configuration, configuration.file) // , NSApp.currentEvent?.window?.windowController?.document)
+
+        print("opening file", configuration, filename, configuration.file) // , NSApp.currentEvent?.window?.windowController?.document)
 
         if let url = url {
             switch configuration.contentType {
@@ -77,6 +81,10 @@ final class ParquetteDocument: ReferenceFileDocument {
     }
 
     func fileWrapper(snapshot: Void, configuration: WriteConfiguration) throws -> FileWrapper {
+        if let file = configuration.existingFile {
+            return file
+        }
+
         throw ParquetteError.writeNotSupported
     }
 }
