@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
-    @Binding var document: ParquetteDocument
+    // @Binding var document: ParquetteDocument
+    @ObservedObject var document: ParquetteDocument
 
     var body: some View {
         ParquetViewer(data: $document.data)
@@ -20,11 +21,5 @@ struct ParquetViewer: View {
 
     var body: some View {
         Text("Parquet data")
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView(document: .constant(ParquetteDocument()))
     }
 }

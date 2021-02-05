@@ -11,7 +11,9 @@ import XCTest
 class SwiftArrowTests: XCTestCase {
 
     func sampleFile(ext: String, _ index: Int = 1) -> URL {
-        URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("../../arcolyte/test/data/\(ext)/userdata\(index).\(ext)")
+        URL(fileURLWithPath: #file)
+            .deletingLastPathComponent()
+            .appendingPathComponent("../../arcolyte/test/data/\(ext)/userdata\(index).\(ext)")
     }
 
     func testLoadArrow() throws {
@@ -25,9 +27,7 @@ class SwiftArrowTests: XCTestCase {
     }
 
     func testAsyncOperation() throws {
-//        async_operation(CompletedCallback(userdata: <#T##UnsafeMutableRawPointer!#>, callback: <#T##((UnsafeMutableRawPointer?, Bool) -> Void)!##((UnsafeMutableRawPointer?, Bool) -> Void)!##(UnsafeMutableRawPointer?, Bool) -> Void#>))
-
-        class TestLifetime {
+        class LifetimeExample {
             let sema: DispatchSemaphore
             init(_ sema: DispatchSemaphore) {
                 self.sema = sema
@@ -45,7 +45,7 @@ class SwiftArrowTests: XCTestCase {
         }
 
         func startOperation(_ sema: DispatchSemaphore) {
-            let test = TestLifetime(sema)
+            let test = LifetimeExample(sema)
             print("starting async operation")
             invokeCallbackBool(millis: 1) { [test] success in
                 test.completed(success)

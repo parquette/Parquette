@@ -10,8 +10,8 @@ import SwiftUI
 @main
 struct ParquetteApp: App {
     var body: some Scene {
-        DocumentGroup(newDocument: ParquetteDocument()) { file in
-            ContentView(document: file.$document)
+        DocumentGroup(newDocument: { ParquetteDocument() }) { file in
+            ContentView(document: file.document)
         }
     }
 }
