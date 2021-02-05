@@ -9,10 +9,11 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 extension UTType {
-    static var exampleText: UTType {
+    static var parquet: UTType {
         UTType(importedAs: "net.parquette.format.parquet")
     }
 }
+
 
 struct ParquetteDocument: FileDocument {
     var text: String
@@ -21,7 +22,7 @@ struct ParquetteDocument: FileDocument {
         self.text = text
     }
 
-    static var readableContentTypes: [UTType] { [.exampleText] }
+    static var readableContentTypes: [UTType] { [.parquet] }
 
     init(configuration: ReadConfiguration) throws {
         guard let data = configuration.file.regularFileContents,
