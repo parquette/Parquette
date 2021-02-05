@@ -18,10 +18,6 @@
 		492E72E725CCC170003C8D58 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72E625CCC170003C8D58 /* Tests_macOS.swift */; };
 		492E72E925CCC170003C8D58 /* ParquetteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C025CCC16D003C8D58 /* ParquetteApp.swift */; };
 		492E72EA25CCC170003C8D58 /* ParquetteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C025CCC16D003C8D58 /* ParquetteApp.swift */; };
-		492E72EB25CCC170003C8D58 /* ParquetteDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C125CCC16D003C8D58 /* ParquetteDocument.swift */; };
-		492E72EC25CCC170003C8D58 /* ParquetteDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C125CCC16D003C8D58 /* ParquetteDocument.swift */; };
-		492E72ED25CCC170003C8D58 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C225CCC16D003C8D58 /* ContentView.swift */; };
-		492E72EE25CCC170003C8D58 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C225CCC16D003C8D58 /* ContentView.swift */; };
 		492E72EF25CCC170003C8D58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 492E72C325CCC170003C8D58 /* Assets.xcassets */; };
 		492E72F025CCC170003C8D58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 492E72C325CCC170003C8D58 /* Assets.xcassets */; };
 		492E730525CCC1B9003C8D58 /* SwiftArrow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; };
@@ -95,8 +91,6 @@
 		492E72A925CCAF86003C8D58 /* libarcolyte.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libarcolyte.a; path = arcolyte/target/libarcolyte.a; sourceTree = "<group>"; };
 		492E72AF25CCBD57003C8D58 /* buildrust.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = buildrust.sh; sourceTree = "<group>"; };
 		492E72C025CCC16D003C8D58 /* ParquetteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParquetteApp.swift; sourceTree = "<group>"; };
-		492E72C125CCC16D003C8D58 /* ParquetteDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParquetteDocument.swift; sourceTree = "<group>"; };
-		492E72C225CCC16D003C8D58 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		492E72C325CCC170003C8D58 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		492E72C825CCC170003C8D58 /* Parquette.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Parquette.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		492E72CA25CCC170003C8D58 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -216,8 +210,6 @@
 			isa = PBXGroup;
 			children = (
 				492E72C025CCC16D003C8D58 /* ParquetteApp.swift */,
-				492E72C125CCC16D003C8D58 /* ParquetteDocument.swift */,
-				492E72C225CCC16D003C8D58 /* ContentView.swift */,
 				492E72C325CCC170003C8D58 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -536,9 +528,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				492E72EB25CCC170003C8D58 /* ParquetteDocument.swift in Sources */,
 				492E72E925CCC170003C8D58 /* ParquetteApp.swift in Sources */,
-				492E72ED25CCC170003C8D58 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -546,9 +536,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				492E72EC25CCC170003C8D58 /* ParquetteDocument.swift in Sources */,
 				492E72EA25CCC170003C8D58 /* ParquetteApp.swift in Sources */,
-				492E72EE25CCC170003C8D58 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

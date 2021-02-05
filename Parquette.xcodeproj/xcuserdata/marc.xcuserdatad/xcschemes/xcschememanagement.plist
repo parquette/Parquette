@@ -7,12 +7,12 @@
 		<key>Parquette (iOS).xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>2</integer>
+			<integer>1</integer>
 		</dict>
 		<key>Parquette (macOS).xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>1</integer>
+			<integer>2</integer>
 		</dict>
 		<key>SwiftArrow.xcscheme_^#shared#^_</key>
 		<dict>
@@ -28,6 +28,16 @@
 			<true/>
 		</dict>
 		<key>49175ED725BF6139003E9FEF</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>492E72CE25CCC170003C8D58</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>492E72E125CCC170003C8D58</key>
 		<dict>
 			<key>primary</key>
 			<true/>
