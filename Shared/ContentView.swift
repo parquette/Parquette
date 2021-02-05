@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+@available(*, deprecated, message: "work in progress")
+func wip<T>(_ value: T) -> T {
+    value
+}
+
 struct ContentView: View {
     @ObservedObject var document: ParquetteDocument
 
@@ -66,6 +71,14 @@ struct DataTableView : NSViewRepresentable {
         tableView.dataSource = context.coordinator
         tableView.delegate = context.coordinator
 
+        tableView.focusRingType = .none
+        tableView.allowsMultipleSelection = true
+        tableView.allowsTypeSelect = true
+        tableView.allowsEmptySelection = true
+        tableView.allowsColumnSelection = true
+        tableView.allowsColumnResizing = true
+        tableView.allowsColumnReordering = false
+
         let scrollView = NSScrollView()
         scrollView.documentView = tableView
         scrollView.focusRingType = .none
@@ -76,9 +89,11 @@ struct DataTableView : NSViewRepresentable {
         let tableView = view.documentView as! NSTableView
 
         if tableView.tableColumns.isEmpty {
-            let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("COL1"))
-            col.title = "Column 1"
-            tableView.addTableColumn(col)
+            for i in 1...10 {
+                let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("COL\(i)"))
+                col.title = "Column \(i)"
+                tableView.addTableColumn(col)
+            }
         }
     }
 
@@ -99,11 +114,11 @@ struct DataTableView : NSViewRepresentable {
         }
 
         func tableView(_ tableView: NSTableView, objectValueFor tableColumn: NSTableColumn?, row: Int) -> Any? {
-            "XXX"
+            wip("XXX")
         }
 
         func numberOfRows(in tableView: NSTableView) -> Int {
-            10
+            wip(10)
         }
     }
 }
