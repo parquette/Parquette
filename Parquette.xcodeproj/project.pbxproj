@@ -14,6 +14,18 @@
 		492E72A225CCAF43003C8D58 /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 492E72A125CCAF43003C8D58 /* arcolyte.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		492E72AA25CCAF86003C8D58 /* libarcolyte.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 492E72A925CCAF86003C8D58 /* libarcolyte.a */; };
 		492E72B025CCBD57003C8D58 /* buildrust.sh in Resources */ = {isa = PBXBuildFile; fileRef = 492E72AF25CCBD57003C8D58 /* buildrust.sh */; };
+		492E72DC25CCC170003C8D58 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72DB25CCC170003C8D58 /* Tests_iOS.swift */; };
+		492E72E725CCC170003C8D58 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72E625CCC170003C8D58 /* Tests_macOS.swift */; };
+		492E72E925CCC170003C8D58 /* ParquetteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C025CCC16D003C8D58 /* ParquetteApp.swift */; };
+		492E72EA25CCC170003C8D58 /* ParquetteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C025CCC16D003C8D58 /* ParquetteApp.swift */; };
+		492E72EB25CCC170003C8D58 /* ParquetteDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C125CCC16D003C8D58 /* ParquetteDocument.swift */; };
+		492E72EC25CCC170003C8D58 /* ParquetteDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C125CCC16D003C8D58 /* ParquetteDocument.swift */; };
+		492E72ED25CCC170003C8D58 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C225CCC16D003C8D58 /* ContentView.swift */; };
+		492E72EE25CCC170003C8D58 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C225CCC16D003C8D58 /* ContentView.swift */; };
+		492E72EF25CCC170003C8D58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 492E72C325CCC170003C8D58 /* Assets.xcassets */; };
+		492E72F025CCC170003C8D58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 492E72C325CCC170003C8D58 /* Assets.xcassets */; };
+		492E730525CCC1B9003C8D58 /* SwiftArrow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; };
+		492E730625CCC1B9003C8D58 /* SwiftArrow.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -24,9 +36,41 @@
 			remoteGlobalIDString = 49175ECE25BF6138003E9FEF;
 			remoteInfo = SwiftArrow;
 		};
+		492E72D825CCC170003C8D58 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49175EC625BF6138003E9FEF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 492E72C725CCC170003C8D58;
+			remoteInfo = "Parquette (iOS)";
+		};
+		492E72E325CCC170003C8D58 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49175EC625BF6138003E9FEF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 492E72CE25CCC170003C8D58;
+			remoteInfo = "Parquette (macOS)";
+		};
+		492E730725CCC1B9003C8D58 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49175EC625BF6138003E9FEF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 49175ECE25BF6138003E9FEF;
+			remoteInfo = SwiftArrow;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		492E730925CCC1B9003C8D58 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				492E730625CCC1B9003C8D58 /* SwiftArrow.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		498CFD0325C05FA000047E65 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -50,6 +94,21 @@
 		492E72A125CCAF43003C8D58 /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = arcolyte.h; path = arcolyte/target/arcolyte.h; sourceTree = SOURCE_ROOT; };
 		492E72A925CCAF86003C8D58 /* libarcolyte.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libarcolyte.a; path = arcolyte/target/libarcolyte.a; sourceTree = "<group>"; };
 		492E72AF25CCBD57003C8D58 /* buildrust.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = buildrust.sh; sourceTree = "<group>"; };
+		492E72C025CCC16D003C8D58 /* ParquetteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParquetteApp.swift; sourceTree = "<group>"; };
+		492E72C125CCC16D003C8D58 /* ParquetteDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParquetteDocument.swift; sourceTree = "<group>"; };
+		492E72C225CCC16D003C8D58 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		492E72C325CCC170003C8D58 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		492E72C825CCC170003C8D58 /* Parquette.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Parquette.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		492E72CA25CCC170003C8D58 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		492E72CF25CCC170003C8D58 /* Parquette.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Parquette.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		492E72D125CCC170003C8D58 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		492E72D225CCC170003C8D58 /* macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macOS.entitlements; sourceTree = "<group>"; };
+		492E72D725CCC170003C8D58 /* Tests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		492E72DB25CCC170003C8D58 /* Tests_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_iOS.swift; sourceTree = "<group>"; };
+		492E72DD25CCC170003C8D58 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		492E72E225CCC170003C8D58 /* Tests macOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests macOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		492E72E625CCC170003C8D58 /* Tests_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_macOS.swift; sourceTree = "<group>"; };
+		492E72E825CCC170003C8D58 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		497CA76F25CCAB7C00180E77 /* arcolyte */ = {isa = PBXFileReference; lastKnownFileType = folder; path = arcolyte; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -70,6 +129,35 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		492E72C525CCC170003C8D58 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492E72CC25CCC170003C8D58 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				492E730525CCC1B9003C8D58 /* SwiftArrow.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492E72D425CCC170003C8D58 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492E72DF25CCC170003C8D58 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -79,6 +167,11 @@
 				497CA76F25CCAB7C00180E77 /* arcolyte */,
 				49175ED125BF6138003E9FEF /* SwiftArrow */,
 				49175EDC25BF6139003E9FEF /* SwiftArrowTests */,
+				492E72BF25CCC16D003C8D58 /* Shared */,
+				492E72C925CCC170003C8D58 /* iOS */,
+				492E72D025CCC170003C8D58 /* macOS */,
+				492E72DA25CCC170003C8D58 /* Tests iOS */,
+				492E72E525CCC170003C8D58 /* Tests macOS */,
 				49175ED025BF6138003E9FEF /* Products */,
 				498CFCE025C0556400047E65 /* Frameworks */,
 			);
@@ -89,6 +182,10 @@
 			children = (
 				49175ECF25BF6138003E9FEF /* SwiftArrow.framework */,
 				49175ED825BF6139003E9FEF /* SwiftArrowTests.xctest */,
+				492E72C825CCC170003C8D58 /* Parquette.app */,
+				492E72CF25CCC170003C8D58 /* Parquette.app */,
+				492E72D725CCC170003C8D58 /* Tests iOS.xctest */,
+				492E72E225CCC170003C8D58 /* Tests macOS.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -113,6 +210,52 @@
 				49175EDF25BF6139003E9FEF /* Info.plist */,
 			);
 			path = SwiftArrowTests;
+			sourceTree = "<group>";
+		};
+		492E72BF25CCC16D003C8D58 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				492E72C025CCC16D003C8D58 /* ParquetteApp.swift */,
+				492E72C125CCC16D003C8D58 /* ParquetteDocument.swift */,
+				492E72C225CCC16D003C8D58 /* ContentView.swift */,
+				492E72C325CCC170003C8D58 /* Assets.xcassets */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		492E72C925CCC170003C8D58 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				492E72CA25CCC170003C8D58 /* Info.plist */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		492E72D025CCC170003C8D58 /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				492E72D125CCC170003C8D58 /* Info.plist */,
+				492E72D225CCC170003C8D58 /* macOS.entitlements */,
+			);
+			path = macOS;
+			sourceTree = "<group>";
+		};
+		492E72DA25CCC170003C8D58 /* Tests iOS */ = {
+			isa = PBXGroup;
+			children = (
+				492E72DB25CCC170003C8D58 /* Tests_iOS.swift */,
+				492E72DD25CCC170003C8D58 /* Info.plist */,
+			);
+			path = "Tests iOS";
+			sourceTree = "<group>";
+		};
+		492E72E525CCC170003C8D58 /* Tests macOS */ = {
+			isa = PBXGroup;
+			children = (
+				492E72E625CCC170003C8D58 /* Tests_macOS.swift */,
+				492E72E825CCC170003C8D58 /* Info.plist */,
+			);
+			path = "Tests macOS";
 			sourceTree = "<group>";
 		};
 		498CFCE025C0556400047E65 /* Frameworks */ = {
@@ -176,13 +319,85 @@
 			productReference = 49175ED825BF6139003E9FEF /* SwiftArrowTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		492E72C725CCC170003C8D58 /* Parquette (iOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 492E72F125CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Parquette (iOS)" */;
+			buildPhases = (
+				492E72C425CCC170003C8D58 /* Sources */,
+				492E72C525CCC170003C8D58 /* Frameworks */,
+				492E72C625CCC170003C8D58 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Parquette (iOS)";
+			productName = "Parquette (iOS)";
+			productReference = 492E72C825CCC170003C8D58 /* Parquette.app */;
+			productType = "com.apple.product-type.application";
+		};
+		492E72CE25CCC170003C8D58 /* Parquette (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 492E72F425CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Parquette (macOS)" */;
+			buildPhases = (
+				492E72CB25CCC170003C8D58 /* Sources */,
+				492E72CC25CCC170003C8D58 /* Frameworks */,
+				492E72CD25CCC170003C8D58 /* Resources */,
+				492E730925CCC1B9003C8D58 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				492E730825CCC1B9003C8D58 /* PBXTargetDependency */,
+			);
+			name = "Parquette (macOS)";
+			productName = "Parquette (macOS)";
+			productReference = 492E72CF25CCC170003C8D58 /* Parquette.app */;
+			productType = "com.apple.product-type.application";
+		};
+		492E72D625CCC170003C8D58 /* Tests iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 492E72F725CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Tests iOS" */;
+			buildPhases = (
+				492E72D325CCC170003C8D58 /* Sources */,
+				492E72D425CCC170003C8D58 /* Frameworks */,
+				492E72D525CCC170003C8D58 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				492E72D925CCC170003C8D58 /* PBXTargetDependency */,
+			);
+			name = "Tests iOS";
+			productName = "Tests iOS";
+			productReference = 492E72D725CCC170003C8D58 /* Tests iOS.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		492E72E125CCC170003C8D58 /* Tests macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 492E72FA25CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Tests macOS" */;
+			buildPhases = (
+				492E72DE25CCC170003C8D58 /* Sources */,
+				492E72DF25CCC170003C8D58 /* Frameworks */,
+				492E72E025CCC170003C8D58 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				492E72E425CCC170003C8D58 /* PBXTargetDependency */,
+			);
+			name = "Tests macOS";
+			productName = "Tests macOS";
+			productReference = 492E72E225CCC170003C8D58 /* Tests macOS.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		49175EC625BF6138003E9FEF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1230;
+				LastSwiftUpdateCheck = 1240;
 				LastUpgradeCheck = 1230;
 				TargetAttributes = {
 					49175ECE25BF6138003E9FEF = {
@@ -191,6 +406,20 @@
 					};
 					49175ED725BF6139003E9FEF = {
 						CreatedOnToolsVersion = 12.3;
+					};
+					492E72C725CCC170003C8D58 = {
+						CreatedOnToolsVersion = 12.4;
+					};
+					492E72CE25CCC170003C8D58 = {
+						CreatedOnToolsVersion = 12.4;
+					};
+					492E72D625CCC170003C8D58 = {
+						CreatedOnToolsVersion = 12.4;
+						TestTargetID = 492E72C725CCC170003C8D58;
+					};
+					492E72E125CCC170003C8D58 = {
+						CreatedOnToolsVersion = 12.4;
+						TestTargetID = 492E72CE25CCC170003C8D58;
 					};
 				};
 			};
@@ -209,6 +438,10 @@
 			targets = (
 				49175ECE25BF6138003E9FEF /* SwiftArrow */,
 				49175ED725BF6139003E9FEF /* SwiftArrowTests */,
+				492E72C725CCC170003C8D58 /* Parquette (iOS) */,
+				492E72CE25CCC170003C8D58 /* Parquette (macOS) */,
+				492E72D625CCC170003C8D58 /* Tests iOS */,
+				492E72E125CCC170003C8D58 /* Tests macOS */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +456,36 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		49175ED625BF6139003E9FEF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492E72C625CCC170003C8D58 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				492E72EF25CCC170003C8D58 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492E72CD25CCC170003C8D58 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				492E72F025CCC170003C8D58 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492E72D525CCC170003C8D58 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492E72E025CCC170003C8D58 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -269,6 +532,42 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		492E72C425CCC170003C8D58 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				492E72EB25CCC170003C8D58 /* ParquetteDocument.swift in Sources */,
+				492E72E925CCC170003C8D58 /* ParquetteApp.swift in Sources */,
+				492E72ED25CCC170003C8D58 /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492E72CB25CCC170003C8D58 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				492E72EC25CCC170003C8D58 /* ParquetteDocument.swift in Sources */,
+				492E72EA25CCC170003C8D58 /* ParquetteApp.swift in Sources */,
+				492E72EE25CCC170003C8D58 /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492E72D325CCC170003C8D58 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				492E72DC25CCC170003C8D58 /* Tests_iOS.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		492E72DE25CCC170003C8D58 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				492E72E725CCC170003C8D58 /* Tests_macOS.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -276,6 +575,21 @@
 			isa = PBXTargetDependency;
 			target = 49175ECE25BF6138003E9FEF /* SwiftArrow */;
 			targetProxy = 49175EDA25BF6139003E9FEF /* PBXContainerItemProxy */;
+		};
+		492E72D925CCC170003C8D58 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 492E72C725CCC170003C8D58 /* Parquette (iOS) */;
+			targetProxy = 492E72D825CCC170003C8D58 /* PBXContainerItemProxy */;
+		};
+		492E72E425CCC170003C8D58 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 492E72CE25CCC170003C8D58 /* Parquette (macOS) */;
+			targetProxy = 492E72E325CCC170003C8D58 /* PBXContainerItemProxy */;
+		};
+		492E730825CCC1B9003C8D58 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 49175ECE25BF6138003E9FEF /* SwiftArrow */;
+			targetProxy = 492E730725CCC1B9003C8D58 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -504,6 +818,184 @@
 			};
 			name = Release;
 		};
+		492E72F225CCC170003C8D58 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RZQAW46AC7;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.parquette.Parquette;
+				PRODUCT_NAME = Parquette;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		492E72F325CCC170003C8D58 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RZQAW46AC7;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.parquette.Parquette;
+				PRODUCT_NAME = Parquette;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		492E72F525CCC170003C8D58 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = macOS/macOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = RZQAW46AC7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = macOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.parquette.Parquette;
+				PRODUCT_NAME = Parquette;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		492E72F625CCC170003C8D58 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = macOS/macOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = RZQAW46AC7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = macOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.parquette.Parquette;
+				PRODUCT_NAME = Parquette;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		492E72F825CCC170003C8D58 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RZQAW46AC7;
+				INFOPLIST_FILE = "Tests iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "net.parquette.Tests-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Parquette (iOS)";
+			};
+			name = Debug;
+		};
+		492E72F925CCC170003C8D58 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RZQAW46AC7;
+				INFOPLIST_FILE = "Tests iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "net.parquette.Tests-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Parquette (iOS)";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		492E72FB25CCC170003C8D58 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = RZQAW46AC7;
+				INFOPLIST_FILE = "Tests macOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "net.parquette.Tests-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "Parquette (macOS)";
+			};
+			name = Debug;
+		};
+		492E72FC25CCC170003C8D58 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = RZQAW46AC7;
+				INFOPLIST_FILE = "Tests macOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "net.parquette.Tests-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "Parquette (macOS)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -530,6 +1022,42 @@
 			buildConfigurations = (
 				49175EE725BF6139003E9FEF /* Debug */,
 				49175EE825BF6139003E9FEF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		492E72F125CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Parquette (iOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				492E72F225CCC170003C8D58 /* Debug */,
+				492E72F325CCC170003C8D58 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		492E72F425CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Parquette (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				492E72F525CCC170003C8D58 /* Debug */,
+				492E72F625CCC170003C8D58 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		492E72F725CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Tests iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				492E72F825CCC170003C8D58 /* Debug */,
+				492E72F925CCC170003C8D58 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		492E72FA25CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Tests macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				492E72FB25CCC170003C8D58 /* Debug */,
+				492E72FC25CCC170003C8D58 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
