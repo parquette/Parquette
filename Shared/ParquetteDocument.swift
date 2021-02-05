@@ -49,7 +49,7 @@ final class ParquetteDocument: ReferenceFileDocument {
     @Published var groupTitle = ""
 
     let ctx = DFExecutionContext()
-    let tableName = "table"
+    let tableName = "data"
 
     init() {
     }
@@ -63,18 +63,34 @@ final class ParquetteDocument: ReferenceFileDocument {
         groupTitle = filename
         let url: URL! = nil
 
-        print("opening file", configuration, filename, configuration.file) // , NSApp.currentEvent?.window?.windowController?.document)
+        print("opening file", configuration, filename, configuration.file)
 
-        if let url = url {
-            switch configuration.contentType {
-            case .parquette_parquet:
-                try ctx.register(parquet: url, tableName: tableName)
-            case .parquette_csv:
-                try ctx.register(csv: url, tableName: tableName)
-            default:
-                throw ParquetteError.unknownContentType(configuration.contentType)
-            }
+        let doc = wip(NSDocumentController.shared.currentDirectory)
+        print("### currentDocument", NSDocumentController.shared.currentDocument?.fileURL)
+        print("### currentDirectory", NSDocumentController.shared.currentDirectory)
+        print("### docs", NSDocumentController.shared.documents)
+
+        let tmpFile = UUID().uuidString
+
+        // we need to operate on a physical file, and NSFileWrapper doens't expose the underlying URL, so we cheat by copying the file into a temporary file and opening that one
+        let tmpURL = URL(fileURLWithPath: tmpFile, relativeTo: URL(fileURLWithPath: NSTemporaryDirectory()))
+            .appendingPathExtension("parquet")
+
+        try configuration.file.write(to: tmpURL, options: .withNameUpdating, originalContentsURL: nil)
+
+        print("### wrote to", tmpURL)
+
+        switch configuration.contentType {
+        case .parquette_parquet:
+            try ctx.register(parquet: tmpURL, tableName: tableName)
+        case .parquette_csv:
+            try ctx.register(csv: tmpURL, tableName: tableName)
+        default:
+            throw ParquetteError.unknownContentType(configuration.contentType)
         }
+
+        print("### opened", tmpURL)
+
     }
 
     func snapshot(contentType: UTType) throws -> Void {
