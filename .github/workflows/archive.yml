@@ -66,6 +66,8 @@ jobs:
 
       - name: "Export & Sign Release Build"
         uses: devbotsxyz/xcode-export-archive@master
+        with:
+          scheme: "Parquette (macOS)"
 
       #
       # Now send the product to Apple's notarization service and then
