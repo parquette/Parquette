@@ -26,12 +26,12 @@ jobs:
       #  with:
       #    version: "12.4.0"
 
-      - name: "Import Certificate: Development"
-        uses: devbotsxyz/import-signing-certificate@main
-        with:
-          certificate-data: ${{ secrets.DEVELOPMENT_CERTIFICATE_DATA }}
-          certificate-passphrase: ${{ secrets.DEVELOPMENT_CERTIFICATE_PASSPHRASE }}
-          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+      #- name: "Import Certificate: Development"
+      #  uses: devbotsxyz/import-signing-certificate@main
+      #  with:
+      #    certificate-data: ${{ secrets.DEVELOPMENT_CERTIFICATE_DATA }}
+      #    certificate-passphrase: ${{ secrets.DEVELOPMENT_CERTIFICATE_PASSPHRASE }}
+      #    keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
 
       #- name: "Import Certificate: Distribution"
       #  uses: devbotsxyz/import-signing-certificate@main
