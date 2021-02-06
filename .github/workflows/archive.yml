@@ -55,6 +55,8 @@ jobs:
 
       - name: "Archive"
         uses: devbotsxyz/xcode-archive@v1
+        with:
+          scheme: "Parquette (macOS)"
 
       #
       # Next ask Xcode to export the product from the archived build
