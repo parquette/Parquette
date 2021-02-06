@@ -16,8 +16,8 @@ typedef struct SerdePoint {
 } SerdePoint;
 
 typedef struct ArrowSchemaArray {
-  const FFI_ArrowSchema *schema;
   const FFI_ArrowArray *array;
+  const FFI_ArrowSchema *schema;
 } ArrowSchemaArray;
 
 typedef ArrowArray ExtArrowArray;
@@ -133,9 +133,12 @@ void datafusion_arrow_destroy(ArrowArray *ptr);
 
 ExtArrowArray *datafusion_array_empty_create(void);
 
-ExtArrowArray *datafusion_dataframe_collect_array(struct DataFrameState *ptr, uintptr_t index);
+struct ArrowSchemaArray datafusion_dataframe_collect_array(struct DataFrameState *ptr,
+                                                           uintptr_t index);
 
-void datafusion_array_schema_get(ArrowArray *ptr);
+const FFI_ArrowArray *datafusion_array_array_get(ArrowArray array);
+
+const FFI_ArrowSchema *datafusion_array_schema_get(ArrowArray array);
 
 ExecutionContext *datafusion_context_create(void);
 

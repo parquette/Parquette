@@ -189,33 +189,37 @@ public class DFDataFrame {
     }
 
     /// Executes the DataFrame and returns the first column
-    public func arrayAt(index: UInt) throws -> DFArray {
-        DFArray(ptr: try SwiftRustError.checking(datafusion_dataframe_collect_array(ptr, index)))
+    public func arrayAt(index: UInt) throws -> ArrowSchemaArray {
+        try SwiftRustError.checking(datafusion_dataframe_collect_array(ptr, index))
     }
 
 }
 
-public class DFArray {
-    let ptr: OpaquePointer
-
-    public init() {
-        self.ptr = datafusion_array_empty_create()
-    }
-
-    init(ptr: OpaquePointer) {
-        self.ptr = ptr
-    }
-
-    init?(checking ptr: OpaquePointer?) throws {
-        guard let ptr = try SwiftRustError.checking(ptr) else { return nil }
-        self.ptr = ptr
-    }
-
-    deinit {
-        datafusion_arrow_destroy(ptr)
-    }
-
-}
+//public class DFArray {
+//    let ptr: OpaquePointer
+//
+//    public init() {
+//        self.ptr = datafusion_array_empty_create()
+//    }
+//
+//    init(ptr: OpaquePointer) {
+//        self.ptr = ptr
+//    }
+//
+//    init?(checking ptr: OpaquePointer?) throws {
+//        guard let ptr = try SwiftRustError.checking(ptr) else { return nil }
+//        self.ptr = ptr
+//    }
+//
+//    deinit {
+//        datafusion_arrow_destroy(ptr)
+//    }
+//
+//    func x() {
+//        datafusion_array_schema_get()
+//    }
+//
+//}
 
 
 

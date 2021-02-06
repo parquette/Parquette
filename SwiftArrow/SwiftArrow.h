@@ -15,11 +15,7 @@ FOUNDATION_EXPORT const unsigned char SwiftArrowVersionString[];
 
 // The Arrow C data interface from: https://arrow.apache.org/docs/format/CDataInterface.html
 
-#define ARROW_FLAG_DICTIONARY_ORDERED 1
-#define ARROW_FLAG_NULLABLE 2
-#define ARROW_FLAG_MAP_KEYS_SORTED 4
-
-struct ArrowSchema {
+typedef struct FFI_ArrowSchema {
   // Array type description
   const char* format;
   const char* name;
@@ -33,13 +29,9 @@ struct ArrowSchema {
   void (*release)(struct ArrowSchema*);
   // Opaque producer-specific data
   void* private_data;
-};
+} FFI_ArrowSchema;
 
-#define FFI_ArrowSchema struct ArrowSchema
-#define XXXFFI_ArrowArrayXXX struct ArrowSchema
-
-
-struct ArrowArray {
+typedef struct FFI_ArrowArray {
   // Array data description
   int64_t length;
   int64_t null_count;
@@ -54,8 +46,12 @@ struct ArrowArray {
   void (*release)(struct ArrowArray*);
   // Opaque producer-specific data
   void* private_data;
-};
+} FFI_ArrowArray;
 
+//typedef struct ArrowSchemaArray {
+//  const FFI_ArrowArray *array;
+//  const FFI_ArrowSchema *schema;
+//} ArrowSchemaArray;
 
 //typedef struct CompletedCallback {
 //  void *userdata;
@@ -72,8 +68,8 @@ struct ArrowArray {
 
 #define ArrowArray struct OpaqueArrowArray
 
-#define FFI_ArrowArray struct OpaqueFFI_ArrowArray
-#define FFI_ArrowSchema struct OpaqueFFI_ArrowSchema
+//#define FFI_ArrowArray struct OpaqueFFI_ArrowArray
+//#define FFI_ArrowSchema struct OpaqueFFI_ArrowSchema
 
 #define ExecutionContext struct OpaqueExecutionContext
 

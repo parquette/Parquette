@@ -115,15 +115,52 @@ class SwiftArrowTests: XCTestCase {
     }
 
     func testSimpleQueries() throws {
+        try simpleQueryTest(.string)
+        try simpleQueryTest(.int)
+    }
+
+    enum SimpleQueryTypes {
+        case string
+        case int
+    }
+
+    func simpleQueryTest(_ type: SimpleQueryTypes) throws {
         let ctx = DFExecutionContext()
 
-        guard let df = try ctx.query(sql: "SELECT 1 AS INT") else {
+        let sql: String
+        switch type {
+        case .string: sql = "select '1'"
+        case .int: sql = "select 1"
+        }
+
+        guard let df = try ctx.query(sql: sql) else {
             return XCTFail("unable to issue query")
         }
 
         XCTAssertEqual(1, try df.collectionCount())
 
-        let array: DFArray = try df.arrayAt(index: 0)
+        let schemaArray: ArrowSchemaArray = try df.arrayAt(index: 0)
+        dbg(schemaArray.array.debugDescription)
+
+        XCTAssertEqual(schemaArray.array.pointee.n_buffers, type == .string ? 3 : 2)
+        XCTAssertEqual(schemaArray.array.pointee.length, 1)
+        XCTAssertEqual(schemaArray.array.pointee.null_count, 0)
+        XCTAssertEqual(schemaArray.array.pointee.offset, 0)
+        XCTAssertEqual(schemaArray.array.pointee.n_children, 0)
+
+        XCTAssertEqual(schemaArray.schema.pointee.n_children, 0)
+
+        if let fmt = schemaArray.schema.pointee.format {
+            XCTAssertEqual(String(cString: fmt), type == .string ? "u" : "l")
+        }
+
+        if let md = schemaArray.schema.pointee.metadata {
+            XCTAssertEqual(String(cString: md), "")
+        }
+        if let nm = schemaArray.schema.pointee.name {
+            XCTAssertEqual(String(cString: nm), "")
+        }
+
         // XCTAssertEqual(1, try ctx.query(sql: "SELECT NOW()")?.collectionCount()) // doesn't work
     }
 
