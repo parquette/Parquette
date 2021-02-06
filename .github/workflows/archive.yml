@@ -56,7 +56,10 @@ jobs:
       - name: "Archive"
         uses: devbotsxyz/xcode-archive@v1
         with:
-          scheme: "Parquette (macOS)"
+          scheme: "Parquette"
+
+      - name: Example archive
+        run: ditto -V -c -k --keepParent "Export/Parquette.app" "Parquette.zip"
 
       #
       # Next ask Xcode to export the product from the archived build
@@ -67,7 +70,7 @@ jobs:
       - name: "Export & Sign Release Build"
         uses: devbotsxyz/xcode-export-archive@master
         with:
-          scheme: "Parquette (macOS)"
+          scheme: "Parquette"
 
       #
       # Now send the product to Apple's notarization service and then
