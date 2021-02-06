@@ -26,12 +26,12 @@ jobs:
       #  with:
       #    version: "12.4.0"
 
-      #- name: "Import Certificate: Development"
-      #  uses: devbotsxyz/import-signing-certificate@main
-      #  with:
-      #    certificate-data: ${{ secrets.DEVELOPMENT_CERTIFICATE_DATA }}
-      #    certificate-passphrase: ${{ secrets.DEVELOPMENT_CERTIFICATE_PASSPHRASE }}
-      #    keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+      - name: "Import Certificate: Development"
+        uses: devbotsxyz/import-signing-certificate@main
+        with:
+          certificate-data: ${{ secrets.DEVELOPMENT_CERTIFICATE_DATA }}
+          certificate-passphrase: ${{ secrets.DEVELOPMENT_CERTIFICATE_PASSPHRASE }}
+          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
 
       #- name: "Import Certificate: Distribution"
       #  uses: devbotsxyz/import-signing-certificate@main
@@ -64,37 +64,37 @@ jobs:
       # the "Developer ID" certificate.
       #
 
-      #- name: "Export & Sign Release Build"
-      #  uses: devbotsxyz/xcode-export-archive@master
+      - name: "Export & Sign Release Build"
+        uses: devbotsxyz/xcode-export-archive@master
 
       #
       # Now send the product to Apple's notarization service and then
       # staple it.
       #
 
-      #- name: "Notarize Release Build"
-      #  uses: devbotsxyz/xcode-notarize@v1
-      #  with:
-      #    product-path: "Export/Rings.app"
-      #    appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
-      #    appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
+      - name: "Notarize Release Build"
+        uses: devbotsxyz/xcode-notarize@v1
+        with:
+          product-path: "Export/Parquette.app"
+          appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
+          appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
 
-      #- name: "Staple Release Build"
-      #  uses: devbotsxyz/xcode-staple@v1
-      #  with:
-      #    product-path: "Export/Rings.app"
+      - name: "Staple Release Build"
+        uses: devbotsxyz/xcode-staple@v1
+        with:
+          product-path: "Export/Parquette.app"
 
       #
       # Zip up the app and add it to the GitHub Release as a
       # downloadable asset.
       #
 
-      #- name: Package for Distribution
-      #  run: ditto -V -c -k --keepParent "Export/Rings.app" "Rings.zip"
+      - name: Package for Distribution
+        run: ditto -V -c -k --keepParent "Export/Parquette.app" "Parquette.zip"
 
-      #- name: Release app
-      #  uses: softprops/action-gh-release@v1
-      #  with:
-      #    files: Rings.zip
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release app
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Parquette.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
