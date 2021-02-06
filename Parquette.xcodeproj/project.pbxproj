@@ -728,6 +728,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/arcolyte/target",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MODULEMAP_FILE = SwiftArrow/SwiftArrow.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = io.glimpse.SwiftArrow;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -761,6 +762,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/arcolyte/target",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MODULEMAP_FILE = SwiftArrow/SwiftArrow.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = io.glimpse.SwiftArrow;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";

@@ -152,7 +152,7 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(1, try df.collectionCount())
 
         let schemaArray: ArrowSchemaArray = try df.arrayAt(index: 0)
-        dbg(schemaArray.array.debugDescription)
+        // dbg(schemaArray.array.debugDescription)
 
         XCTAssertEqual(schemaArray.array.pointee.n_buffers, type == .utf8 ? 3 : 2)
         XCTAssertEqual(schemaArray.array.pointee.length, 1)
@@ -176,20 +176,27 @@ class SwiftArrowTests: XCTestCase {
         // XCTAssertEqual(1, try ctx.query(sql: "SELECT NOW()")?.collectionCount()) // doesn't work
     }
 
-    func testCSVQueries() throws {
+    /// Creates a context with various sample data registered.
+    func loadedContext(csv csvTableRange: ClosedRange<Int>? = nil, parquet parquetTableRange: ClosedRange<Int>? = nil) throws -> DFExecutionContext {
         let ctx = DFExecutionContext()
 
-        try ctx.register(csv: sampleFile(ext: "csv", 1), tableName: "csv1")
-        try ctx.register(csv: sampleFile(ext: "csv", 2), tableName: "csv2")
-        try ctx.register(csv: sampleFile(ext: "csv", 3), tableName: "csv3")
-        try ctx.register(csv: sampleFile(ext: "csv", 4), tableName: "csv4")
-        try ctx.register(csv: sampleFile(ext: "csv", 5), tableName: "csv5")
+        if let csv = csvTableRange {
+            for i in csv {
+                try ctx.register(csv: sampleFile(ext: "csv", i), tableName: "csv\(i)")
+            }
+        }
 
-        try ctx.register(parquet: sampleFile(ext: "parquet", 1), tableName: "parquet1")
-        try ctx.register(parquet: sampleFile(ext: "parquet", 2), tableName: "parquet2")
-        try ctx.register(parquet: sampleFile(ext: "parquet", 3), tableName: "parquet3")
-        try ctx.register(parquet: sampleFile(ext: "parquet", 4), tableName: "parquet4")
-        try ctx.register(parquet: sampleFile(ext: "parquet", 5), tableName: "parquet5")
+        if let parquet = parquetTableRange {
+            for i in parquet {
+                try ctx.register(parquet: sampleFile(ext: "parquet", i), tableName: "parquet\(i)")
+            }
+        }
+
+        return ctx
+    }
+
+    func testCSVQueries() throws {
+        let ctx = try loadedContext(csv: 1...5, parquet: 1...5)
 
         XCTAssertEqual(1_000, try ctx.query(sql: "SELECT * FROM csv1")?.collectionCount())
         XCTAssertEqual(1, try ctx.query(sql: "SELECT COUNT(*) FROM csv1")?.collectionCount())
@@ -201,15 +208,73 @@ class SwiftArrowTests: XCTestCase {
 
 
         do {
-            guard let array = try ctx.query(sql: "SELECT first_name FROM parquet3 WHERE first_name = 'Todd'")?.arrayAt(index: 0) else {
+            guard let array = try ctx.query(sql: "SELECT first_name FROM csv1 WHERE first_name = 'Todd'")?.arrayAt(index: 0) else {
                 return XCTFail("could not execute query")
             }
-
             XCTAssertEqual(ArrowDataType.utf8, array.schema.pointee.dataType)
         }
 
-        // unable to exeecute SQL…
-        // XCTAssertEqual(1_000, try ctx.query(sql: "SELECT * FROM csv1, csv2 WHERE csv1.first_name = csv2.first_name")?.collectionCount())
+    }
+
+    func checkColumnType(_ ctx: DFExecutionContext, column: String, dataType: ArrowDataType, table: String) throws {
+        guard let array = try ctx.query(sql: "SELECT \(column) FROM \(table)")?.arrayAt(index: 0) else {
+            return XCTFail("could not execute query")
+        }
+
+        XCTAssertEqual(dataType, array.schema.pointee.dataType)
+    }
+
+    func testCSVDataTypes() throws {
+        for i in 1...5 {
+            try testCSVDataType(index: i)
+        }
+    }
+
+    func testCSVDataType(index: Int) throws {
+
+        let tbl = "csv\(index)"
+        let ctx = try loadedContext(csv: index...index)
+
+        // note that the types may differ due to different type inference
+        try checkColumnType(ctx, column: "registration_dttm", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "id", dataType: index == 1 ? .int64 : index == 2 ? .utf8 : .int64, table: tbl)
+        try checkColumnType(ctx, column: "first_name", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "last_name", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "email", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "gender", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "ip_address", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "cc", dataType: .int64, table: tbl)
+        try checkColumnType(ctx, column: "country", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "birthdate", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "salary", dataType: index == 1 ? .float64 : index == 2 ? .utf8 : .float64, table: tbl)
+        try checkColumnType(ctx, column: "title", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "comments", dataType: .utf8, table: tbl)
+    }
+
+    func testParquetDataTypes() throws {
+        for i in 1...5 {
+            try testParquetDataType(index: i)
+        }
+    }
+
+    func testParquetDataType(index: Int) throws {
+
+        let tbl = "parquet\(index)"
+        let ctx = try loadedContext(parquet: index...index)
+
+        // try checkColumnType(column: "registration_dttm", dataType: .utf8) // “The datatype \"Timestamp(Nanosecond, None)\" is still not supported in Rust implementation"
+        try checkColumnType(ctx, column: "id", dataType: .int32, table: tbl)
+        try checkColumnType(ctx, column: "first_name", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "last_name", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "email", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "gender", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "ip_address", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "cc", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "country", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "birthdate", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "salary", dataType: .float64, table: tbl)
+        try checkColumnType(ctx, column: "title", dataType: .utf8, table: tbl)
+        try checkColumnType(ctx, column: "comments", dataType: .utf8, table: tbl)
     }
 
     func demoDataFrame(ext: String) throws -> [DFDataFrame] {
