@@ -13,7 +13,7 @@
 		49175EFC25BF6267003E9FEF /* SwiftArrow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49175EFB25BF6267003E9FEF /* SwiftArrow.swift */; };
 		492E72A225CCAF43003C8D58 /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 492E72A125CCAF43003C8D58 /* arcolyte.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		492E72AA25CCAF86003C8D58 /* libarcolyte.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 492E72A925CCAF86003C8D58 /* libarcolyte.a */; };
-		492E72B025CCBD57003C8D58 /* buildrust.sh in Resources */ = {isa = PBXBuildFile; fileRef = 492E72AF25CCBD57003C8D58 /* buildrust.sh */; };
+		492E72B025CCBD57003C8D58 /* buildarcolyte.sh in Resources */ = {isa = PBXBuildFile; fileRef = 492E72AF25CCBD57003C8D58 /* buildarcolyte.sh */; };
 		492E72DC25CCC170003C8D58 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72DB25CCC170003C8D58 /* Tests_iOS.swift */; };
 		492E72E725CCC170003C8D58 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72E625CCC170003C8D58 /* Tests_macOS.swift */; };
 		492E72E925CCC170003C8D58 /* ParquetteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C025CCC16D003C8D58 /* ParquetteApp.swift */; };
@@ -89,7 +89,7 @@
 		49175F0F25BFC4EF003E9FEF /* SwiftArrow.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = SwiftArrow.modulemap; sourceTree = "<group>"; };
 		492E72A125CCAF43003C8D58 /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = arcolyte.h; path = arcolyte/target/arcolyte.h; sourceTree = SOURCE_ROOT; };
 		492E72A925CCAF86003C8D58 /* libarcolyte.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libarcolyte.a; path = arcolyte/target/libarcolyte.a; sourceTree = "<group>"; };
-		492E72AF25CCBD57003C8D58 /* buildrust.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = buildrust.sh; sourceTree = "<group>"; };
+		492E72AF25CCBD57003C8D58 /* buildarcolyte.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = buildarcolyte.sh; sourceTree = "<group>"; };
 		492E72C025CCC16D003C8D58 /* ParquetteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParquetteApp.swift; sourceTree = "<group>"; };
 		492E72C325CCC170003C8D58 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		492E72C825CCC170003C8D58 /* Parquette.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Parquette.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -187,7 +187,7 @@
 		49175ED125BF6138003E9FEF /* SwiftArrow */ = {
 			isa = PBXGroup;
 			children = (
-				492E72AF25CCBD57003C8D58 /* buildrust.sh */,
+				492E72AF25CCBD57003C8D58 /* buildarcolyte.sh */,
 				49175EFB25BF6267003E9FEF /* SwiftArrow.swift */,
 				49175ED325BF6138003E9FEF /* Info.plist */,
 				49175F0F25BFC4EF003E9FEF /* SwiftArrow.modulemap */,
@@ -277,7 +277,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 49175EE325BF6139003E9FEF /* Build configuration list for PBXNativeTarget "SwiftArrow" */;
 			buildPhases = (
-				49175F3825C051DF003E9FEF /* buildrust.sh */,
+				49175F3825C051DF003E9FEF /* buildarcolyte.sh */,
 				498CFD0325C05FA000047E65 /* CopyFiles */,
 				49175ECA25BF6138003E9FEF /* Headers */,
 				49175ECB25BF6138003E9FEF /* Sources */,
@@ -443,7 +443,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				492E72B025CCBD57003C8D58 /* buildrust.sh in Resources */,
+				492E72B025CCBD57003C8D58 /* buildarcolyte.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -487,7 +487,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		49175F3825C051DF003E9FEF /* buildrust.sh */ = {
+		49175F3825C051DF003E9FEF /* buildarcolyte.sh */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -496,14 +496,14 @@
 			);
 			inputPaths = (
 			);
-			name = buildrust.sh;
+			name = buildarcolyte.sh;
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = "/bin/sh -e";
-			shellScript = "${SRCROOT}/${TARGET_NAME}/buildrust.sh\n";
+			shellScript = "${SRCROOT}/${TARGET_NAME}/buildarcolyte.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

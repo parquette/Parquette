@@ -9,6 +9,29 @@ import XCTest
 @testable import SwiftArrow
 
 class SwiftArrowTests: XCTestCase {
+    /// Whether to run additional tests
+    let stressTest = true
+
+    /// Measures the block, other once or multiple times, depending on whether `stressTest` is true.
+    func mmeasure(_ block: () throws -> ()) throws {
+        if stressTest {
+            var errors: [Error] = []
+            measure {
+                do {
+                    try block()
+                } catch {
+                    errors.append(error)
+                }
+            }
+
+            if let error = errors.first {
+                throw error
+            }
+        } else {
+            try block()
+        }
+    }
+
 
     func sampleFile(ext: String, _ index: Int = 1) throws -> URL {
         let url = URL(fileURLWithPath: #file)
@@ -88,28 +111,6 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertThrowsError(try ctx.load(parquet: URL(fileURLWithPath: "/nonexistant/path")))
         XCTAssertThrowsError(try ctx.register(csv: URL(fileURLWithPath: "/nonexistant/path"), tableName: "x"))
         XCTAssertThrowsError(try ctx.register(parquet: URL(fileURLWithPath: "/nonexistant/path"), tableName: "x"))
-    }
-
-    let stressTest = true
-
-    /// Measures the block, other once or multiple times, depending on whether `stressTest` is true.
-    func mmeasure(_ block: () throws -> ()) throws {
-        if stressTest {
-            var errors: [Error] = []
-            measure {
-                do {
-                    try block()
-                } catch {
-                    errors.append(error)
-                }
-            }
-
-            if let error = errors.first {
-                throw error
-            }
-        } else {
-            try block()
-        }
     }
 
     func testQueryCSV() throws {

@@ -117,7 +117,15 @@ extension UTType {
     }
 }
 
+let asyncQueryDefault = "asyncQuery"
+let asyncQueryDefaultValue = false
+
 class AppState : ObservableObject {
+
+    func useAsyncQuery() -> Bool {
+        UserDefaults.standard.object(forKey: asyncQueryDefault) == nil ? asyncQueryDefaultValue : UserDefaults.standard.bool(forKey: asyncQueryDefault)
+    }
+
     let operationQueue: OperationQueue = {
         let queue = OperationQueue()
         queue.qualityOfService = .userInitiated
@@ -128,6 +136,17 @@ class AppState : ObservableObject {
     @Published var result = QueryResult()
 
     init() {
+    }
+
+    /// Performs the operation async or sync, depending on the default `asyncQuery` boolean
+    func performOperation(_ block: @escaping () -> ()) {
+        if useAsyncQuery() {
+            operationQueue.addOperation {
+                block()
+            }
+        } else {
+            block()
+        }
     }
 }
 
@@ -386,6 +405,7 @@ extension View {
 
 
 struct SettingsView : View {
+
     var body: some View {
         TabView {
             DocumentSettingsView()
@@ -455,6 +475,7 @@ enum ControlScale : String, CaseIterable, Hashable {
 
 struct DocumentSettingsView : View {
     @AppStorage("reopenDocuments") private var reopenDocuments = true
+    @AppStorage(asyncQueryDefault) private var asyncQuery = asyncQueryDefaultValue
     @AppStorage("theme") private var theme = AppTheme.system
     @AppStorage("controlSize") private var controlScale = ControlScale.regular
 
@@ -462,6 +483,7 @@ struct DocumentSettingsView : View {
         Form {
             // Text(loc("Document"))
             Toggle(loc("Re-Open Last Document:"), isOn: $reopenDocuments)
+            Toggle(loc("Query Asynchronously:"), isOn: $asyncQuery)
             // Divider()
 
             Picker(loc("Theme:"), selection: $theme) {
@@ -569,7 +591,7 @@ extension UInt {
 //        do {
 //            return block()
 //        } catch {
-//            DispatchQueue.main.async {
+//            onmain {
 //                win?.presentError(error)
 //            }
 //            return nil
@@ -613,12 +635,12 @@ struct ParquetViewer: View {
         appState.result.resultCount = nil
         appState.result.resultTime = 0
 
-        appState.operationQueue.addOperation {
+        appState.performOperation {
             do {
                 if let frame = try ctx.query(sql: sql) {
                     let results = try frame.collectionCount()
 
-                    DispatchQueue.main.async {
+                    onmain {
                         self.rowCount = .init(results)
                         let duration = start.millisFrom()
                         dbg("received \(self.rowCount) results in \(duration)ms")
@@ -627,7 +649,7 @@ struct ParquetViewer: View {
                     }
                 }
             } catch {
-                DispatchQueue.main.async {
+                onmain {
                     win?.presentError(error)
                 }
             }
@@ -744,11 +766,11 @@ struct DataTableView : NSViewRepresentable {
         }
 
         func numberOfRows(in tableView: NSTableView) -> Int {
-            wip(Int(rowCount ?? 0))
+            Int(rowCount ?? 0)
         }
 
         func tableView(_ tableView: NSTableView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
-            dbg(wip("change sort descriptors"), tableView.sortDescriptors)
+            dbg("change sort descriptors", tableView.sortDescriptors)
         }
     }
 }
@@ -770,10 +792,17 @@ struct DataTableView : NSViewRepresentable {
     CFAbsoluteTimeGetCurrent()
 }
 
+/// Executes the given block on the main thread. If the current thread *is* the main thread, executed synchronously
+@inlinable func onmain(_ block: @escaping () -> ()) {
+    if Thread.isMainThread {
+        block()
+    } else {
+        DispatchQueue.main.async(execute: block)
+    }
+}
+
 extension CFAbsoluteTime {
     @inlinable func millisFrom() -> UInt {
         UInt(max(0, (CFAbsoluteTimeGetCurrent() - self) * 1_000))
     }
-
 }
-
