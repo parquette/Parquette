@@ -20,6 +20,8 @@ typedef struct ArrowSchemaArray {
   const FFI_ArrowArray *array;
 } ArrowSchemaArray;
 
+typedef ArrowArray ExtArrowArray;
+
 typedef struct CallbackT_bool {
   void *userdata;
   void (*callback)(void*, bool);
@@ -123,6 +125,17 @@ struct DataFrameState *datafusion_context_execute_sql(ExecutionContext *ptr, con
 struct DataFrameState *datafusion_dataframe_limit(struct DataFrameState *ptr, uintptr_t count);
 
 uintptr_t datafusion_dataframe_collect_count(struct DataFrameState *ptr);
+
+/**
+ * Destroy an `ArrowArray` once you are done with it.
+ */
+void datafusion_arrow_destroy(ArrowArray *ptr);
+
+ExtArrowArray *datafusion_array_empty_create(void);
+
+ExtArrowArray *datafusion_dataframe_collect_array(struct DataFrameState *ptr, uintptr_t index);
+
+void datafusion_array_schema_get(ArrowArray *ptr);
 
 ExecutionContext *datafusion_context_create(void);
 

@@ -27,7 +27,7 @@ class SwiftArrowTests: XCTestCase {
     func testLoadArrow() throws {
         for i in 1...5 {
             let url = try sampleFile(ext: "csv", i)
-            print("loading url:", url.lastPathComponent)
+            dbg("loading url:", url.lastPathComponent)
             XCTAssertNoThrow(try ArrowCSV(fileURL: url).load())
         }
 
@@ -39,22 +39,22 @@ class SwiftArrowTests: XCTestCase {
             let sema: DispatchSemaphore
             init(_ sema: DispatchSemaphore) {
                 self.sema = sema
-                print("start of test lifetime")
+                dbg("start of test lifetime")
             }
 
             deinit {
-                print("end of test lifetime")
+                dbg("end of test lifetime")
             }
 
             func completed(_ success: Bool) {
-                print("the async operation has completed with result \(success)")
+                dbg("the async operation has completed with result \(success)")
                 sema.signal()
             }
         }
 
         func startOperation(_ sema: DispatchSemaphore) {
             let test = LifetimeExample(sema)
-            print("starting async operation")
+            dbg("starting async operation")
             invokeCallbackBool(millis: 1) { [test] success in
                 test.completed(success)
             }
@@ -67,7 +67,7 @@ class SwiftArrowTests: XCTestCase {
     }
 
     func testMultiAsync() {
-        let count = 999
+        let count = 20
         let xpc = (0..<count).map({ expectation(description: "expect #\($0)") })
 
         let maxTime: UInt64 = 1000
@@ -91,25 +91,40 @@ class SwiftArrowTests: XCTestCase {
     }
 
     func testQueryCSV() {
-        measure {
+        //measure {
             demoExecutionContext(ext: "csv")
-        }
+        //}
     }
 
     func testQueryParquet() {
-        measure {
+        //measure {
             demoExecutionContext(ext: "parquet")
-        }
+        //}
     }
 
     func testCSVDataFrame() {
         let block = { try! { XCTAssertNoThrow(try self.demoDataFrame(ext: "csv")) }() }
-        measure(block)
+        // measure(block)
+        block()
     }
 
     func testParquetDataFrame() {
         let block = { try! { XCTAssertNoThrow(try self.demoDataFrame(ext: "parquet")) }() }
-        measure(block)
+        // measure(block)
+        block()
+    }
+
+    func testSimpleQueries() throws {
+        let ctx = DFExecutionContext()
+
+        guard let df = try ctx.query(sql: "SELECT 1 AS INT") else {
+            return XCTFail("unable to issue query")
+        }
+
+        XCTAssertEqual(1, try df.collectionCount())
+
+        let array: DFArray = try df.arrayAt(index: 0)
+        // XCTAssertEqual(1, try ctx.query(sql: "SELECT NOW()")?.collectionCount()) // doesn't work
     }
 
     func testCSVQueries() throws {
@@ -179,7 +194,7 @@ class SwiftArrowTests: XCTestCase {
 
         DispatchQueue.concurrentPerform(iterations: num) { i in
             let index = i + 1 // csv files go from 1...5
-            print("registering source", index)
+            // dbg("registering source", index)
             do {
                 switch ext {
                 case "csv":

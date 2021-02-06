@@ -70,8 +70,10 @@ struct ArrowArray {
 //void async_operation(CompletedCallback callback);
 
 
+#define ArrowArray struct OpaqueArrowArray
 
-#define FFI_ArrowArray struct ArrowArray
+#define FFI_ArrowArray struct OpaqueFFI_ArrowArray
+#define FFI_ArrowSchema struct OpaqueFFI_ArrowSchema
 
 #define ExecutionContext struct OpaqueExecutionContext
 

@@ -188,11 +188,11 @@
 			isa = PBXGroup;
 			children = (
 				492E72AF25CCBD57003C8D58 /* buildrust.sh */,
-				492E72A125CCAF43003C8D58 /* arcolyte.h */,
 				49175EFB25BF6267003E9FEF /* SwiftArrow.swift */,
 				49175ED325BF6138003E9FEF /* Info.plist */,
 				49175F0F25BFC4EF003E9FEF /* SwiftArrow.modulemap */,
 				49175ED225BF6138003E9FEF /* SwiftArrow.h */,
+				492E72A125CCAF43003C8D58 /* arcolyte.h */,
 			);
 			path = SwiftArrow;
 			sourceTree = "<group>";
