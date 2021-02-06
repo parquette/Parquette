@@ -16,15 +16,15 @@ jobs:
         with:
           submodules: true
         
-      - name: "Select Latest Xcode 12 Stable"
-        uses: st3fan/xcode-select@main
-        with:
-          version: "12"
+      #- name: "Select Latest Xcode 12 Stable"
+      #  uses: st3fan/xcode-select@main
+      #  with:
+      #    version: "12"
 
-      - name: "Select Xcode 12.4.0"
-        uses: devbotsxyz/xcode-select@master
-        with:
-          version: "12.4.0"
+      #- name: "Select Xcode 12.4.0"
+      #  uses: devbotsxyz/xcode-select@master
+      #  with:
+      #    version: "12.4.0"
 
       #- name: "Import Certificate: Development"
       #  uses: devbotsxyz/import-signing-certificate@main
