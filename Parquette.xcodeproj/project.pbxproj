@@ -328,9 +328,9 @@
 			productReference = 492E72C825CCC170003C8D58 /* Parquette.app */;
 			productType = "com.apple.product-type.application";
 		};
-		492E72CE25CCC170003C8D58 /* Parquette (macOS) */ = {
+		492E72CE25CCC170003C8D58 /* Parquette */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 492E72F425CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Parquette (macOS)" */;
+			buildConfigurationList = 492E72F425CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Parquette" */;
 			buildPhases = (
 				492E72CB25CCC170003C8D58 /* Sources */,
 				492E72CC25CCC170003C8D58 /* Frameworks */,
@@ -342,7 +342,7 @@
 			dependencies = (
 				492E730825CCC1B9003C8D58 /* PBXTargetDependency */,
 			);
-			name = "Parquette (macOS)";
+			name = Parquette;
 			productName = "Parquette (macOS)";
 			productReference = 492E72CF25CCC170003C8D58 /* Parquette.app */;
 			productType = "com.apple.product-type.application";
@@ -431,7 +431,7 @@
 				49175ECE25BF6138003E9FEF /* SwiftArrow */,
 				49175ED725BF6139003E9FEF /* SwiftArrowTests */,
 				492E72C725CCC170003C8D58 /* Parquette (iOS) */,
-				492E72CE25CCC170003C8D58 /* Parquette (macOS) */,
+				492E72CE25CCC170003C8D58 /* Parquette */,
 				492E72D625CCC170003C8D58 /* Tests iOS */,
 				492E72E125CCC170003C8D58 /* Tests macOS */,
 			);
@@ -571,7 +571,7 @@
 		};
 		492E72E425CCC170003C8D58 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 492E72CE25CCC170003C8D58 /* Parquette (macOS) */;
+			target = 492E72CE25CCC170003C8D58 /* Parquette */;
 			targetProxy = 492E72E325CCC170003C8D58 /* PBXContainerItemProxy */;
 		};
 		492E730825CCC1B9003C8D58 /* PBXTargetDependency */ = {
@@ -1037,7 +1037,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		492E72F425CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Parquette (macOS)" */ = {
+		492E72F425CCC170003C8D58 /* Build configuration list for PBXNativeTarget "Parquette" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				492E72F525CCC170003C8D58 /* Debug */,

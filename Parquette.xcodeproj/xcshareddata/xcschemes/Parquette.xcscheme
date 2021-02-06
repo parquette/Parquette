@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "492E72CE25CCC170003C8D58"
                BuildableName = "Parquette.app"
-               BlueprintName = "Parquette (macOS)"
+               BlueprintName = "Parquette"
                ReferencedContainer = "container:Parquette.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -70,7 +70,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "492E72CE25CCC170003C8D58"
             BuildableName = "Parquette.app"
-            BlueprintName = "Parquette (macOS)"
+            BlueprintName = "Parquette"
             ReferencedContainer = "container:Parquette.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -87,7 +87,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "492E72CE25CCC170003C8D58"
             BuildableName = "Parquette.app"
-            BlueprintName = "Parquette (macOS)"
+            BlueprintName = "Parquette"
             ReferencedContainer = "container:Parquette.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
