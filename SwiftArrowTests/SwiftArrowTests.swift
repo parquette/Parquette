@@ -90,28 +90,50 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertThrowsError(try ctx.register(parquet: URL(fileURLWithPath: "/nonexistant/path"), tableName: "x"))
     }
 
-    func testQueryCSV() {
-        //measure {
+    let stressTest = true
+
+    /// Measures the block, other once or multiple times, depending on whether `stressTest` is true.
+    func mmeasure(_ block: () throws -> ()) throws {
+        if stressTest {
+            var errors: [Error] = []
+            measure {
+                do {
+                    try block()
+                } catch {
+                    errors.append(error)
+                }
+            }
+
+            if let error = errors.first {
+                throw error
+            }
+        } else {
+            try block()
+        }
+    }
+
+    func testQueryCSV() throws {
+        try mmeasure {
             demoExecutionContext(ext: "csv")
-        //}
+        }
     }
 
-    func testQueryParquet() {
-        //measure {
+    func testQueryParquet() throws {
+        try mmeasure {
             demoExecutionContext(ext: "parquet")
-        //}
+        }
     }
 
-    func testCSVDataFrame() {
-        let block = { try! { XCTAssertNoThrow(try self.demoDataFrame(ext: "csv")) }() }
-        // measure(block)
-        block()
+    func testCSVDataFrame() throws {
+        try mmeasure {
+            XCTAssertNoThrow(try self.demoDataFrame(ext: "csv"))
+        }
     }
 
-    func testParquetDataFrame() {
-        let block = { try! { XCTAssertNoThrow(try self.demoDataFrame(ext: "parquet")) }() }
-        // measure(block)
-        block()
+    func testParquetDataFrame() throws {
+        try mmeasure {
+            XCTAssertNoThrow(try self.demoDataFrame(ext: "parquet"))
+        }
     }
 
     func testSimpleQueries() throws {
