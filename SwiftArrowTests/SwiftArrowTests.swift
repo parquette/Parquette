@@ -115,22 +115,34 @@ class SwiftArrowTests: XCTestCase {
     }
 
     func testSimpleQueries() throws {
-        try simpleQueryTest(.string)
-        try simpleQueryTest(.int)
+        try simpleQueryTest(.utf8)
+        try simpleQueryTest(.boolean)
+        try simpleQueryTest(.int16)
+        try simpleQueryTest(.int32)
+        try simpleQueryTest(.int64)
+//        try simpleQueryTest(.float32)
+//        try simpleQueryTest(.float64)
+//        try simpleQueryTest(.date32)
+//        try simpleQueryTest(.date64)
+
     }
 
-    enum SimpleQueryTypes {
-        case string
-        case int
-    }
-
-    func simpleQueryTest(_ type: SimpleQueryTypes) throws {
+    func simpleQueryTest(_ type: ArrowDataType) throws {
         let ctx = DFExecutionContext()
 
         let sql: String
+        guard let sqlType = type.sqlTypes.first else {
+            return XCTFail("unhandled type: \(type)")
+        }
         switch type {
-        case .string: sql = "select '1'"
-        case .int: sql = "select 1"
+        case .utf8: sql = "select '1'"
+        case .boolean: sql = "select CAST (1 AS \(sqlType))"
+        case .int16: sql = "select CAST (1 AS \(sqlType))"
+        case .int32: sql = "select CAST (1 AS \(sqlType))"
+        case .int64: sql = "select CAST (1 AS \(sqlType))"
+        case .float32: sql = "select CAST (1 AS \(sqlType))"
+        case .float64: sql = "select CAST (1 AS \(sqlType))"
+        default: return XCTFail("unhandled type: \(type)")
         }
 
         guard let df = try ctx.query(sql: sql) else {
@@ -142,7 +154,7 @@ class SwiftArrowTests: XCTestCase {
         let schemaArray: ArrowSchemaArray = try df.arrayAt(index: 0)
         dbg(schemaArray.array.debugDescription)
 
-        XCTAssertEqual(schemaArray.array.pointee.n_buffers, type == .string ? 3 : 2)
+        XCTAssertEqual(schemaArray.array.pointee.n_buffers, type == .utf8 ? 3 : 2)
         XCTAssertEqual(schemaArray.array.pointee.length, 1)
         XCTAssertEqual(schemaArray.array.pointee.null_count, 0)
         XCTAssertEqual(schemaArray.array.pointee.offset, 0)
@@ -151,7 +163,7 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(schemaArray.schema.pointee.n_children, 0)
 
         if let fmt = schemaArray.schema.pointee.format {
-            XCTAssertEqual(String(cString: fmt), type == .string ? "u" : "l")
+            XCTAssertEqual(type, ArrowDataType(String(cString: fmt)))
         }
 
         if let md = schemaArray.schema.pointee.metadata {
@@ -186,6 +198,15 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(1, try ctx.query(sql: "SELECT * FROM csv1 WHERE first_name = 'Todd' AND last_name = 'Alvarez'")?.collectionCount())
         XCTAssertEqual(2, try ctx.query(sql: "SELECT * FROM csv1 WHERE email LIKE '%@whitehouse.gov'")?.collectionCount())
         XCTAssertEqual(25, try ctx.query(sql: "SELECT * FROM csv1 WHERE email LIKE '%@___.gov'")?.collectionCount()) // e.g., epa.gov
+
+
+        do {
+            guard let array = try ctx.query(sql: "SELECT first_name FROM parquet3 WHERE first_name = 'Todd'")?.arrayAt(index: 0) else {
+                return XCTFail("could not execute query")
+            }
+
+            XCTAssertEqual(ArrowDataType.utf8, array.schema.pointee.dataType)
+        }
 
         // unable to exeecute SQL…
         // XCTAssertEqual(1_000, try ctx.query(sql: "SELECT * FROM csv1, csv2 WHERE csv1.first_name = csv2.first_name")?.collectionCount())
