@@ -3,4 +3,34 @@
    uuid = "3B5D9F15-B19C-45F1-953D-FB4341532664"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.SymbolicBreakpoint">
+         <BreakpointContent
+            uuid = "6CD908DC-6ED5-44A3-8C95-7A3913A83624"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            symbolName = "__rust_drop_panic"
+            moduleName = "">
+            <Locations>
+               <Location
+                  uuid = "6CD908DC-6ED5-44A3-8C95-7A3913A83624 - 29634ca2e4f60465"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__rust_drop_panic"
+                  moduleName = "SwiftArrow"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///rustc/e1884a8e3c3e813aada8254edfa120e85bf5ffca/library/core/src/fmt/mod.rs"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "314"
+                  endingLineNumber = "314"
+                  offsetFromSymbolStart = "8">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

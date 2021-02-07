@@ -31,7 +31,9 @@
       enableASanStackUseAfterReturn = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO">
+            skipped = "NO"
+            parallelizable = "YES"
+            testExecutionOrdering = "random">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "49175ED725BF6139003E9FEF"

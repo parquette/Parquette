@@ -184,9 +184,9 @@ public class DFDataFrame {
     }
 
     /// Executes the DataFrame and returns the count
-    public func collectionCount() throws -> UInt {
-        // try arrayAt(index: 0).count
-        try SwiftRustError.checking(datafusion_dataframe_collect_count(ptr))
+    public func collectionCount() throws -> Int64 {
+        try arrayAt(index: 0).count
+        // try SwiftRustError.checking(datafusion_dataframe_collect_count(ptr))
     }
 
     /// Executes the DataFrame and returns the first column

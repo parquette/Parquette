@@ -261,7 +261,7 @@ extension AppState {
                 return loc("Querying…")
             } else if let resultCount = self.result.resultCount {
                 let countStr = NumberFormatter.localizedString(from: .init(value: resultCount), number: .decimal)
-                let timeStr = NumberFormatter.localizedString(from: .init(value: resultTime), number: .scientific)
+                let timeStr = NumberFormatter.localizedString(from: .init(value: resultTime), number: .decimal)
 
                 return loc("\(countStr) results in \(timeStr) ms")
             } else {
@@ -604,7 +604,9 @@ struct ParquetViewer: View {
     @ObservedObject var document: ParquetteDocument
     @EnvironmentObject var appState: AppState
 
-    @State var sql = wip("select * from data where first_name >= 'B'")
+    // registration_dttm, birthdate: thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: CDataInterface("The datatype \"Timestamp(Nanosecond, None)\" is still not supported in Rust implementation")', src/arrowz.rs:614:79
+
+    @State var sql = wip("select id, first_name, last_name, email, gender, ip_address, cc, country, salary, title, comments from data where first_name >= 'G'")
     @Environment(\.font) var font
     @State var rowCount: UInt = 0
 
@@ -613,7 +615,7 @@ struct ParquetViewer: View {
             DataTableView()
 
             HStack {
-                TextField("SELECT * FROM table", text: $sql, onCommit: performQuery)
+                TextField(wip("SQL"), text: $sql, onCommit: performQuery)
                     .font(Font.custom("Menlo", size: 15, relativeTo: .body))
 
                 Button(action: performQuery) {
