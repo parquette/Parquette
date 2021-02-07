@@ -22,7 +22,7 @@
 		492E730625CCC1B9003C8D58 /* SwiftArrow.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		49BA3F9425D04C580064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3F9325D04C580064DEEC /* arcolyte.h */; };
 		49BA3FA125D04CDB0064DEEC /* libarcolyte.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49BA3F9F25D04CCF0064DEEC /* libarcolyte.a */; };
-		49BA3FC125D04D8A0064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3FC025D04D8A0064DEEC /* arcolyte.h */; };
+		49BA3FD725D053DD0064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3FD625D053DC0064DEEC /* arcolyte.h */; settings = {ATTRIBUTES = (Private, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -105,7 +105,7 @@
 		497CA76F25CCAB7C00180E77 /* arcolyte */ = {isa = PBXFileReference; lastKnownFileType = folder; path = arcolyte; sourceTree = "<group>"; };
 		49BA3F9325D04C580064DEEC /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arcolyte.h; sourceTree = BUILT_PRODUCTS_DIR; };
 		49BA3F9F25D04CCF0064DEEC /* libarcolyte.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libarcolyte.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		49BA3FC025D04D8A0064DEEC /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arcolyte.h; sourceTree = "<group>"; };
+		49BA3FD625D053DC0064DEEC /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arcolyte.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -189,8 +189,8 @@
 		49175ED125BF6138003E9FEF /* SwiftArrow */ = {
 			isa = PBXGroup;
 			children = (
+				49BA3FD625D053DC0064DEEC /* arcolyte.h */,
 				492E72AF25CCBD57003C8D58 /* buildarcolyte.sh */,
-				49BA3FC025D04D8A0064DEEC /* arcolyte.h */,
 				49175EFB25BF6267003E9FEF /* SwiftArrow.swift */,
 				49175ED325BF6138003E9FEF /* Info.plist */,
 				49175F0F25BFC4EF003E9FEF /* SwiftArrow.modulemap */,
@@ -270,7 +270,7 @@
 			files = (
 				49175EE025BF6139003E9FEF /* SwiftArrow.h in Headers */,
 				49BA3F9425D04C580064DEEC /* arcolyte.h in Headers */,
-				49BA3FC125D04D8A0064DEEC /* arcolyte.h in Headers */,
+				49BA3FD725D053DD0064DEEC /* arcolyte.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

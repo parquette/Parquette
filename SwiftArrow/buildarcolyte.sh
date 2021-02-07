@@ -56,7 +56,8 @@ cargo build --target aarch64-apple-darwin ${CARGO_FLAGS}
 
 echo "Linking ${CARGO_TARGET_DIR}/arcolyte.h"
 # link the header to the parent (samedir required)
-ln -fv "${CARGO_TARGET_DIR}/arcolyte.h" ../
+# ln -fv "${CARGO_TARGET_DIR}/arcolyte.h" ../
+cp -av "${CARGO_TARGET_DIR}/arcolyte.h" ../
 
 FAT_ARCHIVE_PATH=${BUILT_PRODUCTS_DIR:-"target"}/libarcolyte.a
 
