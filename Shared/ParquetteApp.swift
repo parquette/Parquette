@@ -304,7 +304,7 @@ protocol ParquetteCommands where Self : View {
 
 extension ParquetteCommands {
     func performBookmark() {
-        dbg(wip(#function))
+        dbg(wip("TODO"))
     }
 
     func performBookmarkButton() -> some View {
@@ -314,7 +314,7 @@ extension ParquetteCommands {
 
 extension ParquetteCommands {
     func performCancel() {
-        dbg(wip(#function))
+        dbg(wip("TODO"))
         appState.operationQueue.cancelAllOperations()
     }
 
@@ -327,7 +327,7 @@ extension ParquetteCommands {
 
 extension ParquetteCommands {
     func performReload() {
-        dbg(wip(#function))
+        dbg(wip("TODO"))
     }
 
     func performReloadButton() -> some View {
@@ -339,7 +339,7 @@ extension ParquetteCommands {
 
 extension ParquetteCommands {
     func performInfo() {
-        dbg(wip(#function))
+        dbg(wip("TODO"))
     }
 
     func performInfoButton() -> some View {
@@ -349,7 +349,7 @@ extension ParquetteCommands {
 
 extension ParquetteCommands {
     func performLink() {
-        dbg(wip(#function))
+        dbg(wip("TODO"))
     }
 
     func performLinkButton() -> some View {
@@ -359,7 +359,7 @@ extension ParquetteCommands {
 
 extension ParquetteCommands {
     func performFlag() {
-        dbg(wip(#function))
+        dbg(wip("TODO"))
     }
 
     func performFlagButton() -> some View {
@@ -369,7 +369,7 @@ extension ParquetteCommands {
 
 extension ParquetteCommands {
     func performTimer() {
-        dbg(wip(#function))
+        dbg(wip("TODO"))
     }
 
     func performTimerButton() -> some View {
@@ -604,7 +604,7 @@ struct ParquetViewer: View {
     @ObservedObject var document: ParquetteDocument
     @EnvironmentObject var appState: AppState
 
-    @State var sql = wip("select * from data where first_name >= 'Q'")
+    @State var sql = wip("select * from data where first_name >= 'B'")
     @Environment(\.font) var font
     @State var rowCount: UInt = 0
 

@@ -974,7 +974,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "net.parquette.Tests-macOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "Parquette (macOS)";
+				TEST_TARGET_NAME = Parquette;
 			};
 			name = Debug;
 		};
@@ -994,7 +994,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "net.parquette.Tests-macOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "Parquette (macOS)";
+				TEST_TARGET_NAME = Parquette;
 			};
 			name = Release;
 		};

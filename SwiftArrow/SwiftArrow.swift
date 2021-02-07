@@ -185,6 +185,7 @@ public class DFDataFrame {
 
     /// Executes the DataFrame and returns the count
     public func collectionCount() throws -> UInt {
+        // try arrayAt(index: 0).count
         try SwiftRustError.checking(datafusion_dataframe_collect_count(ptr))
     }
 
@@ -194,6 +195,13 @@ public class DFDataFrame {
     }
 
 }
+
+extension ArrowSchemaArray {
+    var count: Int64 {
+        array.pointee.length
+    }
+}
+
 
 //public class DFArray {
 //    let ptr: OpaquePointer
