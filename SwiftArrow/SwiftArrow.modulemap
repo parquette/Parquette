@@ -5,7 +5,8 @@ framework module SwiftArrow {
    module * { export * }
    explicit module SwiftArrow_Private {
        // note that "HEADER_SEARCH_PATH" must contain the target folder with the header file
-      header "../../../../../Users/marc/Library/Developer/Xcode/DerivedData/Parquette-egvewyvwcnylthbvesnbktqbehag/Build/Products/Debug/arcolyte.h"
-      export *
+       // header "/opt/src/github/parquette/parquette/arcolyte.h"
+       header "arcolyte.h"
+       export *
    }
 }
