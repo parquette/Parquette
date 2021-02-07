@@ -3,6 +3,11 @@
 # translate Xcode's CONFIGURATION setting of "Release" or "Debug"
 CARGO_MODE=$(echo ${CONFIGURATION:-"debug"} | tr '[A-Z]' '[a-z]')
 
+# build for macOS10.12+
+export MACOSX_DEPLOYMENT_TARGET=10.12
+
+export CARGO_TARGET_DIR=${TARGET_BUILD_DIR:-"target"}
+
 # rustup should be installed in ~/.cargo/bin with `brew install rustup`
 PATH=${HOME}/.cargo/bin:${PATH}
 
@@ -41,8 +46,6 @@ cargo build --target aarch64-apple-darwin ${CARGO_FLAGS}
 # note that we can't merge an iOS & ARM macOS archive at the same time:
 # fatal error: lipo: target/aarch64-apple-darwin/debug/libarcolyte.a and target/aarch64-apple-ios/debug/libarcolyte.a have the same architectures (arm64) and can't be in the same fat output file
 
-lipo -create target/*-*/${CARGO_MODE}/libarcolyte.a -output target/libarcolyte.a
-
 # generate a C header file for all the target items
 # no need to do this manually; it is now performed in build.rs
 # cbindgen -l C -o target/arcolyte.h
@@ -51,9 +54,16 @@ lipo -create target/*-*/${CARGO_MODE}/libarcolyte.a -output target/libarcolyte.a
 
 # cat target/arcolyte.h
 
-# print out some diagnostic info
-file target/libarcolyte.a
-ls -lah target/libarcolyte.a
-
+echo "Linking ${CARGO_TARGET_DIR}/arcolyte.h"
 # link the header to the parent (samedir required)
-ln -fv target/arcolyte.h ../
+ln -fv "${CARGO_TARGET_DIR}/arcolyte.h" ../
+
+FAT_ARCHIVE_PATH=${BUILT_PRODUCTS_DIR:-"target"}/libarcolyte.a
+
+lipo -create ${CARGO_TARGET_DIR}/*-*/${CARGO_MODE}/libarcolyte.a -output ${FAT_ARCHIVE_PATH}
+
+
+# print out some diagnostic info
+file ${FAT_ARCHIVE_PATH}
+ls -lah ${FAT_ARCHIVE_PATH}
+

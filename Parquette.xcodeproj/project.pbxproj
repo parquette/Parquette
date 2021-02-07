@@ -11,8 +11,6 @@
 		49175EDE25BF6139003E9FEF /* SwiftArrowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49175EDD25BF6139003E9FEF /* SwiftArrowTests.swift */; };
 		49175EE025BF6139003E9FEF /* SwiftArrow.h in Headers */ = {isa = PBXBuildFile; fileRef = 49175ED225BF6138003E9FEF /* SwiftArrow.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49175EFC25BF6267003E9FEF /* SwiftArrow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49175EFB25BF6267003E9FEF /* SwiftArrow.swift */; };
-		492E72A225CCAF43003C8D58 /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 492E72A125CCAF43003C8D58 /* arcolyte.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		492E72AA25CCAF86003C8D58 /* libarcolyte.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 492E72A925CCAF86003C8D58 /* libarcolyte.a */; };
 		492E72B025CCBD57003C8D58 /* buildarcolyte.sh in Resources */ = {isa = PBXBuildFile; fileRef = 492E72AF25CCBD57003C8D58 /* buildarcolyte.sh */; };
 		492E72DC25CCC170003C8D58 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72DB25CCC170003C8D58 /* Tests_iOS.swift */; };
 		492E72E725CCC170003C8D58 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72E625CCC170003C8D58 /* Tests_macOS.swift */; };
@@ -22,6 +20,9 @@
 		492E72F025CCC170003C8D58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 492E72C325CCC170003C8D58 /* Assets.xcassets */; };
 		492E730525CCC1B9003C8D58 /* SwiftArrow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; };
 		492E730625CCC1B9003C8D58 /* SwiftArrow.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		49BA3F9425D04C580064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3F9325D04C580064DEEC /* arcolyte.h */; };
+		49BA3FA125D04CDB0064DEEC /* libarcolyte.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49BA3F9F25D04CCF0064DEEC /* libarcolyte.a */; };
+		49BA3FC125D04D8A0064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3FC025D04D8A0064DEEC /* arcolyte.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,8 +88,6 @@
 		49175EDF25BF6139003E9FEF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		49175EFB25BF6267003E9FEF /* SwiftArrow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftArrow.swift; sourceTree = "<group>"; };
 		49175F0F25BFC4EF003E9FEF /* SwiftArrow.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = SwiftArrow.modulemap; sourceTree = "<group>"; };
-		492E72A125CCAF43003C8D58 /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = arcolyte.h; path = arcolyte/target/arcolyte.h; sourceTree = SOURCE_ROOT; };
-		492E72A925CCAF86003C8D58 /* libarcolyte.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libarcolyte.a; path = arcolyte/target/libarcolyte.a; sourceTree = "<group>"; };
 		492E72AF25CCBD57003C8D58 /* buildarcolyte.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = buildarcolyte.sh; sourceTree = "<group>"; };
 		492E72C025CCC16D003C8D58 /* ParquetteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParquetteApp.swift; sourceTree = "<group>"; };
 		492E72C325CCC170003C8D58 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -104,6 +103,9 @@
 		492E72E625CCC170003C8D58 /* Tests_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_macOS.swift; sourceTree = "<group>"; };
 		492E72E825CCC170003C8D58 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		497CA76F25CCAB7C00180E77 /* arcolyte */ = {isa = PBXFileReference; lastKnownFileType = folder; path = arcolyte; sourceTree = "<group>"; };
+		49BA3F9325D04C580064DEEC /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arcolyte.h; sourceTree = BUILT_PRODUCTS_DIR; };
+		49BA3F9F25D04CCF0064DEEC /* libarcolyte.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libarcolyte.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		49BA3FC025D04D8A0064DEEC /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arcolyte.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,7 +113,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				492E72AA25CCAF86003C8D58 /* libarcolyte.a in Frameworks */,
+				49BA3FA125D04CDB0064DEEC /* libarcolyte.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,11 +190,11 @@
 			isa = PBXGroup;
 			children = (
 				492E72AF25CCBD57003C8D58 /* buildarcolyte.sh */,
+				49BA3FC025D04D8A0064DEEC /* arcolyte.h */,
 				49175EFB25BF6267003E9FEF /* SwiftArrow.swift */,
 				49175ED325BF6138003E9FEF /* Info.plist */,
 				49175F0F25BFC4EF003E9FEF /* SwiftArrow.modulemap */,
 				49175ED225BF6138003E9FEF /* SwiftArrow.h */,
-				492E72A125CCAF43003C8D58 /* arcolyte.h */,
 			);
 			path = SwiftArrow;
 			sourceTree = "<group>";
@@ -253,7 +255,8 @@
 		498CFCE025C0556400047E65 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				492E72A925CCAF86003C8D58 /* libarcolyte.a */,
+				49BA3F9325D04C580064DEEC /* arcolyte.h */,
+				49BA3F9F25D04CCF0064DEEC /* libarcolyte.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -266,7 +269,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				49175EE025BF6139003E9FEF /* SwiftArrow.h in Headers */,
-				492E72A225CCAF43003C8D58 /* arcolyte.h in Headers */,
+				49BA3F9425D04C580064DEEC /* arcolyte.h in Headers */,
+				49BA3FC125D04D8A0064DEEC /* arcolyte.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

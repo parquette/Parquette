@@ -194,6 +194,10 @@ public class DFDataFrame {
         try SwiftRustError.checking(datafusion_dataframe_collect_array(ptr, index))
     }
 
+//    /// Executes the DataFrame and returns all the columns
+//    public func collectedAerays() throws -> ArrowSchemaArray {
+//        try SwiftRustError.checking(datafusion_dataframe_collect_array(ptr, index))
+//    }
 }
 
 extension ArrowSchemaArray {

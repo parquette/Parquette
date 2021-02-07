@@ -86,7 +86,6 @@ class SwiftArrowTests: XCTestCase {
         let semaphore = DispatchSemaphore(value: 0)
         startOperation(semaphore)
         semaphore.wait()
-
     }
 
     func testMultiAsync() {
@@ -151,6 +150,7 @@ class SwiftArrowTests: XCTestCase {
 
     }
 
+    /// https://github.com/apache/arrow/blob/master/rust/datafusion/README.md#supported-data-types
     func simpleQueryTest(_ type: ArrowDataType) throws {
         let ctx = DFExecutionContext()
 
@@ -230,14 +230,12 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(2, try ctx.query(sql: "SELECT * FROM csv1 WHERE email LIKE '%@whitehouse.gov'")?.collectionCount())
         XCTAssertEqual(25, try ctx.query(sql: "SELECT * FROM csv1 WHERE email LIKE '%@___.gov'")?.collectionCount()) // e.g., epa.gov
 
-
         do {
             guard let array = try ctx.query(sql: "SELECT first_name FROM csv1 WHERE first_name = 'Todd'")?.arrayAt(index: 0) else {
                 return XCTFail("could not execute query")
             }
             XCTAssertEqual(ArrowDataType.utf8, array.schema.pointee.dataType)
         }
-
     }
 
     func checkColumnType(_ ctx: DFExecutionContext, column: String, dataType: ArrowDataType, table: String) throws {

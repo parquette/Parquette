@@ -615,14 +615,19 @@ struct ParquetViewer: View {
             DataTableView()
 
             HStack {
+                MenuButton(loc("SQL:")) {
+                    ActionButton(title: loc("Execute"), icon: "play", action: performQuery)
+                }
+                .menuButtonStyle(PullDownMenuButtonStyle())
+                .frame(idealWidth: 80)
+
                 TextField(wip("SQL"), text: $sql, onCommit: performQuery)
                     .font(Font.custom("Menlo", size: 15, relativeTo: .body))
+                    .layoutPriority(1)
 
-                Button(action: performQuery) {
-                    Label(loc("Execute"), systemImage: "play.fill")
-                        .labelStyle(IconOnlyLabelStyle())
-                }
-                .keyboardShortcut(.return, modifiers: [.command])
+                ActionButton(title: loc("Execute"), icon: "play.fill", action: performQuery)
+                    .keyboardShortcut(.return, modifiers: [.command])
+                    .labelStyle(IconOnlyLabelStyle()) // TODO: change to menu comment shortcut
             }
             .padding()
         }

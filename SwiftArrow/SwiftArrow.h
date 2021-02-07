@@ -73,4 +73,7 @@ typedef struct FFI_ArrowArray {
 
 #define ExecutionContext struct OpaqueExecutionContext
 
+#define Vec_RecordBatch struct OpaqueVec_RecordBatch
+
+
 #import "arcolyte.h"
