@@ -1,4 +1,4 @@
-name: Archive
+name: CI
 
 on:
   push:
@@ -12,13 +12,16 @@ on:
 jobs:
   Build:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: "Checkout Project"
         uses: actions/checkout@v2
         with:
           submodules: true
-        
+
+      - name: Tests
+        run: xcodebuild test -scheme SwiftArrow
+
       #- name: "Select Latest Xcode 12 Stable"
       #  uses: st3fan/xcode-select@main
       #  with:
