@@ -64,8 +64,11 @@ jobs:
         with:
           scheme: "Parquette"
 
-      - name: Example archive
-        run: ditto -V -c -k --keepParent "Export/Parquette.app" "Parquette.zip"
+      - name: Show archive files
+        run: ls "Export/"
+
+      # - name: Example archive
+      #   run: ditto -V -c -k --keepParent "Export/Parquette.app" "Parquette.zip"
 
       #
       # Next ask Xcode to export the product from the archived build
