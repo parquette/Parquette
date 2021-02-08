@@ -1,4 +1,4 @@
-#!/bin/bash -ve
+#!/bin/bash -e
 
 # translate Xcode's CONFIGURATION setting of "Release" or "Debug"
 CARGO_MODE=$(echo ${CONFIGURATION:-"debug"} | tr '[A-Z]' '[a-z]')
@@ -7,6 +7,8 @@ CARGO_MODE=$(echo ${CONFIGURATION:-"debug"} | tr '[A-Z]' '[a-z]')
 export MACOSX_DEPLOYMENT_TARGET=10.12
 
 export CARGO_TARGET_DIR=${TARGET_BUILD_DIR:-"target"}
+
+echo "Building ${CARGO_MODE} arcolyte into ${CARGO_TARGET_DIR}…"
 
 # rustup should be installed in ~/.cargo/bin with `brew install rustup`
 PATH=${HOME}/.cargo/bin:${PATH}
@@ -56,8 +58,8 @@ cargo build --target aarch64-apple-darwin ${CARGO_FLAGS}
 
 echo "Linking ${CARGO_TARGET_DIR}/arcolyte.h"
 # link the header to the parent (samedir required)
-# ln -fv "${CARGO_TARGET_DIR}/arcolyte.h" ../
-cp -av "${CARGO_TARGET_DIR}/arcolyte.h" ../
+ln -fv "${CARGO_TARGET_DIR}/arcolyte.h" ../
+# cp -av "${CARGO_TARGET_DIR}/arcolyte.h" ../
 
 FAT_ARCHIVE_PATH=${BUILT_PRODUCTS_DIR:-"target"}/libarcolyte.a
 

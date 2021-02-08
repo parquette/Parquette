@@ -30,7 +30,7 @@ struct ContainerView : View, ParquetteCommands {
     var body: some View {
         ContentView(document: document)
             .preferredColorScheme(theme.colorScheme)
-            //.controlSize(controlScale.controlSize)
+        //.controlSize(controlScale.controlSize)
     }
 }
 
@@ -405,17 +405,71 @@ extension View {
 
 
 struct SettingsView : View {
+    @AppStorage("reopenDocuments") private var reopenDocuments = true
+    @AppStorage(asyncQueryDefault) private var asyncQuery = asyncQueryDefaultValue
+    @AppStorage("theme") private var theme = AppTheme.system
+    @AppStorage("controlSize") private var controlScale = ControlScale.regular
 
     var body: some View {
         TabView {
-            DocumentSettingsView()
-                .padding()
-                .tabItem({
-                    Label(loc("General"), systemImage: "gearshape.2.fill")
-                })
+            VStack {
+                documentSettingsView()
+                Divider().frame(width: 250)
+                appearanceSettingsView()
+            }
+            .padding()
+            .tabItem({
+                Label(loc("General"), systemImage: "gearshape.2.fill")
+            })
+
+            /* crashes when switching tabs and then back to general
+             documentSettingsView()
+             .padding()
+             .tabItem({
+             Label(loc("General"), systemImage: "gearshape.2.fill")
+             })
+
+             appearanceSettingsView()
+             .padding()
+             .tabItem({
+             Label(loc("Appearance"), systemImage: "eye.fill")
+             })
+             */
         }
         .tabViewStyle(DefaultTabViewStyle())
     }
+
+    func documentSettingsView() -> some View {
+
+        Form {
+            // Text(loc("Document"))
+            Toggle(loc("Re-Open Last Document"), isOn: $reopenDocuments)
+            Toggle(loc("Query Asynchronously"), isOn: $asyncQuery)
+            // Divider()
+        }
+    }
+
+    func appearanceSettingsView() -> some View {
+        Form {
+            Picker(loc("Theme:"), selection: $theme) {
+                ForEach(AppTheme.allCases, id: \.self) { theme in
+                    Text(theme.localizedTitle)
+                }
+            }
+            .pickerStyle(RadioGroupPickerStyle())
+
+            //Divider()
+
+            Picker(loc("Control Size:"), selection: $controlScale) {
+                ForEach(ControlScale.allCases, id: \.self) { scale in
+                    Text(scale.localizedTitle)
+                }
+            }
+            .pickerStyle(RadioGroupPickerStyle())
+
+        }
+    }
+
 }
 
 
@@ -473,38 +527,6 @@ enum ControlScale : String, CaseIterable, Hashable {
 
 }
 
-struct DocumentSettingsView : View {
-    @AppStorage("reopenDocuments") private var reopenDocuments = true
-    @AppStorage(asyncQueryDefault) private var asyncQuery = asyncQueryDefaultValue
-    @AppStorage("theme") private var theme = AppTheme.system
-    @AppStorage("controlSize") private var controlScale = ControlScale.regular
-
-    var body: some View {
-        Form {
-            // Text(loc("Document"))
-            Toggle(loc("Re-Open Last Document:"), isOn: $reopenDocuments)
-            Toggle(loc("Query Asynchronously:"), isOn: $asyncQuery)
-            // Divider()
-
-            Picker(loc("Theme:"), selection: $theme) {
-                ForEach(AppTheme.allCases, id: \.self) { theme in
-                    Text(theme.localizedTitle)
-                }
-            }
-            .pickerStyle(RadioGroupPickerStyle())
-
-            //Divider()
-
-            Picker(loc("Control Size:"), selection: $controlScale) {
-                ForEach(ControlScale.allCases, id: \.self) { scale in
-                    Text(scale.localizedTitle)
-                }
-            }
-            .pickerStyle(RadioGroupPickerStyle())
-
-        }
-    }
-}
 
 @available(*, deprecated, message: "make columns dynamic")
 let colcount = 7
