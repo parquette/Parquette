@@ -323,62 +323,98 @@ public protocol ArrowDataRepresentable {
 
 extension Int8 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.int8
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
 }
 
 extension Int16 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.int16
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
 }
 
 extension Int32 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.int32
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
 }
 
 extension Int64 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.int64
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
 }
 
 extension UInt8 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.uint8
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
 }
 
 extension UInt16 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.uint16
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
 }
 
 extension UInt32 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.uint32
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
 }
 
 extension UInt64 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.uint64
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
 }
 
 #if !os(macOS) // “'Float16' is unavailable in macOS”
 extension Float16 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.float16
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
 }
 #endif
 
 extension Float32 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.float32
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
 }
 
 extension Float64 : ArrowDataRepresentable {
     public static let arrowDataType = ArrowDataType.float64
-    public typealias BufferView = TypedBufferView<Self>
+    public typealias BufferView = PrimitiveBufferViewOf<Self>
+}
+
+extension String : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.utf8
+    public typealias BufferView = UTF8BufferView
+
+    public final class UTF8BufferView : ArrowBufferView {
+        public typealias DataType = String
+        public var dataType: ArrowDataType { .utf8 }
+        public let vector: ArrowVector
+        @usableFromInline let offsets: UnsafeBufferPointer<Int32>
+        @usableFromInline let contents: UnsafeBufferPointer<CUnsignedChar>
+
+        @inlinable public init(vector: ArrowVector) throws {
+            self.vector = vector
+
+            // “The offsets buffer contains length + 1 signed integers (either 32-bit or 64-bit, depending on the logical type), which encode the start position of each slot in the data buffer. The length of the value in each slot is computed using the difference between the offset at that slot's index and the subsequent offset”
+            let offlen = vector.capacity + 1
+            let offsetPtr = vector.bufferContents[1]?.bindMemory(to: Int32.self, capacity: offlen)
+            self.offsets = UnsafeBufferPointer(start: offsetPtr, count: offlen)
+
+            // “Generally the first value in the offsets array is 0, and the last slot is the length of the values array.”
+            let contentLength = offsets[offlen-1]
+            dbg("contentLength", contentLength)
+            let contentPtr = vector.bufferContents[2]?.bindMemory(to: CUnsignedChar.self, capacity: .init(contentLength))
+            self.contents = UnsafeBufferPointer(start: contentPtr, count: .init(contentLength))
+        }
+
+        @inlinable public subscript(position: Int) -> String? {
+            if !vector.isValid(at: .init(position)) { return nil }
+            let (start, end) = (offsets[position], offsets[position+1])
+            let range = Int(start)..<Int(end)
+            return String(cString: Array(contents[range]) + [0]) // need to null-terminate the strings to work with `cString`
+        }
+    }
 }
 
 
+/// A Collection-fronting view on an underlying buffer of arrow data, which can be a directly-mapped primitive or an indirectly-mapped set of pointers to variable data.
 public protocol ArrowBufferView : Collection where Element == Optional<DataType> {
     associatedtype DataType
     var dataType: ArrowDataType { get }
@@ -406,9 +442,8 @@ extension PrimitiveBufferView {
     }
 }
 
-
-
-public final class TypedBufferView<T: ArrowDataRepresentable> : PrimitiveBufferView {
+// A wrapper for a directly-mapped primitive buffer
+public final class PrimitiveBufferViewOf<T: ArrowDataRepresentable> : PrimitiveBufferView {
     public typealias DataType = T
     public var dataType: ArrowDataType { DataType.arrowDataType }
     public let vector: ArrowVector
@@ -440,26 +475,6 @@ extension Data {
     }
 }
 
-
-
-import OSLog
-
-/// debug message to NSLog only when NDEBUG is not set
-@inlinable public func dbg(level: OSLogType = .default, _ arg1: @autoclosure () -> CVarArg? = nil, _ arg2: @autoclosure () -> CVarArg? = nil, _ arg3: @autoclosure () -> CVarArg? = nil, _ arg4: @autoclosure () -> CVarArg? = nil, _ arg5: @autoclosure () -> CVarArg? = nil, _ arg6: @autoclosure () -> CVarArg? = nil, _ arg7: @autoclosure () -> CVarArg? = nil, _ arg8: @autoclosure () -> CVarArg? = nil, _ arg9: @autoclosure () -> CVarArg? = nil, _ arg10: @autoclosure () -> CVarArg? = nil, _ arg11: @autoclosure () -> CVarArg? = nil, _ arg12: @autoclosure () -> CVarArg? = nil, separator: String = " ", functionName: StaticString = #function, fileName: StaticString = #file, lineNumber: Int = #line) {
-    #if DEBUG
-    let items = [arg1(), arg2(), arg3(), arg4(), arg5(), arg6(), arg7(), arg8(), arg9(), arg10(), arg11(), arg12()]
-    let msg = items.compactMap({ $0 }).map({ String(describing: $0) }).joined(separator: separator)
-
-    // use just the file name
-    let filePath = fileName.description.split(separator: "/").last?.description ?? fileName.description
-
-    let message = "\(filePath):\(lineNumber) \(functionName): \(msg)"
-    // need to use public to log the message to the console; failure to do so will cause the strings to be logged in my dev builds, but downloaded release builds will jsut show "<private>" in the log messages
-    // os_log("%{public}@", /* log: log, */ type: level, message)
-
-    os_log(level, "%{public}@", message, arg1() ?? "", arg2() ?? "", arg3() ?? "", arg4() ?? "", arg5() ?? "", arg6() ?? "", arg7() ?? "", arg8() ?? "", arg9() ?? "", arg10() ?? "", arg11() ?? "", arg12() ?? "")
-    #endif
-}
 
 
 public extension FFI_ArrowSchema {
@@ -611,7 +626,7 @@ public enum ArrowDataType {
         case .int32: return ["INT"]
         case .int64: return ["BIGINT"]
         case .float32: return ["FLOAT"]
-        case .float64: return ["DECIMAL", "REAL"]
+        case .float64: return ["DOUBLE", "REAL", "DECIMAL"]
         case .date32: return ["DATE"]
         case .date64: return ["TIMESTAMP"]
         default: return [] // unsupported
@@ -698,7 +713,51 @@ public enum ArrowDataType {
 
 // MARK: Utilities
 
+/// Warning marker for a work-in-progress
 @available(*, deprecated, message: "work in progress")
 @inlinable func wip<T>(_ value: T) -> T {
     value
 }
+
+#if canImport(OSLog)
+import OSLog
+
+/// debug message to NSLog only when NDEBUG is not set
+@inlinable public func dbg(level: OSLogType = .default, _ arg1: @autoclosure () -> CVarArg? = nil, _ arg2: @autoclosure () -> CVarArg? = nil, _ arg3: @autoclosure () -> CVarArg? = nil, _ arg4: @autoclosure () -> CVarArg? = nil, _ arg5: @autoclosure () -> CVarArg? = nil, _ arg6: @autoclosure () -> CVarArg? = nil, _ arg7: @autoclosure () -> CVarArg? = nil, _ arg8: @autoclosure () -> CVarArg? = nil, _ arg9: @autoclosure () -> CVarArg? = nil, _ arg10: @autoclosure () -> CVarArg? = nil, _ arg11: @autoclosure () -> CVarArg? = nil, _ arg12: @autoclosure () -> CVarArg? = nil, separator: String = " ", functionName: StaticString = #function, fileName: StaticString = #file, lineNumber: Int = #line) {
+    #if DEBUG
+    let items = [arg1(), arg2(), arg3(), arg4(), arg5(), arg6(), arg7(), arg8(), arg9(), arg10(), arg11(), arg12()]
+    let msg = items.compactMap({ $0 }).map({ String(describing: $0) }).joined(separator: separator)
+
+    // use just the file name
+    let filePath = fileName.description.split(separator: "/").last?.description ?? fileName.description
+
+    let message = "\(filePath):\(lineNumber) \(functionName): \(msg)"
+    // need to use public to log the message to the console; failure to do so will cause the strings to be logged in my dev builds, but downloaded release builds will jsut show "<private>" in the log messages
+    // os_log("%{public}@", /* log: log, */ type: level, message)
+
+    os_log(level, "%{public}@", message, arg1() ?? "", arg2() ?? "", arg3() ?? "", arg4() ?? "", arg5() ?? "", arg6() ?? "", arg7() ?? "", arg8() ?? "", arg9() ?? "", arg10() ?? "", arg11() ?? "", arg12() ?? "")
+    #endif
+}
+#endif
+
+
+#if canImport(Dispatch)
+extension Collection {
+    /// Executes the given block concurrently using `DispatchQueue.concurrentPerform`, returning the array of results
+    @inlinable public func qmap<T>(concurrent: Bool = true, block: (Element) throws -> (T)) throws -> [T] {
+        let queue = DispatchQueue(label: "resultsLock")
+
+        let items = Array(self)
+        var results: [Result<T, Error>?] = Array(repeating: nil, count: items.count)
+
+        DispatchQueue.concurrentPerform(iterations: items.count) { i in
+            let result = Result { try block(items[i]) }
+            queue.sync { results[i] = result }
+        }
+
+        // returns all the results, or throws the first error encountered
+        return try results.map { result in try result!.get() }
+    }
+}
+#endif
+

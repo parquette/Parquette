@@ -8,9 +8,10 @@
 import XCTest
 @testable import SwiftArrow
 
+/// Whether to run additional measurement & stress tests
+let stressTest = true
+
 class SwiftArrowTests: XCTestCase {
-    /// Whether to run additional measurement & stress tests
-    let stressTest = false
 
     /// Measures the block, other once or multiple times, depending on whether `stressTest` is true.
     func mmeasure(_ block: () throws -> ()) throws {
@@ -242,57 +243,54 @@ class SwiftArrowTests: XCTestCase {
             XCTAssertEqual(Array<Int32>(1...1_000), try checkArrowType(ctx: ctx, .int32, sql: "select id from parquet1"))
         }
 
+        XCTAssertEqual(Array<Double>([49756.53, 150280.17]), try checkArrowType(ctx: ctx, .float64, sql: "select salary from parquet1 LIMIT 2"))
+
+        XCTAssertEqual(["Amanda", "Albert", "Evelyn"], try checkArrowType(ctx: ctx, .utf8, sql: "select first_name from parquet1 LIMIT 3"))
+
+
+        func stringQL(_ sql: String) throws -> [String?] {
+            try checkArrowType(ctx: ctx, .utf8, sql: sql) as [String?]
+        }
+
+        try results { _ in
+            XCTAssertEqual(198, Set(try stringQL("select first_name from parquet1")).count)
+            XCTAssertEqual(247, Set(try stringQL("select last_name from parquet1")).count)
+            XCTAssertEqual(985, Set(try stringQL("select email from parquet1")).count)
+            XCTAssertEqual(3, Set(try stringQL("select gender from parquet1")).count)
+            XCTAssertEqual(1000, Set(try stringQL("select ip_address from parquet1")).count)
+            XCTAssertEqual(120, Set(try stringQL("select country from parquet1")).count)
+            XCTAssertEqual(788, Set(try stringQL("select birthdate from parquet1")).count)
+            XCTAssertEqual(182, Set(try stringQL("select title from parquet1")).count)
+            XCTAssertEqual(85, Set(try stringQL("select comments from parquet1")).count)
+        }
+
+        // check ordering
         try results { _ in
             XCTAssertEqual(Array<Int32>(1...1_000).reversed(), try checkArrowType(ctx: ctx, .int32, sql: "select id from parquet1 order by id desc"))
         }
 
-//        try results { _ in
-//            XCTAssertEqual(["X"], try checkArrowType(ctx: ctx, .int32, sql: "select first_name from parquet1"))
-//        }
 
-
-
-
-        try results { _ in
-            XCTAssertEqual([Int16?.none], try checkArrowType(ctx: ctx, .int16, sqlValue: "NULL"))
-            let val = Int16.random(in: (.min)...(.max))
-            XCTAssertEqual([val], try checkArrowType(ctx: ctx, .int16, sqlValue: "\(val)"))
+        func checkArrowValues<T: ArrowDataRepresentable & Equatable>(_ makeValue: @autoclosure () -> T) throws {
+            try results { _ in
+                XCTAssertEqual([T?.none], try checkArrowType(ctx: ctx, T.arrowDataType, sqlValue: "NULL"))
+                let val = makeValue()
+                XCTAssertEqual([val], try checkArrowType(ctx: ctx, T.arrowDataType, sqlValue: "\(val)"))
+            }
         }
 
-        try results { _ in
-            XCTAssertEqual([Float32?.none], try checkArrowType(ctx: ctx, .float32, sqlValue: "NULL"))
-//            let val = Float32.random(in: (-9_999)...(+9_999))
-//            XCTAssertEqual([val], try checkArrowType(ctx: ctx, .float32, sqlValue: "\(val)"))
-        }
+        try checkArrowValues(Int16.random(in: (.min)...(.max)))
+        // try checkArrowValues(UInt16.random(in: (.min)...(.max))) // no SQL type
+        try checkArrowValues(Int32.random(in: (.min)...(.max)))
+        // try checkArrowValues(UInt32.random(in: (.min)...(.max))) // no SQL type
+        try checkArrowValues(Int64.random(in: (.min)...(.max)))
+        // try checkArrowValues(UInt64.random(in: (.min)...(.max))) // no SQL type
 
-        try results { _ in
-            XCTAssertEqual([Int64?.none], try checkArrowType(ctx: ctx, .int64, sqlValue: "NULL"))
-            let val = Int64.random(in: (.min)...(.max))
-            XCTAssertEqual([val], try checkArrowType(ctx: ctx, .int64, sqlValue: "\(val)"))
-        }
-
-        // XCTAssertEqual(["ABC"].map(\.utf8CString), try checkArrowType(.utf8, sqlValue: "'ABC'"))
-
-//        try checkArrowType(.int64, sqlValue: "1")
-//        // try checkArrowType(.float32, sqlValue: "1")
-//        // try checkArrowType(.float64, sqlValue: "1")
-//        try checkArrowType(.boolean, sqlValue: "TRUE")
-//        try checkArrowType(.utf8, sqlValue: "'ABC'")
+        try checkArrowValues(Double.random(in: (-9_999_999)...(+9_999_999)))
+        //try checkArrowValues(Float.random(in: (-9_999_999)...(+9_999_999)))
     }
 
-    @discardableResult func results<T>(count: Int = 99, concurrent: Bool = false, block: (Int) throws -> T) throws -> [T] {
-        if count == 1 || !concurrent {
-            return try (0..<count).map(block)
-        }
-
-        var results: [Result<T, Error>] = []
-        DispatchQueue.concurrentPerform(iterations: count) { i in
-            results.append(Result {
-                try block(i)
-            })
-        }
-
-        return try results.map { try $0.get() }
+    @discardableResult func results<T>(count: Int = stressTest ? 999 : 99, concurrent: Bool = true, block: (Int) throws -> T) throws -> [T] {
+        try (1...count).qmap(concurrent: concurrent, block: block)
     }
 
     /// Creates a context with various sample data registered.
