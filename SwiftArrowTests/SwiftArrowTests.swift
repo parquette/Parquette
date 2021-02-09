@@ -9,7 +9,7 @@ import XCTest
 import SwiftArrow
 
 /// Whether to run additional measurement & stress tests
-let stressTest = true
+let stressTest = false
 
 class SwiftArrowTests: XCTestCase {
     func sampleFile(ext: String, _ index: Int = 1) throws -> URL {
@@ -202,7 +202,12 @@ class SwiftArrowTests: XCTestCase {
         // Debug stressTest=true: 135.419 seconds
         // Release stressTest=true: 29.676 seconds
 
-        let ctx = try loadedContext(parquet: 1...1)
+        let ctx = try loadedContext(csv: 1...5, parquet: 1...5)
+
+        /// Returns an array of the results of the string query
+        func stringQL(_ sql: String) throws -> [String?] {
+            try checkArrowType(ctx: ctx, .utf8, sql: sql) as [String?]
+        }
 
         // check data columns
         try results { _ in
@@ -214,20 +219,69 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(["Amanda", "Albert", "Evelyn"], try checkArrowType(ctx: ctx, .utf8, sql: "select first_name from parquet1 LIMIT 3"))
 
 
-        func stringQL(_ sql: String) throws -> [String?] {
-            try checkArrowType(ctx: ctx, .utf8, sql: sql) as [String?]
-        }
+        XCTAssertEqual(["\u{202b}test\u{202b}"], try stringQL("select comments from parquet1 where email = 'sadams2p@imdb.com'"), "unicode support")
+
+        XCTAssertEqual(["̡͓̞ͅI̗̘̦͝n͇͇͙v̮̫ok̲̫̙͈i̖͙̭̹̠̞n̡̻̮̣̺g̲͈͙̭͙̬͎ ̰t͔̦h̞̲e̢̤ ͍̬̲͖f̴̘͕̣è͖ẹ̥̩l͖͔͚i͓͚̦͠n͖͍̗͓̳̮g͍ ̨o͚̪͡f̘̣̬ ̖̘͖̟͙̮c҉͔̫͖͓͇͖ͅh̵̤̣͚͔á̗̼͕ͅo̼̣̥s̱͈̺̖̦̻͢.̛̖̞̠̫̰"], try stringQL("select comments from parquet1 where email = 'wweaver2r@google.de'"), "unicode support")
+
+        XCTAssertEqual(["社會科學院語學研究所"], try stringQL("select comments from parquet1 where ip_address = '250.178.192.2'"), "unicode support")
 
         try results { _ in
-            XCTAssertEqual(198, Set(try stringQL("select first_name from parquet1")).count)
-            XCTAssertEqual(247, Set(try stringQL("select last_name from parquet1")).count)
-            XCTAssertEqual(985, Set(try stringQL("select email from parquet1")).count)
-            XCTAssertEqual(3, Set(try stringQL("select gender from parquet1")).count)
-            XCTAssertEqual(1000, Set(try stringQL("select ip_address from parquet1")).count)
-            XCTAssertEqual(120, Set(try stringQL("select country from parquet1")).count)
-            XCTAssertEqual(788, Set(try stringQL("select birthdate from parquet1")).count)
-            XCTAssertEqual(182, Set(try stringQL("select title from parquet1")).count)
-            XCTAssertEqual(85, Set(try stringQL("select comments from parquet1")).count)
+            for format in [
+                "parquet",
+                "csv",
+            ].shuffled() {
+                let isCSV = format == "csv"
+
+                XCTAssertEqual(198, Set(try stringQL("select first_name from \(format)1")).count)
+                XCTAssertEqual(247, Set(try stringQL("select last_name from \(format)1")).count)
+                XCTAssertEqual(985, Set(try stringQL("select email from \(format)1")).count)
+                XCTAssertEqual(isCSV ? 7 : 3, Set(try stringQL("select gender from \(format)1")).count)
+                XCTAssertEqual(1000, Set(try stringQL("select ip_address from \(format)1")).count)
+                XCTAssertEqual(120, Set(try stringQL("select country from \(format)1")).count)
+                XCTAssertEqual(isCSV ? 787 : 788, Set(try stringQL("select birthdate from \(format)1")).count)
+                XCTAssertEqual(isCSV ? 181 : 182, Set(try stringQL("select title from \(format)1")).count)
+                XCTAssertEqual(isCSV ? 88 : 85, Set(try stringQL("select comments from \(format)1")).count)
+
+                XCTAssertEqual(199, Set(try stringQL("select first_name from \(format)2")).count)
+                XCTAssertEqual(242, Set(try stringQL("select last_name from \(format)2")).count)
+                XCTAssertEqual(979, Set(try stringQL("select email from \(format)2")).count)
+                XCTAssertEqual(3, Set(try stringQL("select gender from \(format)2")).count)
+                XCTAssertEqual(1000, Set(try stringQL("select ip_address from \(format)2")).count)
+                XCTAssertEqual(129, Set(try stringQL("select country from \(format)2")).count)
+                XCTAssertEqual(775, Set(try stringQL("select birthdate from \(format)2")).count)
+                XCTAssertEqual(179, Set(try stringQL("select title from \(format)2")).count)
+                XCTAssertEqual(isCSV ? 91 : 87, Set(try stringQL("select comments from \(format)2")).count)
+
+                XCTAssertEqual(201, Set(try stringQL("select first_name from \(format)3")).count)
+                XCTAssertEqual(246, Set(try stringQL("select last_name from \(format)3")).count)
+                XCTAssertEqual(977, Set(try stringQL("select email from \(format)3")).count)
+                XCTAssertEqual(3, Set(try stringQL("select gender from \(format)3")).count)
+                XCTAssertEqual(1000, Set(try stringQL("select ip_address from \(format)3")).count)
+                XCTAssertEqual(131, Set(try stringQL("select country from \(format)3")).count)
+                XCTAssertEqual(764, Set(try stringQL("select birthdate from \(format)3")).count)
+                XCTAssertEqual(180, Set(try stringQL("select title from \(format)3")).count)
+                XCTAssertEqual(isCSV ? 93 : 89, Set(try stringQL("select comments from \(format)3")).count)
+
+                XCTAssertEqual(199, Set(try stringQL("select first_name from \(format)4")).count)
+                XCTAssertEqual(247, Set(try stringQL("select last_name from \(format)4")).count)
+                XCTAssertEqual(984, Set(try stringQL("select email from \(format)4")).count)
+                XCTAssertEqual(3, Set(try stringQL("select gender from \(format)4")).count)
+                XCTAssertEqual(1000, Set(try stringQL("select ip_address from \(format)4")).count)
+                XCTAssertEqual(119, Set(try stringQL("select country from \(format)4")).count)
+                XCTAssertEqual(774, Set(try stringQL("select birthdate from \(format)4")).count)
+                XCTAssertEqual(175, Set(try stringQL("select title from \(format)4")).count)
+                XCTAssertEqual(isCSV ? 96 : 92, Set(try stringQL("select comments from \(format)4")).count)
+
+                XCTAssertEqual(200, Set(try stringQL("select first_name from \(format)5")).count)
+                XCTAssertEqual(243, Set(try stringQL("select last_name from \(format)5")).count)
+                XCTAssertEqual(980, Set(try stringQL("select email from \(format)5")).count)
+                XCTAssertEqual(3, Set(try stringQL("select gender from \(format)5")).count)
+                XCTAssertEqual(1000, Set(try stringQL("select ip_address from \(format)5")).count)
+                XCTAssertEqual(129, Set(try stringQL("select country from \(format)5")).count)
+                XCTAssertEqual(784, Set(try stringQL("select birthdate from \(format)5")).count)
+                XCTAssertEqual(181, Set(try stringQL("select title from \(format)5")).count)
+                XCTAssertEqual(isCSV ? 93 : 90, Set(try stringQL("select comments from \(format)5")).count)
+            }
         }
 
         // check ordering
@@ -255,7 +309,7 @@ class SwiftArrowTests: XCTestCase {
         //try checkArrowValues(Float.random(in: (-9_999_999)...(+9_999_999)))
     }
 
-    @discardableResult func results<T>(count: Int = stressTest ? 999 : 99, concurrent: Bool = true, block: (Int) throws -> T) throws -> [T] {
+    @discardableResult func results<T>(count: Int = stressTest ? 999 : 1, concurrent: Bool = true, block: (Int) throws -> T) throws -> [T] {
         try (1...count).qmap(concurrent: concurrent, block: block)
     }
 
