@@ -64,8 +64,11 @@ jobs:
         with:
           scheme: "Parquette"
 
+      - name: Show current files
+        run: ls -la
+        
       - name: Show archive files
-        run: ls "Export/"
+        run: find . -name '*.app'
 
       # - name: Example archive
       #   run: ditto -V -c -k --keepParent "Export/Parquette.app" "Parquette.zip"
