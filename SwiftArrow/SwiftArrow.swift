@@ -85,10 +85,10 @@ extension ArrowVectorFFI {
 //    }
 //}
 
-class ArrowCSV {
+public class ArrowCSV {
     private let fileURL: URL
 
-    init(fileURL: URL) {
+    public init(fileURL: URL) {
         // ptr = request_create(url)
         self.fileURL = fileURL
     }
@@ -97,7 +97,7 @@ class ArrowCSV {
         // request_destroy(ptr)
     }
 
-    func load(printRows: Int64 = 0) throws -> OpaquePointer? {
+    public func load(printRows: Int64 = 0) throws -> OpaquePointer? {
         try fileURL.path.withCString({
             try SwiftRustError.checking(arrow_load_csv($0, printRows))
         })
@@ -233,7 +233,7 @@ public final class ArrowVector {
         schema.name.flatMap(String.init(cString:))
     }
 
-    @inlinable public var format: ArrowDataType? {
+    @inlinable public var dataType: ArrowDataType? {
         schema.format.flatMap(String.init(cString:)).flatMap(ArrowDataType.init(_:))
     }
 
@@ -390,6 +390,10 @@ extension String : ArrowDataRepresentable {
         @usableFromInline let contents: UnsafeBufferPointer<CUnsignedChar>
 
         @inlinable public init(vector: ArrowVector) throws {
+            if vector.bufferContents.count != 3 {
+                throw SwiftArrowError.wrongBufferCount(vector.bufferContents.count)
+            }
+
             self.vector = vector
 
             // “The offsets buffer contains length + 1 signed integers (either 32-bit or 64-bit, depending on the logical type), which encode the start position of each slot in the data buffer. The length of the value in each slot is computed using the difference between the offset at that slot's index and the subsequent offset”
@@ -399,7 +403,7 @@ extension String : ArrowDataRepresentable {
 
             // “Generally the first value in the offsets array is 0, and the last slot is the length of the values array.”
             let contentLength = offsets[offlen-1]
-            dbg("contentLength", contentLength)
+            // dbg("contentLength", contentLength)
             let contentPtr = vector.bufferContents[2]?.bindMemory(to: CUnsignedChar.self, capacity: .init(contentLength))
             self.contents = UnsafeBufferPointer(start: contentPtr, count: .init(contentLength))
         }

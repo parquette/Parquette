@@ -6,34 +6,12 @@
 //
 
 import XCTest
-@testable import SwiftArrow
+import SwiftArrow
 
 /// Whether to run additional measurement & stress tests
 let stressTest = true
 
 class SwiftArrowTests: XCTestCase {
-
-    /// Measures the block, other once or multiple times, depending on whether `stressTest` is true.
-    func mmeasure(_ block: () throws -> ()) throws {
-        if stressTest {
-            var errors: [Error] = []
-            measure {
-                do {
-                    try block()
-                } catch {
-                    errors.append(error)
-                }
-            }
-
-            if let error = errors.first {
-                throw error
-            }
-        } else {
-            try block()
-        }
-    }
-
-
     func sampleFile(ext: String, _ index: Int = 1) throws -> URL {
         let url = URL(fileURLWithPath: #file)
             .deletingLastPathComponent()
@@ -179,26 +157,11 @@ class SwiftArrowTests: XCTestCase {
         let schemaArray: ArrowVector = try df.collectVector(index: 0)
         // dbg(schemaArray.array.debugDescription)
 
-        XCTAssertEqual(schemaArray.array.n_buffers, type == .utf8 ? 3 : 2)
-        XCTAssertEqual(schemaArray.array.length, 1)
-        XCTAssertEqual(schemaArray.array.null_count, 0)
-        XCTAssertEqual(schemaArray.array.offset, 0)
-        XCTAssertEqual(schemaArray.array.n_children, 0)
-
-        XCTAssertEqual(schemaArray.schema.n_children, 0)
-
-        if let fmt = schemaArray.schema.format {
-            XCTAssertEqual(type, ArrowDataType(String(cString: fmt)))
-        }
-
-        if let md = schemaArray.schema.metadata {
-            XCTAssertEqual(String(cString: md), "")
-        }
-        if let nm = schemaArray.schema.name {
-            XCTAssertEqual(String(cString: nm), "")
-        }
-
-        // XCTAssertEqual(1, try ctx.query(sql: "SELECT NOW()")?.collectionCount()) // doesn't work
+        XCTAssertEqual(schemaArray.bufferCount, type == .utf8 ? 3 : 2)
+        XCTAssertEqual(schemaArray.bufferLength, 1)
+        XCTAssertEqual(schemaArray.nullCount, 0)
+        XCTAssertEqual(schemaArray.offset, 0)
+        XCTAssertEqual(schemaArray.arrayChildCount, 0)
     }
 
     func checkArrowType<T: ArrowDataRepresentable>(ctx: DFExecutionContext = DFExecutionContext(), _ type: ArrowDataType, sqlValue: String = "NULL", sql literalSQL: String? = nil) throws -> [T?] {
@@ -229,13 +192,16 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(0, vector.offset)
         XCTAssertEqual(0, vector.flags)
         XCTAssertEqual(nil, vector.name)
-        XCTAssertEqual(type, vector.format)
+        XCTAssertEqual(type, vector.dataType)
         XCTAssertEqual(nil, vector.metadata)
 
         return Array(try T.BufferView(vector: vector))
     }
 
     func testFusionDataTypes() throws {
+        // Debug stressTest=true: 135.419 seconds
+        // Release stressTest=true: 29.676 seconds
+
         let ctx = try loadedContext(parquet: 1...1)
 
         // check data columns
@@ -331,19 +297,19 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(25, try ctx.query(sql: "SELECT * FROM csv1 WHERE email LIKE '%@___.gov'")?.collectionCount()) // e.g., epa.gov
 
         do {
-            guard let array = try ctx.query(sql: "SELECT first_name FROM csv1 WHERE first_name = 'Todd'")?.collectVector(index: 0) else {
+            guard let vector = try ctx.query(sql: "SELECT first_name FROM csv1 WHERE first_name = 'Todd'")?.collectVector(index: 0) else {
                 return XCTFail("could not execute query")
             }
-            XCTAssertEqual(ArrowDataType.utf8, array.schema.dataType)
+            XCTAssertEqual(ArrowDataType.utf8, vector.dataType)
         }
     }
 
     func checkColumnType(_ ctx: DFExecutionContext, column: String, dataType: ArrowDataType, table: String) throws {
-        guard let array = try ctx.query(sql: "SELECT \(column) FROM \(table)")?.collectVector(index: 0) else {
+        guard let vector = try ctx.query(sql: "SELECT \(column) FROM \(table)")?.collectVector(index: 0) else {
             return XCTFail("could not execute query")
         }
 
-        XCTAssertEqual(dataType, array.schema.dataType)
+        XCTAssertEqual(dataType, vector.dataType)
     }
 
     func testCSVDataTypes() throws {
@@ -470,3 +436,27 @@ class SwiftArrowTests: XCTestCase {
     }
 }
 
+
+#if canImport(XCTest)
+extension XCTestCase {
+    /// Measures the block, other once or multiple times, depending on whether `stressTest` is true.
+    public func mmeasure(_ block: () throws -> ()) throws {
+        if stressTest {
+            var errors: [Error] = []
+            measure {
+                do {
+                    try block()
+                } catch {
+                    errors.append(error)
+                }
+            }
+
+            if let error = errors.first {
+                throw error
+            }
+        } else {
+            try block()
+        }
+    }
+}
+#endif
