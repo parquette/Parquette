@@ -6,8 +6,8 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # run once an hour as well
-    - cron:  '0 * * * *'
+    # run once at noon
+    - cron:  '0 12 * * *'
 
 jobs:
   Build:
