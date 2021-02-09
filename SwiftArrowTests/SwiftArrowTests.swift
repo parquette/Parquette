@@ -200,7 +200,7 @@ class SwiftArrowTests: XCTestCase {
         // XCTAssertEqual(1, try ctx.query(sql: "SELECT NOW()")?.collectionCount()) // doesn't work
     }
 
-    func checkArrowType<T>(ctx: DFExecutionContext = DFExecutionContext(), _ type: ArrowDataType, sqlValue: String = "NULL", pqcol: String? = nil) throws -> [T?] {
+    func checkArrowType<T: ArrowDataRepresentable>(ctx: DFExecutionContext = DFExecutionContext(), _ type: ArrowDataType, sqlValue: String = "NULL", sql literalSQL: String? = nil) throws -> [T?] {
         guard let sqlType = type.sqlTypes.first else {
             XCTFail("no SQL type")
             throw SwiftArrowError.general
@@ -210,12 +210,7 @@ class SwiftArrowTests: XCTestCase {
         // VALUES (1, 'one'), (2, 'two'), (3, 'three')
         // let sql = "VALUES (CAST (\(sqlValue) AS \(sqlType)))"
 
-        let sql: String
-        if let pqcol = pqcol {
-            sql = "select \(pqcol) from parquet1"
-        } else {
-            sql = "select CAST (\(sqlValue) AS \(sqlType)) as COL"
-        }
+        let sql = literalSQL ?? "select CAST (\(sqlValue) AS \(sqlType)) as COL"
 
         //dbg("executing", sql)
 
@@ -236,35 +231,44 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(type, vector.format)
         XCTAssertEqual(nil, vector.metadata)
 
-        return try vector.withBufferData(at: 0) { (array: [T?]) in
-            array
-        }
+        return Array(try T.BufferView(vector: vector))
     }
 
     func testFusionDataTypes() throws {
         let ctx = try loadedContext(parquet: 1...1)
 
         // check data columns
-        let _ = try results { _ in
-            XCTAssertEqual(Array<Int32>(1...1_000), try checkArrowType(ctx: ctx, .int32, pqcol: "id"))
+        try results { _ in
+            XCTAssertEqual(Array<Int32>(1...1_000), try checkArrowType(ctx: ctx, .int32, sql: "select id from parquet1"))
         }
 
-        let _ = try results { _ in
+        try results { _ in
+            XCTAssertEqual(Array<Int32>(1...1_000).reversed(), try checkArrowType(ctx: ctx, .int32, sql: "select id from parquet1 order by id desc"))
+        }
+
+//        try results { _ in
+//            XCTAssertEqual(["X"], try checkArrowType(ctx: ctx, .int32, sql: "select first_name from parquet1"))
+//        }
+
+
+
+
+        try results { _ in
             XCTAssertEqual([Int16?.none], try checkArrowType(ctx: ctx, .int16, sqlValue: "NULL"))
-            let i16 = Int16.random(in: (.min)...(.max))
-            XCTAssertEqual([i16], try checkArrowType(ctx: ctx, .int16, sqlValue: "\(i16)"))
+            let val = Int16.random(in: (.min)...(.max))
+            XCTAssertEqual([val], try checkArrowType(ctx: ctx, .int16, sqlValue: "\(val)"))
         }
 
-        let _ = try results { _ in
-            XCTAssertEqual([Int32?.none], try checkArrowType(ctx: ctx, .int32, sqlValue: "NULL"))
-            let i32 = Int32.random(in: (.min)...(.max))
-            XCTAssertEqual([i32], try checkArrowType(ctx: ctx, .int32, sqlValue: "\(i32)"))
+        try results { _ in
+            XCTAssertEqual([Float32?.none], try checkArrowType(ctx: ctx, .float32, sqlValue: "NULL"))
+//            let val = Float32.random(in: (-9_999)...(+9_999))
+//            XCTAssertEqual([val], try checkArrowType(ctx: ctx, .float32, sqlValue: "\(val)"))
         }
 
-        let _ = try results { _ in
+        try results { _ in
             XCTAssertEqual([Int64?.none], try checkArrowType(ctx: ctx, .int64, sqlValue: "NULL"))
-            let i64 = Int64.random(in: (.min)...(.max))
-            XCTAssertEqual([i64], try checkArrowType(ctx: ctx, .int64, sqlValue: "\(i64)"))
+            let val = Int64.random(in: (.min)...(.max))
+            XCTAssertEqual([val], try checkArrowType(ctx: ctx, .int64, sqlValue: "\(val)"))
         }
 
         // XCTAssertEqual(["ABC"].map(\.utf8CString), try checkArrowType(.utf8, sqlValue: "'ABC'"))
@@ -276,7 +280,7 @@ class SwiftArrowTests: XCTestCase {
 //        try checkArrowType(.utf8, sqlValue: "'ABC'")
     }
 
-    func results<T>(count: Int = 99, concurrent: Bool = false, block: (Int) throws -> T) throws -> [T] {
+    @discardableResult func results<T>(count: Int = 99, concurrent: Bool = false, block: (Int) throws -> T) throws -> [T] {
         if count == 1 || !concurrent {
             return try (0..<count).map(block)
         }
@@ -416,7 +420,7 @@ class SwiftArrowTests: XCTestCase {
             }
         }
 
-        var counts: [Int64] = []
+        var counts: [Int] = []
 
         for frame in frames {
             var df = frame

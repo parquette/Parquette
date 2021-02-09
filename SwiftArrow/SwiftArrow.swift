@@ -16,6 +16,7 @@ public enum SwiftArrowError : Error {
     case nullsUnsupported
     case nullsInconsistent
     case emptyBuffer
+    case wrongBufferCount(Int)
 }
 
 /// Setup Rust logging. This can be called multiple times, from multiple threads.
@@ -191,7 +192,7 @@ public class DFDataFrame {
     }
 
     /// Executes the DataFrame and returns the count
-    public func collectionCount() throws -> Int64 {
+    public func collectionCount() throws -> Int {
         try collectVector(index: 0).bufferLength
         // try SwiftRustError.checking(datafusion_dataframe_collect_count(ptr))
     }
@@ -237,11 +238,12 @@ public final class ArrowVector {
     }
 
     @inlinable public var metadata: String? {
-        schema.metadata.flatMap(String.init(cString:))
+        wip(nil) // “This string is not null-terminated but follows a specific format…” – http://arrow.apache.org/docs/format/CDataInterface.html#c.ArrowSchema.metadata
+        // schema.metadata.flatMap(String.init(cString:))
     }
 
-    @inlinable public var schemaChildCount: Int64 {
-        schema.n_children
+    @inlinable public var schemaChildCount: Int {
+        .init(schema.n_children)
     }
 
     @inlinable public var flags: Int64 {
@@ -255,36 +257,38 @@ public final class ArrowVector {
     }
 
     /// The number of null items in the array. MAY be -1 if not yet computed.
-    @inlinable public var nullCount: Int64 {
-        array.null_count
+    @inlinable public var nullCount: Int {
+        .init(array.null_count)
     }
 
     /// The logical offset inside the array (i.e. the number of items from the physical start of the buffers). MUST be 0 or positive.
-    @inlinable public var offset: Int64 {
-        array.offset
+    @inlinable public var offset: Int {
+        .init(array.offset)
     }
 
     /// The number of children this array has. The number of children is a function of the data type, as described in the Columnar format specification.
-    @inlinable public var arrayChildCount: Int64 {
-        array.n_children
+    @inlinable public var arrayChildCount: Int {
+        .init(array.n_children)
     }
 
     /// The number of physical buffers backing this array. The number of buffers is a function of the data type, as described in the Columnar format specification.
-    @inlinable public var bufferCount: Int64 {
-        array.n_buffers
+    @inlinable public var bufferCount: Int {
+        .init(array.n_buffers)
     }
 
     /// The logical length of the array (i.e. its number of items).
-    @inlinable public var bufferLength: Int64 {
-        array.length
+    @inlinable public var bufferLength: Int {
+        .init(array.length)
     }
 
+    /// The sequential buffers
     @usableFromInline var bufferContents: UnsafeBufferPointer<UnsafeRawPointer?> {
         let buf: UnsafeMutablePointer<UnsafeRawPointer?>! = array.buffers
         let buffers = UnsafeBufferPointer(start: buf, count: .init(bufferCount))
         return buffers
     }
 
+    /// For types whose first buffer is the validity bitfield, returns the mapped data
     @usableFromInline var validityBitfield: Data? {
         guard let validityBitfield = bufferContents.first else {
             return nil
@@ -305,68 +309,128 @@ public final class ArrowVector {
         validityBitfield?[bitfieldElement: index] != false
     }
 
-    @inlinable public func withBufferData<T, U>(at index: Int, handler: ([T?]) throws -> U) throws -> U {
-
-//        guard let buffs: UnsafeMutablePointer<UnsafeRawPointer?> = array.buffers else {
-//            throw SwiftArrowError.missingPointer
-//        }
-
-        let bufferCount = array.n_buffers
-        if bufferCount <= 0 {
-            throw SwiftArrowError.noBuffers
-        }
-
-        if bufferCount != 2 {
-            #warning("TODO: handle multiple buffers (strings have 3)")
-            throw SwiftArrowError.noMultiBufferSupport
-        }
-
-        let buffers = self.bufferContents
-
-        // dbg("array.buffers", bufferCount, buffers.debugDescription)
-
-        let capacity = Int(array.length + array.offset)
-        assert(index <= capacity, "index must be less than capacity")
-
-        guard let targetPtr: UnsafeRawPointer = buffers[index + 1] else {
-            throw SwiftArrowError.emptyBuffer
-        }
-
-        let boundTarget = targetPtr.bindMemory(to: T.self, capacity: capacity)
-        let boundBuffer = UnsafeBufferPointer(start: boundTarget, count: capacity)
-
-        #warning("FIXME: use a lazy collection rather than copying")
-        let values = Array(boundBuffer).enumerated().map { index, element in
-            isValid(at: index) ? element : nil
-        }
-        return try handler(values)
-    }
-    
-    final class Int8View : ArrowBufferView {
-        typealias DataType = Int8
-        var dataType: ArrowDataType { .int8 }
-
-        let vector: ArrowVector
-
-        init(vector: ArrowVector) {
-            self.vector = vector
-        }
-
-        public var endIndex: Int64 {
-            vector.bufferLength
-        }
-
-        subscript(position: Int64) -> DataType? {
-            if vector.nullCount != 0 {
-                if let validity = vector.bufferContents.first {
-
-                }
-            }
-            fatalError("XXX")
-        }
+    @inlinable public var capacity: Int {
+        Int(array.length + array.offset)
     }
 }
 
+/// A type that can be represented efficiently by an Arrow array.
+/// These include primitives, strings, and other custom types.
+public protocol ArrowDataRepresentable {
+    static var arrowDataType: ArrowDataType { get }
+    associatedtype BufferView : ArrowBufferView where BufferView.DataType == Self
+}
+
+extension Int8 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.int8
+    public typealias BufferView = TypedBufferView<Self>
+}
+
+extension Int16 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.int16
+    public typealias BufferView = TypedBufferView<Self>
+}
+
+extension Int32 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.int32
+    public typealias BufferView = TypedBufferView<Self>
+}
+
+extension Int64 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.int64
+    public typealias BufferView = TypedBufferView<Self>
+}
+
+extension UInt8 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.uint8
+    public typealias BufferView = TypedBufferView<Self>
+}
+
+extension UInt16 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.uint16
+    public typealias BufferView = TypedBufferView<Self>
+}
+
+extension UInt32 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.uint32
+    public typealias BufferView = TypedBufferView<Self>
+}
+
+extension UInt64 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.uint64
+    public typealias BufferView = TypedBufferView<Self>
+}
+
+#if !os(macOS) // “'Float16' is unavailable in macOS”
+extension Float16 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.float16
+    public typealias BufferView = TypedBufferView<Self>
+}
+#endif
+
+extension Float32 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.float32
+    public typealias BufferView = TypedBufferView<Self>
+}
+
+extension Float64 : ArrowDataRepresentable {
+    public static let arrowDataType = ArrowDataType.float64
+    public typealias BufferView = TypedBufferView<Self>
+}
+
+
+public protocol ArrowBufferView : Collection where Element == Optional<DataType> {
+    associatedtype DataType
+    var dataType: ArrowDataType { get }
+    var vector: ArrowVector { get }
+
+    init(vector: ArrowVector) throws
+}
+
+extension ArrowBufferView {
+    public var startIndex: Int { 0 }
+    public var endIndex: Int { vector.bufferLength }
+    public func index(after i: Int) -> Int { i + 1 }
+}
+
+/// Primitive (fixed-size): a sequence of values each having the same byte or bit width
+/// https://github.com/apache/arrow/blob/master/docs/source/format/Columnar.rst#physical-memory-layout
+public protocol PrimitiveBufferView where Self : ArrowBufferView {
+    var buffer: UnsafeBufferPointer<DataType> { get }
+}
+
+extension PrimitiveBufferView {
+    public subscript(position: Int) -> DataType? {
+        if !vector.isValid(at: .init(position)) { return nil }
+        return buffer[position]
+    }
+}
+
+
+
+public final class TypedBufferView<T: ArrowDataRepresentable> : PrimitiveBufferView {
+    public typealias DataType = T
+    public var dataType: ArrowDataType { DataType.arrowDataType }
+    public let vector: ArrowVector
+    public let buffer: UnsafeBufferPointer<DataType>
+
+    public init(vector: ArrowVector) throws {
+        if vector.bufferCount != 2 {
+            // primitive buffer views always two buffers: validity and contents
+            throw SwiftArrowError.wrongBufferCount(vector.bufferCount)
+        }
+        self.vector = vector
+        let target = vector.bufferContents[1]?.bindMemory(to: DataType.self, capacity: vector.capacity)
+        self.buffer = UnsafeBufferPointer(start: target, count: vector.capacity)
+    }
+}
+
+
+
+/// Variable-size Binary: a sequence of values each having a variable byte length. Two variants of this layout are supported using 32-bit and 64-bit length encoding.
+/// TODO: this is how we will support UTF-8 strings
+protocol VariableBufferView where Self : ArrowBufferView {
+}
 
 extension Data {
     /// Returns the bit at the current index for the given bitfield data
@@ -375,42 +439,6 @@ extension Data {
         (self[i / 8] & (1 << (i % 8))) != 0
     }
 }
-
-public protocol ArrowBufferView : Collection {
-    associatedtype DataType
-    var dataType: ArrowDataType { get }
-}
-
-extension ArrowBufferView {
-    public var startIndex: Int64 { 0 }
-    public func index(after i: Int64) -> Int64 { i + 1 }
-}
-
-//public class DFArray {
-//    let ptr: OpaquePointer
-//
-//    public init() {
-//        self.ptr = datafusion_array_empty_create()
-//    }
-//
-//    init(ptr: OpaquePointer) {
-//        self.ptr = ptr
-//    }
-//
-//    init?(checking ptr: OpaquePointer?) throws {
-//        guard let ptr = try SwiftRustError.checking(ptr) else { return nil }
-//        self.ptr = ptr
-//    }
-//
-//    deinit {
-//        datafusion_arrow_destroy(ptr)
-//    }
-//
-//    func x() {
-//        datafusion_array_schema_get()
-//    }
-//
-//}
 
 
 
@@ -665,4 +693,12 @@ public enum ArrowDataType {
 //dense union with type ids I,J…
 //+us:I,J,...
 //sparse union with type ids I,J…
+}
+
+
+// MARK: Utilities
+
+@available(*, deprecated, message: "work in progress")
+@inlinable func wip<T>(_ value: T) -> T {
+    value
 }
