@@ -14,6 +14,7 @@ public enum SwiftArrowError : Error {
     case noBuffers
     case noMultiBufferSupport
     case nullsUnsupported
+    case nullsInconsistent
     case emptyBuffer
 }
 
@@ -278,7 +279,31 @@ public final class ArrowVector {
         array.length
     }
 
-    @inlinable public func withBufferData<T, U>(at index: Int, handler: ([T]) throws -> U) throws -> U {
+    @usableFromInline var bufferContents: UnsafeBufferPointer<UnsafeRawPointer?> {
+        let buf: UnsafeMutablePointer<UnsafeRawPointer?>! = array.buffers
+        let buffers = UnsafeBufferPointer(start: buf, count: .init(bufferCount))
+        return buffers
+    }
+
+    @usableFromInline var validityBuffer: Data? {
+        guard let validityBuffer = bufferContents.first else {
+            return nil
+        }
+
+        guard let validity = validityBuffer else {
+            return nil
+        }
+
+        let capacity = Int(array.length + array.offset)
+        let nullBufferSize = Int(ceil(Double(capacity) / 8))
+        return Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: validity), count: nullBufferSize, deallocator: .none)
+    }
+
+    public func isValid(at index: Int) -> Bool {
+        validityBuffer?[bitfieldElement: index] != false
+    }
+
+    @inlinable public func withBufferData<T, U>(at index: Int, handler: ([T?]) throws -> U) throws -> U {
 
 //        guard let buffs: UnsafeMutablePointer<UnsafeRawPointer?> = array.buffers else {
 //            throw SwiftArrowError.missingPointer
@@ -294,9 +319,7 @@ public final class ArrowVector {
             throw SwiftArrowError.noMultiBufferSupport
         }
 
-        let buf: UnsafeMutablePointer<UnsafeRawPointer?>! = array.buffers
-
-        let buffers = UnsafeBufferPointer(start: buf, count: .init(bufferCount))
+        let buffers = self.bufferContents
 
         // dbg("array.buffers", bufferCount, buffers.debugDescription)
 
@@ -304,10 +327,8 @@ public final class ArrowVector {
         assert(index <= capacity, "index must be less than capacity")
 
         let nullBuffer = buffers[0]
-        if nullBuffer != nil {
-            #warning("TODO: use the nulls bitfield")
-            throw SwiftArrowError.nullsUnsupported
-        }
+
+        assert((nullBuffer == nil) == (nullCount == 0))
 
         guard let targetBuffer: UnsafeRawPointer = buffers[index + 1] else {
             throw SwiftArrowError.emptyBuffer
@@ -323,40 +344,51 @@ public final class ArrowVector {
 //            dbg("#### ptr", "\(item)")
 //        }
 
-        #warning("FIXME: only first element of the array")
-        return try handler([ptr.pointee])
+        #warning("FIXME: we only handle the first element of the array")
+        if !isValid(at: 0) {
+            return try handler([nil])
+        } else {
+            return try handler([ptr.pointee])
+        }
     }
     
     final class Int8View : ArrowBufferView {
+        typealias DataType = Int8
+        var dataType: ArrowDataType { .int8 }
+
         let vector: ArrowVector
 
         init(vector: ArrowVector) {
             self.vector = vector
         }
 
-        subscript(position: Int64) -> Slice<ArrowVector.Int8View> {
-            fatalError("TODO")
-        }
-
-        typealias DataType = Int8
-        var dataType: ArrowDataType { .int8 }
-
-        func element(at index: Int64) -> DataType {
-            #warning("TODO")
-            fatalError("TODO")
-        }
-
         public var endIndex: Int64 {
             vector.bufferLength
         }
 
+        subscript(position: Int64) -> DataType? {
+            if vector.nullCount != 0 {
+                if let validity = vector.bufferContents.first {
+
+                }
+            }
+            fatalError("XXX")
+        }
+    }
+}
+
+
+extension Data {
+    /// Returns the bit at the current index for the given bitfield data
+    // https://github.com/apache/arrow/blob/master/docs/source/format/Columnar.rst#validity-bitmaps
+    @usableFromInline subscript(bitfieldElement i: Int) -> Bool {
+        (self[i / 8] & (1 << (i % 8))) != 0
     }
 }
 
 public protocol ArrowBufferView : Collection {
     associatedtype DataType
     var dataType: ArrowDataType { get }
-    func element(at index: Int64) -> DataType
 }
 
 extension ArrowBufferView {

@@ -200,7 +200,7 @@ class SwiftArrowTests: XCTestCase {
         // XCTAssertEqual(1, try ctx.query(sql: "SELECT NOW()")?.collectionCount()) // doesn't work
     }
 
-    func checkArrowType<T>(ctx: DFExecutionContext = DFExecutionContext(), _ type: ArrowDataType, sqlValue: String) throws -> [T] {
+    func checkArrowType<T>(ctx: DFExecutionContext = DFExecutionContext(), _ type: ArrowDataType, sqlValue: String) throws -> [T?] {
         guard let sqlType = type.sqlTypes.first else {
             XCTFail("no SQL type")
             throw SwiftArrowError.general
@@ -231,7 +231,7 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(type, vector.format)
         XCTAssertEqual(nil, vector.metadata)
 
-        return try vector.withBufferData(at: 0) { (array: [T]) in
+        return try vector.withBufferData(at: 0) { (array: [T?]) in
             array
         }
     }
@@ -245,19 +245,21 @@ class SwiftArrowTests: XCTestCase {
         // 11=0x000060200000cc30
         // 12=0x000060200000dc30
 
-        XCTAssertEqual([nil] as [Int16?], try checkArrowType(ctx: ctx, .int16, sqlValue: "NULL"))
 
         let _ = try results { _ in
+            XCTAssertEqual([Int16?.none], try checkArrowType(ctx: ctx, .int16, sqlValue: "NULL"))
             let i16 = Int16.random(in: (.min)...(.max))
             XCTAssertEqual([i16], try checkArrowType(ctx: ctx, .int16, sqlValue: "\(i16)"))
         }
 
         let _ = try results { _ in
+            XCTAssertEqual([Int32?.none], try checkArrowType(ctx: ctx, .int32, sqlValue: "NULL"))
             let i32 = Int32.random(in: (.min)...(.max))
             XCTAssertEqual([i32], try checkArrowType(ctx: ctx, .int32, sqlValue: "\(i32)"))
         }
 
         let _ = try results { _ in
+            XCTAssertEqual([Int64?.none], try checkArrowType(ctx: ctx, .int64, sqlValue: "NULL"))
             let i64 = Int64.random(in: (.min)...(.max))
             XCTAssertEqual([i64], try checkArrowType(ctx: ctx, .int64, sqlValue: "\(i64)"))
         }
