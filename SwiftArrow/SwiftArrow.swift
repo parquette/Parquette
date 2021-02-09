@@ -285,12 +285,12 @@ public final class ArrowVector {
         return buffers
     }
 
-    @usableFromInline var validityBuffer: Data? {
-        guard let validityBuffer = bufferContents.first else {
+    @usableFromInline var validityBitfield: Data? {
+        guard let validityBitfield = bufferContents.first else {
             return nil
         }
 
-        guard let validity = validityBuffer else {
+        guard let validity = validityBitfield else {
             return nil
         }
 
@@ -299,8 +299,10 @@ public final class ArrowVector {
         return Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: validity), count: nullBufferSize, deallocator: .none)
     }
 
-    public func isValid(at index: Int) -> Bool {
-        validityBuffer?[bitfieldElement: index] != false
+    /// Returns true if the element at the given index is valid
+    /// - Returns: `false` if the element is null (as indicated by being absent in the validity bitfield)
+    @inlinable public func isValid(at index: Int) -> Bool {
+        validityBitfield?[bitfieldElement: index] != false
     }
 
     @inlinable public func withBufferData<T, U>(at index: Int, handler: ([T?]) throws -> U) throws -> U {
