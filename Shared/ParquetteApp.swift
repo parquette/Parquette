@@ -137,7 +137,7 @@ let asyncQueryDefaultValue = false
 
 class AppState : ObservableObject {
 
-    func useAsyncQuery() -> Bool {
+    var useAsyncQuery: Bool {
         UserDefaults.standard.object(forKey: asyncQueryDefault) == nil ? asyncQueryDefaultValue : UserDefaults.standard.bool(forKey: asyncQueryDefault)
     }
 
@@ -150,12 +150,15 @@ class AppState : ObservableObject {
 
     @Published var result = QueryResult()
 
+    /// The current stack of errors to present to the user
+    //@Published var errors = Array<LocalError>()
+
     init() {
     }
 
     /// Performs the operation async or sync, depending on the default `asyncQuery` boolean
-    func performOperation(_ block: @escaping () -> ()) {
-        if useAsyncQuery() {
+    func performOperation(async: Bool, _ block: @escaping () -> ()) {
+        if async {
             operationQueue.addOperation {
                 block()
             }
@@ -163,11 +166,57 @@ class AppState : ObservableObject {
             block()
         }
     }
+
+    func attempt(async: Bool = false, _ block: @escaping () throws -> ()) {
+        let win = NSApp.currentEvent?.window ?? NSDocumentController.shared.currentDocument?.windowForSheet
+
+        performOperation(async: async) {
+            do {
+                try block()
+            } catch {
+                onmain {
+                    dbg("presenting error", error.localizedDescription, "\(error)")
+                    let err = LocalError(id: UUID(), error: error)
+                    // self.errors.append(err)
+                    win?.presentError(err)
+                }
+            }
+        }
+    }
 }
 
-struct QueryResult : Equatable {
-    var resultCount: UInt? = nil
+
+struct LocalError : LocalizedError, Identifiable {
+    let id: UUID
+    let error: Error
+
+    /// A localized message describing what error occurred.
+    var errorDescription: String? {
+        (error as NSError).localizedDescription
+    }
+
+    /// A localized message describing the reason for the failure.
+    var failureReason: String? {
+        (error as NSError).localizedFailureReason
+    }
+
+    /// A localized message describing how one might recover from the failure.
+    var recoverySuggestion: String? {
+        (error as NSError).localizedRecoverySuggestion
+    }
+
+    /// A localized message providing "help" text if the user requests help.
+    var helpAnchor: String? {
+        (error as NSError).helpAnchor
+    }
+}
+
+struct QueryResult {
+    /// The current unique ID of the results
+    var resultID: UUID? = nil
+    var resultCount: Int? = nil
     var resultTime: UInt? = nil
+    var vectors: [ArrowVector] = []
 }
 
 final class ParquetteDocument: ReferenceFileDocument {
@@ -610,9 +659,12 @@ struct ContentView: View, ParquetteCommands {
                 }
         }
         .navigationViewStyle(DoubleColumnNavigationViewStyle())
+//        .sheet(item: .constant(appState.errors.first), onDismiss: { appState.errors.removeFirst() }) { error in
+//            ErrorSheet(error: error)
+//        }
     }
-
 }
+
 
 extension UInt {
     var localizedString: String {
@@ -641,9 +693,8 @@ struct ParquetViewer: View {
 
     // registration_dttm, birthdate: thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: CDataInterface("The datatype \"Timestamp(Nanosecond, None)\" is still not supported in Rust implementation")', src/arrowz.rs:614:79
 
-    @State var sql = wip("select id, first_name, last_name, email, gender, ip_address, cc, country, salary, title, comments from data where first_name >= 'G'")
+    @SceneStorage("sql") var sql = "select 1"
     @Environment(\.font) var font
-    @State var rowCount: UInt = 0
 
     var body: some View {
         VStack {
@@ -656,7 +707,7 @@ struct ParquetViewer: View {
                 .menuButtonStyle(PullDownMenuButtonStyle())
                 .frame(idealWidth: 80)
 
-                TextField(wip("SQL"), text: $sql, onCommit: performQuery)
+                TextField(loc("SQL"), text: $sql, onCommit: performQuery)
                     .font(Font.custom("Menlo", size: 15, relativeTo: .body))
                     .layoutPriority(1)
 
@@ -672,27 +723,21 @@ struct ParquetViewer: View {
         dbg("performQuery")
         let start = now()
         let ctx = document.ctx
-        let win = NSDocumentController.shared.currentDocument?.windowForSheet
 
         appState.result.resultCount = nil
         appState.result.resultTime = 0
 
-        appState.performOperation {
-            do {
-                if let frame = try ctx.query(sql: sql) {
-                    let results = try frame.collectionCount()
+        appState.attempt(async: appState.useAsyncQuery) {
+            if let frame = try ctx.query(sql: sql) {
+                let results = try frame.collectVector(index: wip(0)) // need a way to get multiple columns
 
-                    onmain {
-                        self.rowCount = .init(results)
-                        let duration = start.millisFrom()
-                        dbg("received \(self.rowCount) results in \(duration)ms")
-                        appState.result.resultCount = self.rowCount
-                        appState.result.resultTime = duration
-                    }
-                }
-            } catch {
                 onmain {
-                    win?.presentError(error)
+                    let duration = start.millisFrom()
+                    appState.result.resultCount = results.bufferLength
+                    appState.result.vectors = [results]
+                    appState.result.resultTime = duration
+                    appState.result.resultID = .init()
+                    dbg("received \(appState.result.vectors.count) columns with \(appState.result.resultCount ?? -1) elements in \(appState.result.resultTime ?? 0)ms")
                 }
             }
         }
@@ -722,6 +767,51 @@ extension NSControl.ControlSize {
         NSFont.systemFontSize(for: self)
     }
 }
+
+private final class ArrowTableColumn : NSTableColumn {
+    let vector: ArrowVector
+
+    init(id: String, vector: ArrowVector) {
+        self.vector = vector
+        super.init(identifier: .init(id))
+    }
+
+    required init(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func objectValue(at index: Int) -> NSObject? {
+        do {
+            switch vector.dataType {
+            case .utf8:
+                return try String.BufferView(vector: vector)[index] as NSString?
+            case .int8:
+                return try Int8.BufferView(vector: vector)[index] as NSNumber?
+            case .int16:
+                return try Int16.BufferView(vector: vector)[index] as NSNumber?
+            case .int32:
+                return try Int32.BufferView(vector: vector)[index] as NSNumber?
+            case .int64:
+                return try Int64.BufferView(vector: vector)[index] as NSNumber?
+            case .uint8:
+                return try UInt8.BufferView(vector: vector)[index] as NSNumber?
+            case .uint16:
+                return try UInt16.BufferView(vector: vector)[index] as NSNumber?
+            case .uint32:
+                return try UInt32.BufferView(vector: vector)[index] as NSNumber?
+            case .uint64:
+                return try UInt64.BufferView(vector: vector)[index] as NSNumber?
+
+            default:
+                throw SwiftArrowError.unsupportedDataType(vector.dataType)
+            }
+        } catch {
+            dbg("error accessing index", index, error.localizedDescription)
+            return loc("ERROR") as NSString
+        }
+    }
+}
+
 
 struct DataTableView : NSViewRepresentable {
     @Environment(\.controlSize) var controlSize
@@ -763,29 +853,61 @@ struct DataTableView : NSViewRepresentable {
     }
 
     func updateNSView(_ view: NSViewType, context: Context) {
-        let tableView = view.documentView as! NSTableView
+        guard let tableView = view.documentView as? NSTableView else {
+            fatalError("document view should have been a table")
+        }
 
-        if tableView.tableColumns.isEmpty {
-            for i in 1...colcount {
+        func reloadColumns() {
+            let results = self.appState.result
+            let colCount = results.vectors.count
+
+            let font = NSFont.monospacedDigitSystemFont(ofSize: controlSize.controlSize.systemFontSize, weight: .light)
+
+            // clear and re-load; we could alternatively diff it and move columns around for similar queries…
+            for col in tableView.tableColumns.reversed() {
+                tableView.removeTableColumn(col)
+            }
+
+            for i in 0..<colCount {
                 let id = "C\(i)"
 
-                let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(id))
-                col.title = "Column \(i)"
-                col.sortDescriptorPrototype = NSSortDescriptor(key: wip(id), ascending: true)
+                let vec = results.vectors[i]
+
+                let col = ArrowTableColumn(id: id, vector: vec)
+                col.title = wip("Column \(i)") // TODO: extract name from column
+
+                // col.sortDescriptorPrototype = NSSortDescriptor(key: wip(id), ascending: true)
 
                 col.isEditable = false
                 col.isHidden = false
                 col.headerCell.isEnabled = true
 
-                (col.dataCell as? NSCell)?.font = NSFont.monospacedDigitSystemFont(ofSize: controlSize.controlSize.systemFontSize, weight: .light)
+                if let dataCell = col.dataCell as? NSCell {
+                    switch vec.dataType {
+                    case .utf8, .utf8Large:
+                        dataCell.formatter = nil // just strings
+                        dataCell.alignment = .left
+                    case .int8, .int16, .int32, .int64, .uint8, .uint16, .uint32, .uint64:
+                        dataCell.formatter = NumberFormatter()
+                        dataCell.alignment = .right
+                    case .float16, .float32, .float64:
+                        dataCell.formatter = NumberFormatter()
+                        dataCell.alignment = .right
+                    default:
+                        dataCell.alignment = .center
+                        ; // no formatter
+                    }
+                    dataCell.font = font
+                }
 
                 tableView.addTableColumn(col)
             }
         }
 
-        if context.coordinator.rowCount != self.appState.result.resultCount {
-            context.coordinator.rowCount = self.appState.result.resultCount
-            dbg("reloading", context.coordinator.rowCount)
+        if context.coordinator.result?.resultID != self.appState.result.resultID {
+            reloadColumns()
+            context.coordinator.result = self.appState.result
+            dbg("reloading table with", context.coordinator.result?.resultCount, "rows")
             context.coordinator.tableView.reloadData()
         }
     }
@@ -801,14 +923,14 @@ struct DataTableView : NSViewRepresentable {
 
     final class Coordinator : NSObject, NSTableViewDelegate, NSTableViewDataSource {
         let tableView: NSTableView = NSTableView()
-        var rowCount: UInt? = nil
+        var result: QueryResult? = nil
 
         func tableView(_ tableView: NSTableView, objectValueFor tableColumn: NSTableColumn?, row: Int) -> Any? {
-            wip("\(tableColumn?.identifier.rawValue ?? "") \(row)")
+            (tableColumn as? ArrowTableColumn)?.objectValue(at: row)
         }
 
         func numberOfRows(in tableView: NSTableView) -> Int {
-            Int(rowCount ?? 0)
+            result?.resultCount ?? 0
         }
 
         func tableView(_ tableView: NSTableView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {

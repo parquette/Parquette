@@ -490,6 +490,15 @@ class SwiftArrowTests: XCTestCase {
     }
 }
 
+extension DFDataFrame {
+    /// Executes the DataFrame and returns the count
+    func collectionCount() throws -> Int {
+        try collectVector(index: 0).bufferLength
+        // try SwiftRustError.checking(datafusion_dataframe_collect_count(ptr))
+    }
+
+}
+
 
 #if canImport(XCTest)
 extension XCTestCase {

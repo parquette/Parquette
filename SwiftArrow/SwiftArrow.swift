@@ -16,6 +16,7 @@ public enum SwiftArrowError : Error {
     case nullsUnsupported
     case nullsInconsistent
     case emptyBuffer
+    case unsupportedDataType(ArrowDataType?)
     case wrongBufferCount(Int)
 }
 
@@ -52,8 +53,9 @@ func JSONToArrow(arrow: NSDictionary, JSONFile: URL, arrowFile: URL) throws -> D
     return arrowData
 }
 
-enum SwiftRustError : Error {
-    case generic(String?)
+struct SwiftRustError : LocalizedError {
+
+    var errorDescription: String?
 
     /// Passes the given value through the SwiftRust error checking
     static func checking<T>(_ value: T!) throws -> T! {
@@ -64,7 +66,7 @@ enum SwiftRustError : Error {
         defer { buffer.deallocate() }
 
         if last_error_message(buffer, errlen) != 0 {
-            throw Self.generic(String(validatingUTF8: buffer))
+            throw Self(errorDescription: String(validatingUTF8: buffer))
         }
 
         return value
@@ -191,15 +193,9 @@ public class DFDataFrame {
         DFDataFrame(ptr: try SwiftRustError.checking(datafusion_dataframe_limit(ptr, count)))
     }
 
-    /// Executes the DataFrame and returns the count
-    public func collectionCount() throws -> Int {
-        try collectVector(index: 0).bufferLength
-        // try SwiftRustError.checking(datafusion_dataframe_collect_count(ptr))
-    }
-
     /// Executes the DataFrame and returns the first column
     public func collectVector(index: UInt) throws -> ArrowVector {
-        ArrowVector(ffi: try SwiftRustError.checking(datafusion_dataframe_collect_vector(ptr, index)))
+        ArrowVector(ffi: try SwiftRustError.checking(datafusion_dataframe_collect_vector(ptr, index).pointee))
     }
 
 //    /// Executes the DataFrame and returns all the columns

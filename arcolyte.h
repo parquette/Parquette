@@ -133,8 +133,8 @@ void datafusion_arrow_destroy(ArrowArray *ptr);
 
 ExtArrowArray *datafusion_array_empty_create(void);
 
-struct ArrowVectorFFI datafusion_dataframe_collect_vector(struct DataFrameState *ptr,
-                                                          uintptr_t index);
+struct ArrowVectorFFI *datafusion_dataframe_collect_vector(struct DataFrameState *ptr,
+                                                           uintptr_t index);
 
 const FFI_ArrowArray *datafusion_array_array_get(ArrowArray array);
 
