@@ -200,7 +200,7 @@ class SwiftArrowTests: XCTestCase {
         // XCTAssertEqual(1, try ctx.query(sql: "SELECT NOW()")?.collectionCount()) // doesn't work
     }
 
-    func checkArrowType<T>(ctx: DFExecutionContext = DFExecutionContext(), _ type: ArrowDataType, sqlValue: String) throws -> [T?] {
+    func checkArrowType<T>(ctx: DFExecutionContext = DFExecutionContext(), _ type: ArrowDataType, sqlValue: String = "NULL", pqcol: String? = nil) throws -> [T?] {
         guard let sqlType = type.sqlTypes.first else {
             XCTFail("no SQL type")
             throw SwiftArrowError.general
@@ -210,7 +210,12 @@ class SwiftArrowTests: XCTestCase {
         // VALUES (1, 'one'), (2, 'two'), (3, 'three')
         // let sql = "VALUES (CAST (\(sqlValue) AS \(sqlType)))"
 
-        let sql = "select CAST (\(sqlValue) AS \(sqlType)) as COL"
+        let sql: String
+        if let pqcol = pqcol {
+            sql = "select \(pqcol) from parquet1"
+        } else {
+            sql = "select CAST (\(sqlValue) AS \(sqlType)) as COL"
+        }
 
         //dbg("executing", sql)
 
@@ -223,7 +228,7 @@ class SwiftArrowTests: XCTestCase {
 
         // “The number of children is a function of the data type, as described in the Columnar format specification.” http://arrow.apache.org/docs/format/Columnar.html#format-columnar
         XCTAssertEqual(type == .utf8 ? 3 : 2, vector.bufferCount)
-        XCTAssertEqual(1, vector.bufferLength)
+        // XCTAssertEqual(1, vector.bufferLength)
         XCTAssertEqual(0, vector.arrayChildCount)
         XCTAssertEqual(0, vector.offset)
         XCTAssertEqual(0, vector.flags)
@@ -237,14 +242,12 @@ class SwiftArrowTests: XCTestCase {
     }
 
     func testFusionDataTypes() throws {
-        let ctx = DFExecutionContext()
+        let ctx = try loadedContext(parquet: 1...1)
 
-//        try checkArrowType(.int16, sqlValue: "1")
-
-        // 0x000060200000ec30
-        // 11=0x000060200000cc30
-        // 12=0x000060200000dc30
-
+        // check data columns
+        let _ = try results { _ in
+            XCTAssertEqual(Array<Int32>(1...1_000), try checkArrowType(ctx: ctx, .int32, pqcol: "id"))
+        }
 
         let _ = try results { _ in
             XCTAssertEqual([Int16?.none], try checkArrowType(ctx: ctx, .int16, sqlValue: "NULL"))

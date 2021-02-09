@@ -328,30 +328,18 @@ public final class ArrowVector {
         let capacity = Int(array.length + array.offset)
         assert(index <= capacity, "index must be less than capacity")
 
-        let nullBuffer = buffers[0]
-
-        assert((nullBuffer == nil) == (nullCount == 0))
-
-        guard let targetBuffer: UnsafeRawPointer = buffers[index + 1] else {
+        guard let targetPtr: UnsafeRawPointer = buffers[index + 1] else {
             throw SwiftArrowError.emptyBuffer
         }
 
-        // dbg("targetBuffer", targetBuffer.debugDescription)
+        let boundTarget = targetPtr.bindMemory(to: T.self, capacity: capacity)
+        let boundBuffer = UnsafeBufferPointer(start: boundTarget, count: capacity)
 
-        let ptr = targetBuffer.bindMemory(to: T.self, capacity: capacity)
-
-        // dbg("#### ptr", "\(ptr.pointee)")
-
-//        for item in ptr.pointee {
-//            dbg("#### ptr", "\(item)")
-//        }
-
-        #warning("FIXME: we only handle the first element of the array")
-        if !isValid(at: 0) {
-            return try handler([nil])
-        } else {
-            return try handler([ptr.pointee])
+        #warning("FIXME: use a lazy collection rather than copying")
+        let values = Array(boundBuffer).enumerated().map { index, element in
+            isValid(at: index) ? element : nil
         }
+        return try handler(values)
     }
     
     final class Int8View : ArrowBufferView {
