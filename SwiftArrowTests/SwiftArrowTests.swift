@@ -206,6 +206,10 @@ class SwiftArrowTests: XCTestCase {
             throw SwiftArrowError.general
         }
 
+        // "VALUES" syntax doesn't seem to work
+        // VALUES (1, 'one'), (2, 'two'), (3, 'three')
+        // let sql = "VALUES (CAST (\(sqlValue) AS \(sqlType)))"
+
         let sql = "select CAST (\(sqlValue) AS \(sqlType)) as COL"
 
         //dbg("executing", sql)
@@ -241,17 +245,19 @@ class SwiftArrowTests: XCTestCase {
         // 11=0x000060200000cc30
         // 12=0x000060200000dc30
 
-        try results { _ in
+        XCTAssertEqual([nil] as [Int16?], try checkArrowType(ctx: ctx, .int16, sqlValue: "NULL"))
+
+        let _ = try results { _ in
             let i16 = Int16.random(in: (.min)...(.max))
             XCTAssertEqual([i16], try checkArrowType(ctx: ctx, .int16, sqlValue: "\(i16)"))
         }
 
-        try results { _ in
+        let _ = try results { _ in
             let i32 = Int32.random(in: (.min)...(.max))
             XCTAssertEqual([i32], try checkArrowType(ctx: ctx, .int32, sqlValue: "\(i32)"))
         }
 
-        try results { _ in
+        let _ = try results { _ in
             let i64 = Int64.random(in: (.min)...(.max))
             XCTAssertEqual([i64], try checkArrowType(ctx: ctx, .int64, sqlValue: "\(i64)"))
         }
@@ -265,9 +271,9 @@ class SwiftArrowTests: XCTestCase {
 //        try checkArrowType(.utf8, sqlValue: "'ABC'")
     }
 
-    func results<T>(count: Int = 1, block: (Int) throws -> T) throws -> [T] {
-        if count == 1 {
-            return [try block(0)]
+    func results<T>(count: Int = 99, concurrent: Bool = false, block: (Int) throws -> T) throws -> [T] {
+        if count == 1 || !concurrent {
+            return try (0..<count).map(block)
         }
 
         var results: [Result<T, Error>] = []

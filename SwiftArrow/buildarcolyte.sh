@@ -8,6 +8,10 @@ export MACOSX_DEPLOYMENT_TARGET=10.12
 
 export CARGO_TARGET_DIR=${TARGET_BUILD_DIR:-"target"}
 
+# enabling SIMD works for Intel, but fails on AARM:
+# “'+sse4.2' is not a recognized feature for this target (ignoring feature)”
+# export RUSTFLAGS="-C target-feature=+sse4.2"
+
 echo "Building ${CARGO_MODE} arcolyte into ${CARGO_TARGET_DIR}…"
 
 # rustup should be installed in ~/.cargo/bin with `brew install rustup`
