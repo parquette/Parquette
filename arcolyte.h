@@ -15,10 +15,10 @@ typedef struct SerdePoint {
   int32_t y;
 } SerdePoint;
 
-typedef struct ArrowSchemaArray {
+typedef struct ArrowVectorFFI {
   const FFI_ArrowArray *array;
   const FFI_ArrowSchema *schema;
-} ArrowSchemaArray;
+} ArrowVectorFFI;
 
 typedef ArrowArray ExtArrowArray;
 
@@ -98,7 +98,7 @@ void rust_hello_free(char *s);
 
 void load_arrow_file(char *fname);
 
-struct ArrowSchemaArray arrow_array_ffi_roundtrip(const struct ArrowSchemaArray *arrow);
+struct ArrowVectorFFI arrow_array_ffi_roundtrip(const struct ArrowVectorFFI *arrow);
 
 void arrow_array_ffi_arg_param_demo(FFI_ArrowArray buf, int64_t param);
 
@@ -133,8 +133,8 @@ void datafusion_arrow_destroy(ArrowArray *ptr);
 
 ExtArrowArray *datafusion_array_empty_create(void);
 
-struct ArrowSchemaArray datafusion_dataframe_collect_array(struct DataFrameState *ptr,
-                                                           uintptr_t index);
+struct ArrowVectorFFI datafusion_dataframe_collect_vector(struct DataFrameState *ptr,
+                                                          uintptr_t index);
 
 const FFI_ArrowArray *datafusion_array_array_get(ArrowArray array);
 

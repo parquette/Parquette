@@ -175,29 +175,109 @@ class SwiftArrowTests: XCTestCase {
 
         XCTAssertEqual(1, try df.collectionCount())
 
-        let schemaArray: ArrowSchemaArray = try df.arrayAt(index: 0)
+        let schemaArray: ArrowVector = try df.collectVector(index: 0)
         // dbg(schemaArray.array.debugDescription)
 
-        XCTAssertEqual(schemaArray.array.pointee.n_buffers, type == .utf8 ? 3 : 2)
-        XCTAssertEqual(schemaArray.array.pointee.length, 1)
-        XCTAssertEqual(schemaArray.array.pointee.null_count, 0)
-        XCTAssertEqual(schemaArray.array.pointee.offset, 0)
-        XCTAssertEqual(schemaArray.array.pointee.n_children, 0)
+        XCTAssertEqual(schemaArray.array.n_buffers, type == .utf8 ? 3 : 2)
+        XCTAssertEqual(schemaArray.array.length, 1)
+        XCTAssertEqual(schemaArray.array.null_count, 0)
+        XCTAssertEqual(schemaArray.array.offset, 0)
+        XCTAssertEqual(schemaArray.array.n_children, 0)
 
-        XCTAssertEqual(schemaArray.schema.pointee.n_children, 0)
+        XCTAssertEqual(schemaArray.schema.n_children, 0)
 
-        if let fmt = schemaArray.schema.pointee.format {
+        if let fmt = schemaArray.schema.format {
             XCTAssertEqual(type, ArrowDataType(String(cString: fmt)))
         }
 
-        if let md = schemaArray.schema.pointee.metadata {
+        if let md = schemaArray.schema.metadata {
             XCTAssertEqual(String(cString: md), "")
         }
-        if let nm = schemaArray.schema.pointee.name {
+        if let nm = schemaArray.schema.name {
             XCTAssertEqual(String(cString: nm), "")
         }
 
         // XCTAssertEqual(1, try ctx.query(sql: "SELECT NOW()")?.collectionCount()) // doesn't work
+    }
+
+    func checkArrowType<T>(ctx: DFExecutionContext = DFExecutionContext(), _ type: ArrowDataType, sqlValue: String) throws -> [T] {
+        guard let sqlType = type.sqlTypes.first else {
+            XCTFail("no SQL type")
+            throw SwiftArrowError.general
+        }
+
+        let sql = "select CAST (\(sqlValue) AS \(sqlType)) as COL"
+
+        //dbg("executing", sql)
+
+        guard let df = try ctx.query(sql: sql) else {
+            XCTFail("no return frame")
+            throw SwiftArrowError.general
+        }
+
+        let vector = try df.collectVector(index: 0)
+
+        // “The number of children is a function of the data type, as described in the Columnar format specification.” http://arrow.apache.org/docs/format/Columnar.html#format-columnar
+        XCTAssertEqual(type == .utf8 ? 3 : 2, vector.bufferCount)
+        XCTAssertEqual(1, vector.bufferLength)
+        XCTAssertEqual(0, vector.arrayChildCount)
+        XCTAssertEqual(0, vector.offset)
+        XCTAssertEqual(0, vector.flags)
+        XCTAssertEqual(nil, vector.name)
+        XCTAssertEqual(type, vector.format)
+        XCTAssertEqual(nil, vector.metadata)
+
+        return try vector.withBufferData(at: 0) { (array: [T]) in
+            array
+        }
+    }
+
+    func testFusionDataTypes() throws {
+        let ctx = DFExecutionContext()
+
+//        try checkArrowType(.int16, sqlValue: "1")
+
+        // 0x000060200000ec30
+        // 11=0x000060200000cc30
+        // 12=0x000060200000dc30
+
+        try results { _ in
+            let i16 = Int16.random(in: (.min)...(.max))
+            XCTAssertEqual([i16], try checkArrowType(ctx: ctx, .int16, sqlValue: "\(i16)"))
+        }
+
+        try results { _ in
+            let i32 = Int32.random(in: (.min)...(.max))
+            XCTAssertEqual([i32], try checkArrowType(ctx: ctx, .int32, sqlValue: "\(i32)"))
+        }
+
+        try results { _ in
+            let i64 = Int64.random(in: (.min)...(.max))
+            XCTAssertEqual([i64], try checkArrowType(ctx: ctx, .int64, sqlValue: "\(i64)"))
+        }
+
+        // XCTAssertEqual(["ABC"].map(\.utf8CString), try checkArrowType(.utf8, sqlValue: "'ABC'"))
+
+//        try checkArrowType(.int64, sqlValue: "1")
+//        // try checkArrowType(.float32, sqlValue: "1")
+//        // try checkArrowType(.float64, sqlValue: "1")
+//        try checkArrowType(.boolean, sqlValue: "TRUE")
+//        try checkArrowType(.utf8, sqlValue: "'ABC'")
+    }
+
+    func results<T>(count: Int = 1, block: (Int) throws -> T) throws -> [T] {
+        if count == 1 {
+            return [try block(0)]
+        }
+
+        var results: [Result<T, Error>] = []
+        DispatchQueue.concurrentPerform(iterations: count) { i in
+            results.append(Result {
+                try block(i)
+            })
+        }
+
+        return try results.map { try $0.get() }
     }
 
     /// Creates a context with various sample data registered.
@@ -219,6 +299,13 @@ class SwiftArrowTests: XCTestCase {
         return ctx
     }
 
+    func testJoinQueries() throws {
+        let ctx = try loadedContext(csv: 3...4)
+        XCTAssertEqual(1_000, try ctx.query(sql: "SELECT * FROM csv3")?.collectionCount())
+        XCTAssertEqual(1_000, try ctx.query(sql: "SELECT * FROM csv4")?.collectionCount())
+        // XCTAssertEqual(1_000 * 1_000, try ctx.query(sql: "SELECT * FROM csv3, csv4")?.collectionCount()) // not yet, apparently…
+    }
+
     func testCSVQueries() throws {
         let ctx = try loadedContext(csv: 1...5, parquet: 1...5)
 
@@ -231,19 +318,19 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(25, try ctx.query(sql: "SELECT * FROM csv1 WHERE email LIKE '%@___.gov'")?.collectionCount()) // e.g., epa.gov
 
         do {
-            guard let array = try ctx.query(sql: "SELECT first_name FROM csv1 WHERE first_name = 'Todd'")?.arrayAt(index: 0) else {
+            guard let array = try ctx.query(sql: "SELECT first_name FROM csv1 WHERE first_name = 'Todd'")?.collectVector(index: 0) else {
                 return XCTFail("could not execute query")
             }
-            XCTAssertEqual(ArrowDataType.utf8, array.schema.pointee.dataType)
+            XCTAssertEqual(ArrowDataType.utf8, array.schema.dataType)
         }
     }
 
     func checkColumnType(_ ctx: DFExecutionContext, column: String, dataType: ArrowDataType, table: String) throws {
-        guard let array = try ctx.query(sql: "SELECT \(column) FROM \(table)")?.arrayAt(index: 0) else {
+        guard let array = try ctx.query(sql: "SELECT \(column) FROM \(table)")?.collectVector(index: 0) else {
             return XCTFail("could not execute query")
         }
 
-        XCTAssertEqual(dataType, array.schema.pointee.dataType)
+        XCTAssertEqual(dataType, array.schema.dataType)
     }
 
     func testCSVDataTypes() throws {

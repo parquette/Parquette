@@ -86,14 +86,18 @@ struct ParquetteApp: App {
 
 public enum ParquetteError : LocalizedError {
     case writeNotSupported
-    case unknownContentType(UTType)
+    case unsupportedContentType(UTType)
+    case readNoFilename
+
 
     public var failureReason: String? {
         switch self {
         case .writeNotSupported:
             return loc("Write is not supported")
-        case .unknownContentType:
-            return loc("Unknown content type")
+        case .unsupportedContentType:
+            return loc("Unsupported content type")
+        case .readNoFilename:
+            return loc("No filename for reading")
         }
     }
 
@@ -101,8 +105,10 @@ public enum ParquetteError : LocalizedError {
         switch self {
         case .writeNotSupported:
             return loc("Parquette currently only supports reading files")
-        case .unknownContentType:
-            return loc("Save as a supported content type")
+        case .unsupportedContentType:
+            return loc("Parquette supports reading csv and parquet files")
+        case .readNoFilename:
+            return loc("Parquette can only read local files")
         }
     }
 }
@@ -114,6 +120,15 @@ extension UTType {
 
     static var parquette_csv: UTType {
         UTType(importedAs: "net.parquette.format.csv")
+    }
+
+    /// For types that we natively support, return the file extension
+    var parquetteExtension: String? {
+        switch self {
+        case .parquette_csv: return "csv"
+        case .parquette_parquet: return "parquet"
+        default: return nil
+        }
     }
 }
 
@@ -167,11 +182,13 @@ final class ParquetteDocument: ReferenceFileDocument {
 
     required init(configuration: ReadConfiguration) throws {
 
-        guard let filename = configuration.file.filename else {
-            throw CocoaError(.fileReadCorruptFile)
+        guard let ext = configuration.contentType.parquetteExtension else {
+            throw ParquetteError.unsupportedContentType(configuration.contentType)
         }
 
-        //        let url: URL! = nil
+        guard let filename = configuration.file.filename else {
+            throw ParquetteError.readNoFilename
+        }
 
         dbg("opening file", filename)
 
@@ -184,11 +201,11 @@ final class ParquetteDocument: ReferenceFileDocument {
 
         // we need to operate on a physical file, and NSFileWrapper doens't expose the underlying URL, so we cheat by copying the file into a temporary file and opening that one
         let tmpURL = URL(fileURLWithPath: tmpFile, relativeTo: URL(fileURLWithPath: NSTemporaryDirectory()))
-            .appendingPathExtension("parquet")
+            .appendingPathExtension(ext)
 
         try configuration.file.write(to: tmpURL, options: .withNameUpdating, originalContentsURL: nil)
 
-        dbg("### wrote to", tmpURL.absoluteString)
+        dbg("intermediate temporary file", tmpURL.description)
 
         switch configuration.contentType {
         case .parquette_parquet:
@@ -196,11 +213,8 @@ final class ParquetteDocument: ReferenceFileDocument {
         case .parquette_csv:
             try ctx.register(csv: tmpURL, tableName: tableName)
         default:
-            throw ParquetteError.unknownContentType(configuration.contentType)
+            throw ParquetteError.unsupportedContentType(configuration.contentType)
         }
-
-        dbg("### opened", tmpURL.absoluteString)
-
     }
 
     func snapshot(contentType: UTType) throws -> Void {
@@ -402,7 +416,6 @@ extension View {
         }
     }
 }
-
 
 struct SettingsView : View {
     @AppStorage("reopenDocuments") private var reopenDocuments = true

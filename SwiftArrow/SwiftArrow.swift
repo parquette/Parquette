@@ -8,7 +8,13 @@
 import Foundation
 
 public enum SwiftArrowError : Error {
+    case general
     case missingFileError(url: URL)
+    case missingPointer
+    case noBuffers
+    case noMultiBufferSupport
+    case nullsUnsupported
+    case emptyBuffer
 }
 
 /// Setup Rust logging. This can be called multiple times, from multiple threads.
@@ -63,8 +69,8 @@ enum SwiftRustError : Error {
     }
 }
 
-extension ArrowSchemaArray {
-    func roundTrip() -> ArrowSchemaArray {
+extension ArrowVectorFFI {
+    func roundTrip() -> ArrowVectorFFI {
         withUnsafePointer(to: self) {
             arrow_array_ffi_roundtrip($0)
         }
@@ -185,27 +191,178 @@ public class DFDataFrame {
 
     /// Executes the DataFrame and returns the count
     public func collectionCount() throws -> Int64 {
-        try arrayAt(index: 0).count
+        try collectVector(index: 0).bufferLength
         // try SwiftRustError.checking(datafusion_dataframe_collect_count(ptr))
     }
 
     /// Executes the DataFrame and returns the first column
-    public func arrayAt(index: UInt) throws -> ArrowSchemaArray {
-        try SwiftRustError.checking(datafusion_dataframe_collect_array(ptr, index))
+    public func collectVector(index: UInt) throws -> ArrowVector {
+        ArrowVector(ffi: try SwiftRustError.checking(datafusion_dataframe_collect_vector(ptr, index)))
     }
 
 //    /// Executes the DataFrame and returns all the columns
-//    public func collectedAerays() throws -> ArrowSchemaArray {
-//        try SwiftRustError.checking(datafusion_dataframe_collect_array(ptr, index))
+//    public func collectedAerays() throws -> ArrowVectorFFI {
+//        try SwiftRustError.checking(datafusion_dataframe_collect_vector(ptr, index))
 //    }
 }
 
-extension ArrowSchemaArray {
-    var count: Int64 {
-        array.pointee.length
+/// A wrapper for ArrowVectorFFI that manages deallocation, as per
+/// http://arrow.apache.org/docs/format/CDataInterface.html
+public final class ArrowVector {
+    @usableFromInline
+    let ffi: ArrowVectorFFI
+
+    fileprivate init(ffi: ArrowVectorFFI) {
+        self.ffi = ffi
+    }
+
+    deinit {
+        ffi.array.pointee.release(OpaquePointer(ffi.array))
+        ffi.schema.pointee.release(OpaquePointer(ffi.schema))
+    }
+
+    // MARK: Schema Functions
+
+    @usableFromInline var schema: FFI_ArrowSchema {
+        ffi.schema.pointee
+    }
+
+    @inlinable public var name: String? {
+        schema.name.flatMap(String.init(cString:))
+    }
+
+    @inlinable public var format: ArrowDataType? {
+        schema.format.flatMap(String.init(cString:)).flatMap(ArrowDataType.init(_:))
+    }
+
+    @inlinable public var metadata: String? {
+        schema.metadata.flatMap(String.init(cString:))
+    }
+
+    @inlinable public var schemaChildCount: Int64 {
+        schema.n_children
+    }
+
+    @inlinable public var flags: Int64 {
+        schema.flags
+    }
+
+    // MARK: Array Functions
+
+    @usableFromInline var array: FFI_ArrowArray {
+        ffi.array.pointee
+    }
+
+    /// The number of null items in the array. MAY be -1 if not yet computed.
+    @inlinable public var nullCount: Int64 {
+        array.null_count
+    }
+
+    /// The logical offset inside the array (i.e. the number of items from the physical start of the buffers). MUST be 0 or positive.
+    @inlinable public var offset: Int64 {
+        array.offset
+    }
+
+    /// The number of children this array has. The number of children is a function of the data type, as described in the Columnar format specification.
+    @inlinable public var arrayChildCount: Int64 {
+        array.n_children
+    }
+
+    /// The number of physical buffers backing this array. The number of buffers is a function of the data type, as described in the Columnar format specification.
+    @inlinable public var bufferCount: Int64 {
+        array.n_buffers
+    }
+
+    /// The logical length of the array (i.e. its number of items).
+    @inlinable public var bufferLength: Int64 {
+        array.length
+    }
+
+    @inlinable public func withBufferData<T, U>(at index: Int, handler: ([T]) throws -> U) throws -> U {
+
+//        guard let buffs: UnsafeMutablePointer<UnsafeRawPointer?> = array.buffers else {
+//            throw SwiftArrowError.missingPointer
+//        }
+
+        let bufferCount = array.n_buffers
+        if bufferCount <= 0 {
+            throw SwiftArrowError.noBuffers
+        }
+
+        if bufferCount != 2 {
+            #warning("TODO: handle multiple buffers (strings have 3)")
+            throw SwiftArrowError.noMultiBufferSupport
+        }
+
+        let buf: UnsafeMutablePointer<UnsafeRawPointer?>! = array.buffers
+
+        let buffers = UnsafeBufferPointer(start: buf, count: .init(bufferCount))
+
+        // dbg("array.buffers", bufferCount, buffers.debugDescription)
+
+        let capacity = Int(array.length + array.offset)
+        assert(index <= capacity, "index must be less than capacity")
+
+        let nullBuffer = buffers[0]
+        if nullBuffer != nil {
+            #warning("TODO: use the nulls bitfield")
+            throw SwiftArrowError.nullsUnsupported
+        }
+
+        guard let targetBuffer: UnsafeRawPointer = buffers[index + 1] else {
+            throw SwiftArrowError.emptyBuffer
+        }
+
+        // dbg("targetBuffer", targetBuffer.debugDescription)
+
+        let ptr = targetBuffer.bindMemory(to: T.self, capacity: capacity)
+
+        // dbg("#### ptr", "\(ptr.pointee)")
+
+//        for item in ptr.pointee {
+//            dbg("#### ptr", "\(item)")
+//        }
+
+        #warning("FIXME: only first element of the array")
+        return try handler([ptr.pointee])
+    }
+    
+    final class Int8View : ArrowBufferView {
+        let vector: ArrowVector
+
+        init(vector: ArrowVector) {
+            self.vector = vector
+        }
+
+        subscript(position: Int64) -> Slice<ArrowVector.Int8View> {
+            fatalError("TODO")
+        }
+
+        typealias DataType = Int8
+        var dataType: ArrowDataType { .int8 }
+
+        func element(at index: Int64) -> DataType {
+            #warning("TODO")
+            fatalError("TODO")
+        }
+
+        public var endIndex: Int64 {
+            vector.bufferLength
+        }
+
     }
 }
 
+public protocol ArrowBufferView : Collection {
+    associatedtype DataType
+    var dataType: ArrowDataType { get }
+    func element(at index: Int64) -> DataType
+}
+
+extension ArrowBufferView {
+    public var startIndex: Int64 { 0 }
+    public func index(after i: Int64) -> Int64 { i + 1 }
+}
 
 //public class DFArray {
 //    let ptr: OpaquePointer
@@ -286,7 +443,6 @@ public enum ArrowDataType {
     case utf8Large
     case date32
     case date64
-    case time32
     case time64
 
     public init?(_ rawValue: String) {
@@ -294,7 +450,7 @@ public enum ArrowDataType {
         case "n": self = .null
         case "b": self = .boolean
         case "c": self = .int8
-        case "C": self = .int8
+        case "C": self = .uint8
         case "s": self = .int16
         case "S": self = .uint16
         case "i": self = .int32
@@ -327,6 +483,31 @@ public enum ArrowDataType {
         //time64 [nanoseconds]
 
         default: return nil
+        }
+    }
+
+    var formatCode: String {
+        switch self {
+        case .null: return "n"
+        case .boolean: return "b"
+        case .int8: return "c"
+        case .uint8: return "C"
+        case .int16: return "s"
+        case .uint16: return "S"
+        case .int32: return "i"
+        case .uint32: return "I"
+        case .int64: return "l"
+        case .uint64: return "L"
+        case .float16: return "e"
+        case .float32: return "f"
+        case .float64: return "g"
+        case .binary: return "z"
+        case .binaryLarge: return "Z"
+        case .utf8: return "u"
+        case .utf8Large: return "U"
+        case .date32: return "tdD"
+        case .date64: return "tdm"
+        case .time64: return "ttu"
         }
     }
 
