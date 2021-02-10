@@ -171,6 +171,22 @@ public class DFExecutionContext {
     public func query(sql: String) throws -> DFDataFrame? {
         try DFDataFrame(checking: datafusion_context_execute_sql(ptr, sql))
     }
+
+    /// Validates a SQL query against the context
+    @discardableResult public func validate(sql: String) throws -> Bool? {
+        try SwiftRustError.checking(datafusion_context_check_sql(ptr, sql))?.pointee
+    }
+
+    /// Validates a SQL query against the context
+    public func validationMessage(sql: String) -> String? {
+        do {
+            try validate(sql: sql)
+            return nil
+        } catch {
+            return error.localizedDescription
+        }
+    }
+
 }
 
 public class DFDataFrame {
@@ -195,7 +211,7 @@ public class DFDataFrame {
 
     /// Executes the DataFrame and returns the first column
     public func collectVector(index: UInt) throws -> ArrowVector {
-        ArrowVector(ffi: try SwiftRustError.checking(datafusion_dataframe_collect_vector(ptr, index).pointee))
+        ArrowVector(ffi: try SwiftRustError.checking(datafusion_dataframe_collect_vector(ptr, index)).pointee)
     }
 
 //    /// Executes the DataFrame and returns all the columns

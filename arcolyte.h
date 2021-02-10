@@ -117,6 +117,8 @@ void datafusion_dataframe_destroy(struct DataFrameState *ptr);
 /**
  * E.g.: `"SELECT a, MIN(b) FROM example GROUP BY a LIMIT 100"`
  */
+bool *datafusion_context_check_sql(ExecutionContext *ptr, const char *sql);
+
 struct DataFrameState *datafusion_context_execute_sql(ExecutionContext *ptr, const char *sql);
 
 /**

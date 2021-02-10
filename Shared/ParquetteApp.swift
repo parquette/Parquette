@@ -694,28 +694,47 @@ struct ParquetViewer: View {
     // registration_dttm, birthdate: thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: CDataInterface("The datatype \"Timestamp(Nanosecond, None)\" is still not supported in Rust implementation")', src/arrowz.rs:614:79
 
     @SceneStorage("sql") var sql = "select 1"
+    @SceneStorage("sqlVisible") var sqlVisible = true
+
     @Environment(\.font) var font
 
     var body: some View {
-        VStack {
+        VSplitView {
             DataTableView()
 
-            HStack {
+            GroupBox(label: HStack(alignment: .firstTextBaseline) {
+                ActionButton(title: loc("Toggle SQL View"), icon: "rectangle.bottomthird.inset.fill", render: .template) {
+                    sqlVisible.toggle()
+                }
+                .foregroundColor(sqlVisible ? .accentColor : .secondary)
+                .buttonStyle(PlainButtonStyle())
+                .labelStyle(IconOnlyLabelStyle())
+
                 MenuButton(loc("SQL:")) {
                     ActionButton(title: loc("Execute"), icon: "play", action: performQuery)
                 }
                 .menuButtonStyle(PullDownMenuButtonStyle())
-                .frame(idealWidth: 80)
+                .frame(width: 80)
 
-                TextField(loc("SQL"), text: $sql, onCommit: performQuery)
-                    .font(Font.custom("Menlo", size: 15, relativeTo: .body))
-                    .layoutPriority(1)
+                Spacer()
+                Text(document.ctx.validationMessage(sql: sql) ?? "")
+                Spacer()
 
                 ActionButton(title: loc("Execute"), icon: "play.fill", action: performQuery)
+                    .help(loc("Executed the query (CMD-Return)"))
                     .keyboardShortcut(.return, modifiers: [.command])
                     .labelStyle(IconOnlyLabelStyle()) // TODO: change to menu comment shortcut
             }
-            .padding()
+            .padding()) {
+                if sqlVisible {
+                    TextEditor(text: $sql)
+                        .font(Font.custom("Menlo", size: 15, relativeTo: .body).bold())
+                        .foregroundColor((try? document.ctx.validate(sql: sql)) == nil ? Color.orange : Color.primary)
+                        .frame(idealHeight: 100)
+                        .cornerRadius(5)
+                        .padding()
+                }
+            }
         }
     }
 
