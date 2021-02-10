@@ -23,9 +23,10 @@ jobs:
       - name: "Import Certificate: Distribution"
         uses: devbotsxyz/import-signing-certificate@main
         with:
+          keychain-password: "XXX"  
           certificate-data: ${{ secrets.DISTRIBUTION_CERTIFICATE_DATA }}
           certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
-          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+          keychain-passwordXXX: ${{ secrets.KEYCHAIN_PASSWORD }}
 
 
       - name: Tests
