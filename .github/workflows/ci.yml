@@ -39,10 +39,10 @@ jobs:
           certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
           keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
 
-      - name: "Export & Sign Release Build"
-        uses: devbotsxyz/xcode-export-archive@master
-        with:
-          scheme: "Parquette"
+      #- name: "Export & Sign Release Build"
+      #  uses: devbotsxyz/xcode-export-archive@master
+      #  with:
+      #    scheme: "Parquette"
 
       - name: "Export & Sign Release Build"
         run: 
