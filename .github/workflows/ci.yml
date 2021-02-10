@@ -6,8 +6,8 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # run at noon & midnight
-    - cron:  '0 0,12 * * *'
+    # run at 6AM & 6PM UTC
+    - cron:  '0 6,18 * * *'
 
 
 jobs:
