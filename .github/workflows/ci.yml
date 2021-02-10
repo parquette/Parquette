@@ -9,7 +9,6 @@ on:
     # run at 6AM & 6PM UTC
     - cron:  '0 6,18 * * *'
 
-
 jobs:
   Build:
     runs-on: macos-latest
@@ -21,11 +20,11 @@ jobs:
         with:
           submodules: true
 
-      #- name: SwiftArrow Tests
-      #  run: xcodebuild test -scheme SwiftArrow
+      - name: SwiftArrow Tests
+        run: xcodebuild test -scheme SwiftArrow
 
-      #- name: Parquette Tests
-      #  run: xcodebuild test -scheme Parquette
+      - name: Parquette Tests
+        run: xcodebuild test -scheme Parquette
 
       - name: "Archive"
         uses: devbotsxyz/xcode-archive@v1
@@ -39,6 +38,7 @@ jobs:
           certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
           keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
 
+      # seems to be missing the teamID, so we just do it manually below
       #- name: "Export & Sign Release Build"
       #  uses: devbotsxyz/xcode-export-archive@master
       #  with:
@@ -69,6 +69,7 @@ jobs:
 
       - name: Release app
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: Parquette.zip
         env:
