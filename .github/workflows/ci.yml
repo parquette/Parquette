@@ -9,7 +9,6 @@ on:
     # run at 6AM & 6PM UTC
     - cron:  '0 6,18 * * *'
 
-
 jobs:
   Build:
     runs-on: macos-latest
@@ -24,8 +23,8 @@ jobs:
       - name: SwiftArrow Tests
         run: xcodebuild test -scheme SwiftArrow
 
-      #- name: Parquette Tests
-      #  run: xcodebuild test -scheme Parquette
+      - name: Parquette Tests
+        run: xcodebuild test -scheme Parquette
 
       - name: "Archive"
         uses: devbotsxyz/xcode-archive@v1
@@ -39,14 +38,18 @@ jobs:
           certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
           keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
 
+      # seems to be missing the teamID, so we just do it manually below
       #- name: "Export & Sign Release Build"
       #  uses: devbotsxyz/xcode-export-archive@master
       #  with:
       #    scheme: "Parquette"
 
-      - name: "Export & Sign Release Build"
+      - name: "Create exportOptions.plist"
         run: 
           echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>2HFBY6N8ZN</string></dict></plist>' > exportOptions.plist
+          
+      - name: "Export & Sign Release Build"
+        run: 
           xcodebuild -exportArchive -archivePath Parquette.xcarchive -exportPath Export -exportOptionsPlist exportOptions.plist 
 
       - name: "Notarize Release Build"
@@ -66,6 +69,7 @@ jobs:
 
       - name: Release app
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: Parquette.zip
         env:
