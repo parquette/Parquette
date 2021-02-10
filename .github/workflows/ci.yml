@@ -21,8 +21,8 @@ jobs:
         with:
           submodules: true
 
-      - name: SwiftArrow Tests
-        run: xcodebuild test -scheme SwiftArrow
+      #- name: SwiftArrow Tests
+      #  run: xcodebuild test -scheme SwiftArrow
 
       #- name: Parquette Tests
       #  run: xcodebuild test -scheme Parquette
@@ -44,9 +44,12 @@ jobs:
       #  with:
       #    scheme: "Parquette"
 
-      - name: "Export & Sign Release Build"
+      - name: "Create exportOptions.plist"
         run: 
           echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>2HFBY6N8ZN</string></dict></plist>' > exportOptions.plist
+          
+      - name: "Export & Sign Release Build"
+        run: 
           xcodebuild -exportArchive -archivePath Parquette.xcarchive -exportPath Export -exportOptionsPlist exportOptions.plist 
 
       - name: "Notarize Release Build"
