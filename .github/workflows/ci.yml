@@ -6,15 +6,15 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # run once at noon
-    - cron:  '0 12 * * *'
+    # run at noon & midnight
+    - cron:  '0 0,12 * * *'
 
 
 jobs:
   Build:
     runs-on: macos-latest
     environment: Signing
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - name: "Checkout Project"
         uses: actions/checkout@v2
