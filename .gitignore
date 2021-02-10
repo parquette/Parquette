@@ -2,6 +2,7 @@
 build/
 .build/
 DerivedData/
+Export/
 
 ## Various settings
 *.xcarchive
