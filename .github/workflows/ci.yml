@@ -21,13 +21,6 @@ jobs:
         with:
           submodules: true
 
-      - name: "Import Certificate: Distribution"
-        uses: devbotsxyz/import-signing-certificate@main
-        with:
-          certificate-data: ${{ secrets.DISTRIBUTION_CERTIFICATE_DATA }}
-          certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
-          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
-
       - name: SwiftArrow Tests
         run: xcodebuild test -scheme SwiftArrow
 
@@ -39,10 +32,22 @@ jobs:
         with:
           scheme: "Parquette"
 
+      - name: "Import Certificate: Distribution"
+        uses: devbotsxyz/import-signing-certificate@main
+        with:
+          certificate-data: ${{ secrets.DISTRIBUTION_CERTIFICATE_DATA }}
+          certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
+          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+
       - name: "Export & Sign Release Build"
         uses: devbotsxyz/xcode-export-archive@master
         with:
           scheme: "Parquette"
+
+      - name: "Export & Sign Release Build"
+        run: 
+          echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>2HFBY6N8ZN</string></dict></plist>' > exportOptions.plist
+          xcodebuild -exportArchive -archivePath Parquette.xcarchive -exportPath Export -exportOptionsPlist exportOptions.plist 
 
       - name: "Notarize Release Build"
         uses: devbotsxyz/xcode-notarize@v1
