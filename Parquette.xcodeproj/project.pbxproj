@@ -11,7 +11,6 @@
 		49175EDE25BF6139003E9FEF /* SwiftArrowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49175EDD25BF6139003E9FEF /* SwiftArrowTests.swift */; };
 		49175EE025BF6139003E9FEF /* SwiftArrow.h in Headers */ = {isa = PBXBuildFile; fileRef = 49175ED225BF6138003E9FEF /* SwiftArrow.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49175EFC25BF6267003E9FEF /* SwiftArrow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49175EFB25BF6267003E9FEF /* SwiftArrow.swift */; };
-		492E72B025CCBD57003C8D58 /* buildarcolyte.sh in Resources */ = {isa = PBXBuildFile; fileRef = 492E72AF25CCBD57003C8D58 /* buildarcolyte.sh */; };
 		492E72DC25CCC170003C8D58 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72DB25CCC170003C8D58 /* Tests_iOS.swift */; };
 		492E72E725CCC170003C8D58 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72E625CCC170003C8D58 /* Tests_macOS.swift */; };
 		492E72E925CCC170003C8D58 /* ParquetteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492E72C025CCC16D003C8D58 /* ParquetteApp.swift */; };
@@ -447,7 +446,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				492E72B025CCBD57003C8D58 /* buildarcolyte.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -126,8 +126,6 @@ struct DataFrameState *datafusion_context_execute_sql(ExecutionContext *ptr, con
  */
 struct DataFrameState *datafusion_dataframe_limit(struct DataFrameState *ptr, uintptr_t count);
 
-uintptr_t datafusion_dataframe_collect_count(struct DataFrameState *ptr);
-
 /**
  * Destroy an `ArrowArray` once you are done with it.
  */
