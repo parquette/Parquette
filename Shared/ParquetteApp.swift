@@ -21,16 +21,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-struct ContainerView : View, ParquetteCommands {
-    @ObservedObject var document: ParquetteDocument
-    @EnvironmentObject var appState: AppState
+struct ParquetteAppContentView : View, ParquetteCommands {
+    @StateObject var appState: AppState
     @AppStorage("theme") private var theme = AppTheme.system
     @AppStorage("controlSize") private var controlScale = ControlScale.regular
 
     var body: some View {
-        ContentView(document: document)
+        ContentView()
             .preferredColorScheme(theme.colorScheme)
-        //.controlSize(controlScale.controlSize)
+            .environmentObject(appState)
+            //.controlSize(controlScale.controlSize)
     }
 }
 
@@ -39,48 +39,31 @@ struct ParquetteApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     @SceneBuilder var body: some Scene {
-        DocumentGroup(newDocument: { ParquetteDocument() }) { file in
-            ContainerView(document: file.document)
-                .environmentObject(AppState())
+        Group {
+            DocumentGroup(viewing: ParquetteDocument.self, viewer: createAppContent)
+            DocumentGroup(newDocument: ParquetteDocument(), editor: createAppContent)
         }
-        //.windowToolbarStyle(DefaultWindowToolbarStyle())
-        //.windowToolbarStyle(ExpandedWindowToolbarStyle())
-        .windowToolbarStyle(UnifiedWindowToolbarStyle())
-        //.windowToolbarStyle(UnifiedCompactWindowToolbarStyle())
         .commands {
             SidebarCommands()
-
-            // TextEditingCommands()
-            // TextFormattingCommands()
-
             ToolbarCommands()
-
-            //            CommandGroup(before: CommandGroupPlacement.newItem) {
-            //                Button("before item") {
-            //                    dbg("before item")
-            //                }
-            //            }
-            //
-            //            CommandGroup(replacing: CommandGroupPlacement.appInfo) {
-            //                Button("Custom app info") {
-            //                    // show custom app info
-            //                }
-            //            }
-
-            //            performBookmarkButton()
-            //                .keyboardShortcut("d", modifiers: [.command])
-            //                .inCommandGroup(.pasteboard)
-
-            //            CommandMenu("First menu") {
-            //                Button("Print message") {
-            //                    dbg("Hello World!")
-            //                }.keyboardShortcut("p")
-            //            }
         }
 
         Settings {
             SettingsView()
         }
+    }
+
+    func createAppContent(fileConfig: FileDocumentConfiguration<ParquetteDocument>) -> some View {
+        ParquetteAppContentView(appState: AppState(config: fileConfig))
+            .withFileExporter()
+    }
+}
+
+extension View {
+    func withFileExporter() -> some View {
+        wip(self)
+            // TODO
+            // .fileExporter(isPresented: T##Binding<Bool>, documents: T##Collection, contentType: T##UTType, onCompletion: T##(Result<[URL], Error>) -> Void)
     }
 }
 
@@ -135,7 +118,21 @@ extension UTType {
 let asyncQueryDefault = "asyncQuery"
 let asyncQueryDefaultValue = false
 
-class AppState : ObservableObject {
+final class AppState : ObservableObject {
+    let ctx = DFExecutionContext()
+
+    @Published var config: FileDocumentConfiguration<ParquetteDocument>
+    @Published var result = QueryResult()
+
+    init(config: FileDocumentConfiguration<ParquetteDocument>) {
+        self.config = config
+        do {
+            try self.load(fileType: config.document.contentType, fileURL: config.fileURL)
+        } catch {
+            // how best to handle errors here?
+            dbg("error loading from file: \(config) error: \(wip(error))")
+        }
+    }
 
     var useAsyncQuery: Bool {
         UserDefaults.standard.object(forKey: asyncQueryDefault) == nil ? asyncQueryDefaultValue : UserDefaults.standard.bool(forKey: asyncQueryDefault)
@@ -148,12 +145,28 @@ class AppState : ObservableObject {
         return queue
     }()
 
-    @Published var result = QueryResult()
-
     /// The current stack of errors to present to the user
     //@Published var errors = Array<LocalError>()
 
-    init() {
+    @discardableResult func load(fileType: UTType, fileURL: URL?, tableName: String = "data") throws -> Bool {
+        dbg("creating with", config.fileURL?.absoluteString)
+        guard let fileURL = config.fileURL else {
+            return false
+        }
+
+        let accessing = fileURL.startAccessingSecurityScopedResource()
+        defer { if accessing { fileURL.stopAccessingSecurityScopedResource() } }
+
+        switch fileType {
+        case .parquette_parquet:
+            try ctx.register(parquet: fileURL, tableName: tableName)
+        case .parquette_csv:
+            try ctx.register(csv: fileURL, tableName: tableName)
+        default:
+            throw ParquetteError.unsupportedContentType(config.document.contentType)
+        }
+
+        return true
     }
 
     /// Performs the operation async or sync, depending on the default `asyncQuery` boolean
@@ -211,70 +224,51 @@ struct LocalError : LocalizedError, Identifiable {
     }
 }
 
+/// The result of a SQL query
 struct QueryResult {
-    /// The current unique ID of the results
+    /// The current unique ID of the results; new queries will always be assigned a new ID
     var resultID: UUID? = nil
-    var resultCount: Int? = nil
+
+    /// The amount of time the query took
     var resultTime: UInt? = nil
+
+    /// The number of results
+    var resultCount: Int? = nil
+
+    /// The actual results
     var vectors: [ArrowVector] = []
 }
 
-final class ParquetteDocument: ReferenceFileDocument {
+final class ParquetteDocument: FileDocument {
+    let contentType: UTType
     static var readableContentTypes: [UTType] { [.parquette_parquet, .parquette_csv] }
-    static var writableContentTypes: [UTType] { [] }
-
-    let ctx = DFExecutionContext()
-    let tableName = "data"
 
     init() {
+        self.contentType = .parquette_parquet
     }
 
     required init(configuration: ReadConfiguration) throws {
-
         guard let ext = configuration.contentType.parquetteExtension else {
             throw ParquetteError.unsupportedContentType(configuration.contentType)
         }
+        self.contentType = configuration.contentType
+    }
 
-        guard let filename = configuration.file.filename else {
-            throw ParquetteError.readNoFilename
-        }
+    static var writableContentTypes: [UTType] { wip([]) } // TODO: export to CSV?
 
-        dbg("opening file", filename)
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        dbg(configuration.contentType.debugDescription)
 
-        //        let doc = wip(NSDocumentController.shared.currentDirectory)
-        //        dbg("### currentDocument", NSDocumentController.shared.currentDocument?.fileURL)
-        //        dbg("### currentDirectory", NSDocumentController.shared.currentDirectory)
-        //        dbg("### docs", NSDocumentController.shared.documents)
-
-        let tmpFile = UUID().uuidString
-
-        // we need to operate on a physical file, and NSFileWrapper doens't expose the underlying URL, so we cheat by copying the file into a temporary file and opening that one
-        let tmpURL = URL(fileURLWithPath: tmpFile, relativeTo: URL(fileURLWithPath: NSTemporaryDirectory()))
-            .appendingPathExtension(ext)
-
-        try configuration.file.write(to: tmpURL, options: .withNameUpdating, originalContentsURL: nil)
-
-        dbg("intermediate temporary file", tmpURL.description)
+        return FileWrapper() // avoid showing a save error to the user
 
         switch configuration.contentType {
-        case .parquette_parquet:
-            try ctx.register(parquet: tmpURL, tableName: tableName)
         case .parquette_csv:
-            try ctx.register(csv: tmpURL, tableName: tableName)
+            throw ParquetteError.writeNotSupported
+        case .parquette_parquet:
+            throw ParquetteError.writeNotSupported
         default:
-            throw ParquetteError.unsupportedContentType(configuration.contentType)
+            throw ParquetteError.writeNotSupported
         }
-    }
-
-    func snapshot(contentType: UTType) throws -> Void {
-    }
-
-    func fileWrapper(snapshot: Void, configuration: WriteConfiguration) throws -> FileWrapper {
-        if let file = configuration.existingFile {
-            return file
-        }
-
-        throw ParquetteError.writeNotSupported
     }
 }
 
@@ -361,7 +355,6 @@ struct ActionButton : View {
 // MARK: Commands
 
 protocol ParquetteCommands where Self : View {
-    // var document: ParquetteDocument { get }
     var appState: AppState { get }
 }
 
@@ -472,6 +465,10 @@ struct SettingsView : View {
     @AppStorage("theme") private var theme = AppTheme.system
     @AppStorage("controlSize") private var controlScale = ControlScale.regular
 
+    private enum Tabs: Hashable {
+        case general, appearance
+    }
+
     var body: some View {
         TabView {
             VStack {
@@ -484,19 +481,20 @@ struct SettingsView : View {
                 Label(loc("General"), systemImage: "gearshape.2.fill")
             })
 
-            /* crashes when switching tabs and then back to general
-             documentSettingsView()
-             .padding()
-             .tabItem({
-             Label(loc("General"), systemImage: "gearshape.2.fill")
-             })
-
-             appearanceSettingsView()
-             .padding()
-             .tabItem({
-             Label(loc("Appearance"), systemImage: "eye.fill")
-             })
-             */
+            // crashes when switching tabs a couple of times
+//            documentSettingsView()
+//                .padding()
+//                .tabItem({
+//                    Label(loc("General"), systemImage: "gearshape.2.fill")
+//                })
+//                .tag(Tabs.general)
+//
+//            appearanceSettingsView()
+//                .padding()
+//                .tabItem({
+//                    Label(loc("Appearance"), systemImage: "eye.fill")
+//                })
+//                .tag(Tabs.appearance)
         }
         .tabViewStyle(DefaultTabViewStyle())
     }
@@ -595,7 +593,6 @@ let colcount = 7
 
 
 struct ContentView: View, ParquetteCommands {
-    @ObservedObject var document: ParquetteDocument
     @EnvironmentObject var appState: AppState
 
     var body: some View {
@@ -612,7 +609,8 @@ struct ContentView: View, ParquetteCommands {
                 }
             }
             .listStyle(SidebarListStyle())
-            .frame(minWidth: 180)
+            // .frame(minWidth: 180)
+            // .frame(minWidth: appState.config.fileURL == nil ? nil : 180, maxWidth: appState.config.fileURL == nil ? 0 : nil) // hide when no file
             .toolbar {
                 ToolbarItem {
                     ActionButton(title: loc("Toggle Sidebar"), icon: "sidebar.leading", render: .template, action: {
@@ -621,7 +619,7 @@ struct ContentView: View, ParquetteCommands {
                 }
             }
 
-            ParquetViewer(document: document)
+            ParquetViewer()
                 .toolbar {
                     Group {
                         ToolbarItem(id: "statusPanel", placement: ToolbarItemPlacement.principal) {
@@ -687,14 +685,40 @@ extension UInt {
 //    }
 //}
 
+
+struct QueryHistory : Codable {
+    var queries: [String] = []
+}
+
+extension QueryHistory : RawRepresentable {
+    init(rawValue: String) {
+        if let data = rawValue.data(using: .utf8) {
+            do {
+                queries = try JSONDecoder().decode([String].self, from: data)
+            } catch {
+                dbg("error deserializing queries", queries)
+                self = .init(queries: [])
+            }
+        } else {
+            self = .init(queries: [])
+        }
+    }
+
+    var rawValue: String {
+        (squelch(try String(data: JSONEncoder().encode(self.queries), encoding: .utf8)) ?? "[]") ?? "[]" // double optional: <Optional<OptionalString>>
+    }
+}
+
+
 struct ParquetViewer: View {
-    @ObservedObject var document: ParquetteDocument
     @EnvironmentObject var appState: AppState
 
     // registration_dttm, birthdate: thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: CDataInterface("The datatype \"Timestamp(Nanosecond, None)\" is still not supported in Rust implementation")', src/arrowz.rs:614:79
 
-    @SceneStorage("sql") var sql = "select 1"
+    @SceneStorage("sql") var sql = "select 1 + CAST('2' as BIGINT)"
     @SceneStorage("sqlVisible") var sqlVisible = true
+    @SceneStorage("queryHistory") var queryHistory = QueryHistory()
+    @AppStorage("queryHistoryCount") var queryHistoryCount = 20
 
     @Environment(\.font) var font
 
@@ -712,12 +736,23 @@ struct ParquetViewer: View {
 
                 MenuButton(loc("SQL:")) {
                     ActionButton(title: loc("Execute"), icon: "play", action: performQuery)
+                    Divider()
+                    Text(loc("Recent Queries:"))
+                    ForEach(queryHistory.queries, id: \.self) { query in
+                        ActionButton(title: query, icon: "magnifyingglass.circle") {
+                            sql = query
+                        }
+                    }
+                    Divider()
+                    ActionButton(title: loc("Clear Query History"), icon: "trash.circle") {
+                        queryHistory.queries.removeAll()
+                    }
                 }
                 .menuButtonStyle(PullDownMenuButtonStyle())
                 .frame(width: 80)
 
                 Spacer()
-                Text(document.ctx.validationMessage(sql: sql) ?? "")
+                Text(appState.ctx.validationMessage(sql: sql) ?? "")
                 Spacer()
 
                 ActionButton(title: loc("Execute"), icon: "play.fill", action: performQuery)
@@ -729,7 +764,7 @@ struct ParquetViewer: View {
                 if sqlVisible {
                     TextEditor(text: $sql)
                         .font(Font.custom("Menlo", size: 15, relativeTo: .body).bold())
-                        .foregroundColor((try? document.ctx.validate(sql: sql)) == nil ? Color.orange : Color.primary)
+                        .foregroundColor((try? appState.ctx.validate(sql: sql)) == nil ? Color.orange : Color.primary)
                         .frame(idealHeight: 100)
                         .cornerRadius(5)
                         .padding()
@@ -741,17 +776,27 @@ struct ParquetViewer: View {
     func performQuery() {
         dbg("performQuery")
         let start = now()
-        let ctx = document.ctx
+        let ctx = appState.ctx
 
         appState.result.resultCount = nil
         appState.result.resultTime = 0
 
         appState.attempt(async: appState.useAsyncQuery) {
             if let frame = try ctx.query(sql: sql) {
-                let results = try frame.collectVector(index: wip(0)) // need a way to get multiple columns
+                // TODO: collect all the columns, not just the first
+                let results = try frame.collectVector(index: wip(0))
 
                 onmain {
                     let duration = start.millisFrom()
+
+                    // clear any previou history items with the same SQL
+                    queryHistory.queries.removeAll { $0 == sql }
+                    queryHistory.queries.append(sql)
+
+                    while queryHistory.queries.count > queryHistoryCount {
+                        queryHistory.queries.removeFirst()
+                    }
+
                     appState.result.resultCount = results.bufferLength
                     appState.result.vectors = [results]
                     appState.result.resultTime = duration
@@ -981,6 +1026,16 @@ struct DataTableView : NSViewRepresentable {
         block()
     } else {
         DispatchQueue.main.async(execute: block)
+    }
+}
+
+/// Performs the given block, logging any errors that occur
+func squelch<T>(_ block: @autoclosure () throws -> T) -> T? {
+    do {
+        return try block()
+    } catch {
+        dbg("caught error: \(error)")
+        return nil
     }
 }
 
