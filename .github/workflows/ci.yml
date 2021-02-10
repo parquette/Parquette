@@ -70,7 +70,7 @@ jobs:
 
       - name: Release app
         uses: softprops/action-gh-release@v1
-        # if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: Parquette.zip
         env:
