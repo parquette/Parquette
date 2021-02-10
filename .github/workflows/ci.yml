@@ -28,28 +28,11 @@ jobs:
           certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
           keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
 
-
-      - name: Tests
+      - name: SwiftArrow Tests
         run: xcodebuild test -scheme SwiftArrow
 
-      #- name: "Select Latest Xcode 12 Stable"
-      #  uses: st3fan/xcode-select@main
-      #  with:
-      #    version: "12"
-
-
-      #- name: "Select Xcode 12.4.0"
-      #  uses: devbotsxyz/xcode-select@master
-      #  with:
-      #    version: "12.4.0"
-
-      #- name: "Import Certificate: Development"
-      #  uses: devbotsxyz/import-signing-certificate@main
-      #  with:
-      #    certificate-data: ${{ secrets.DEVELOPMENT_CERTIFICATE_DATA }}
-      #    certificate-passphrase: ${{ secrets.DEVELOPMENT_CERTIFICATE_PASSPHRASE }}
-      #    keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
-
+      - name: Parquette Tests
+        run: xcodebuild test -scheme Parquette
 
       - name: "Archive"
         uses: devbotsxyz/xcode-archive@v1
