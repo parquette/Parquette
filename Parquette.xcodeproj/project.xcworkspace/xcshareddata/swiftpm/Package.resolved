@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "MiscKit",
+        "repositoryURL": "https://github.com/glimpseio/MiscKit",
+        "state": {
+          "branch": "main",
+          "revision": "fb75eea8c0c013428758a429f1e48b0ff3a8e5d2",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}

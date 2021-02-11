@@ -158,7 +158,7 @@ class SwiftArrowTests: XCTestCase {
         // dbg(schemaArray.array.debugDescription)
 
         XCTAssertEqual(schemaArray.bufferCount, type == .utf8 ? 3 : 2)
-        XCTAssertEqual(schemaArray.bufferLength, 1)
+        XCTAssertEqual(schemaArray.count, 1)
         XCTAssertEqual(schemaArray.nullCount, 0)
         XCTAssertEqual(schemaArray.offset, 0)
         XCTAssertEqual(schemaArray.arrayChildCount, 0)
@@ -187,7 +187,7 @@ class SwiftArrowTests: XCTestCase {
 
         // “The number of children is a function of the data type, as described in the Columnar format specification.” http://arrow.apache.org/docs/format/Columnar.html#format-columnar
         XCTAssertEqual(type == .utf8 ? 3 : 2, vector.bufferCount)
-        // XCTAssertEqual(1, vector.bufferLength)
+        // XCTAssertEqual(1, vector.count)
         XCTAssertEqual(0, vector.arrayChildCount)
         XCTAssertEqual(0, vector.offset)
         XCTAssertEqual(0, vector.flags)
@@ -528,10 +528,19 @@ class SwiftArrowTests: XCTestCase {
 }
 
 extension DFDataFrame {
+    /// Executes the DataFrame and returns the Nth column
+    @inlinable public func collectVectors<R: RangeExpression>(index: UInt, batch: R) throws -> ArraySlice<ArrowVector> where R.Bound == Int {
+        try collectResults().columnSets[Int(index)].batches[batch]
+    }
+
+    /// Executes the DataFrame and returns the Nth column
+    @inlinable public func collectVector(index: UInt) throws -> ArrowVector {
+        try collectVectors(index: index, batch: 0...0)[0]
+    }
+
     /// Executes the DataFrame and returns the count
-    func collectionCount() throws -> Int {
-        // try collectVector(index: 0).bufferLength
-        try self.collect().columnSets.first?.count ?? 0
+    @inlinable func collectionCount() throws -> Int {
+        try collectVectors(index: 0, batch: 0...).map(\.bufferLength).reduce(0, +)
     }
 }
 

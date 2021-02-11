@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MiscKit
 
 public enum SwiftArrowError : Error {
     case general
@@ -209,14 +210,8 @@ public class DFDataFrame {
         DFDataFrame(ptr: try SwiftRustError.checking(datafusion_dataframe_limit(ptr, count)))
     }
 
-    /// Executes the DataFrame and returns the first column
-    @available(*, deprecated, message: "only returns the first batch; use collect() instead")
-    public func collectVector(index: UInt) throws -> ArrowVector {
-        try collect().columnSets[Int(index)].batches[0] // FIXME:
-    }
-
     /// Executes the DataFrame and returns all the vectors
-    @inlinable public func collect() throws -> ArrowResultSet {
+    @inlinable public func collectResults() throws -> ArrowResultSet {
         let vectorsPtr = try SwiftRustError.checking(datafusion_dataframe_collect_vectors(ptr))
         defer { datafusion_vectorset_destroy(vectorsPtr) }
 

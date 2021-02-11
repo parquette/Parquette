@@ -7,11 +7,16 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import MiscKit
 import SwiftArrow
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     let appState = AppState()
     private let startTime = now()
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        true
+    }
 
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
         false // we do not support creating new files
@@ -26,38 +31,38 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         appState.calculateMemoryUsage()
     }
 
-    func applicationWillHide(_ notification: Notification) {
-        dbg(notification.debugDescription)
-    }
+//    func applicationWillHide(_ notification: Notification) {
+//        dbg(notification.debugDescription)
+//    }
 
-    func applicationDidHide(_ notification: Notification) {
-        dbg(notification.debugDescription)
-    }
+//    func applicationDidHide(_ notification: Notification) {
+//        dbg(notification.debugDescription)
+//    }
 
-    func applicationWillUnhide(_ notification: Notification) {
-        dbg(notification.debugDescription)
-    }
+//    func applicationWillUnhide(_ notification: Notification) {
+//        dbg(notification.debugDescription)
+//    }
 
     func applicationDidUnhide(_ notification: Notification) {
-        dbg(notification.debugDescription)
+//        dbg(notification.debugDescription)
         appState.calculateMemoryUsage()
     }
 
     func applicationWillBecomeActive(_ notification: Notification) {
-        dbg(notification.debugDescription)
+//        dbg(notification.debugDescription)
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
-        dbg(notification.debugDescription)
+//        dbg(notification.debugDescription)
         appState.calculateMemoryUsage()
     }
 
-    func applicationWillResignActive(_ notification: Notification) {
-        dbg(notification.debugDescription)
-    }
+//    func applicationWillResignActive(_ notification: Notification) {
+//        dbg(notification.debugDescription)
+//    }
 
     func applicationDidResignActive(_ notification: Notification) {
-        dbg(notification.debugDescription)
+//        dbg(notification.debugDescription)
         appState.calculateMemoryUsage()
     }
 
@@ -125,6 +130,7 @@ struct ParquetteApp: App {
 
     func createAppContent(fileConfig: FileDocumentConfiguration<ParquetteDocument>) -> some View {
         ParquetteAppContentView(docState: DocState(config: fileConfig))
+            .frame(idealWidth: 700, idealHeight: 700)
             .environmentObject(appDelegate.appState)
             .withFileExporter()
     }
@@ -916,7 +922,7 @@ struct ParquetViewer: View {
 
         dst.attempt(async: dst.useAsyncQuery) {
             if let frame = try ctx.query(sql: sql) {
-                let results = try frame.collect()
+                let results = try frame.collectResults()
 
                 onmain {
                     let duration = start.millisFrom()
