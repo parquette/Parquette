@@ -47,7 +47,7 @@ jobs:
       #- name: "Export & Sign Release Build"
       #  uses: devbotsxyz/xcode-export-archive@master
       #  with:
-      #    scheme: ${{ APP_NAME }}
+      #    scheme: ${{ env.APP_NAME }}
 
       - name: "Create exportOptions.plist"
         run: 
@@ -67,7 +67,7 @@ jobs:
       - name: "Staple Release Build"
         uses: devbotsxyz/xcode-staple@v1
         with:
-          product-path: "Export/${{ APP_NAME }}.app"
+          product-path: "Export/${{env. APP_NAME }}.app"
           verbose: true
 
       - name: Package for Distribution
