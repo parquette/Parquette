@@ -19,23 +19,88 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
         false // we do not support creating new files
     }
+
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationWillHide(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationDidHide(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationWillUnhide(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationDidUnhide(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationWillBecomeActive(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationWillResignActive(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationDidResignActive(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationWillUpdate(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationDidUpdate(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationDidChangeScreenParameters(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
+    func applicationDidChangeOcclusionState(_ notification: Notification) {
+        dbg(notification.debugDescription)
+    }
+
 }
 
 struct ParquetteAppContentView : View, ParquetteCommands {
-    @StateObject var appState: AppState
+    @StateObject var docState: DocState
     @AppStorage("theme") private var theme = AppTheme.system
     @AppStorage("controlSize") private var controlScale = ControlScale.regular
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ContentView()
             .preferredColorScheme(theme.colorScheme)
-            .environmentObject(appState)
+            .environmentObject(docState)
             //.controlSize(controlScale.controlSize)
+            .onChange(of: scenePhase) { phase in
+                dbg("scene phase")
+            }
+            .onAppear {
+                dbg("appear")
+            }
     }
 }
 
 @main
 struct ParquetteApp: App {
+    @ObservedObject var appState = AppState()
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     @SceneBuilder var body: some Scene {
@@ -48,13 +113,15 @@ struct ParquetteApp: App {
             ToolbarCommands()
         }
 
+
         Settings {
             SettingsView()
         }
     }
 
     func createAppContent(fileConfig: FileDocumentConfiguration<ParquetteDocument>) -> some View {
-        ParquetteAppContentView(appState: AppState(config: fileConfig))
+        ParquetteAppContentView(docState: DocState(config: fileConfig))
+            .environmentObject(appState)
             .withFileExporter()
     }
 }
@@ -119,6 +186,14 @@ let asyncQueryDefault = "asyncQuery"
 let asyncQueryDefaultValue = false
 
 final class AppState : ObservableObject {
+    /// The amount of memory usage by the app, as most recently polled
+    @Published var memoryUsage: Int64 = 0
+
+    init() {
+    }
+}
+
+final class DocState : ObservableObject {
     let ctx = DFExecutionContext()
 
     @Published var config: FileDocumentConfiguration<ParquetteDocument>
@@ -154,8 +229,9 @@ final class AppState : ObservableObject {
             return false
         }
 
-        let accessing = fileURL.startAccessingSecurityScopedResource()
-        defer { if accessing { fileURL.stopAccessingSecurityScopedResource() } }
+        // not needed when sandboxed
+//        let accessing = fileURL.startAccessingSecurityScopedResource()
+//        defer { if accessing { fileURL.stopAccessingSecurityScopedResource() } }
 
         switch fileType {
         case .parquette_parquet:
@@ -254,12 +330,13 @@ final class ParquetteDocument: FileDocument {
         self.contentType = configuration.contentType
     }
 
-    static var writableContentTypes: [UTType] { wip([]) } // TODO: export to CSV?
+    // declaring this seems to enable autosave…
+    // static var writableContentTypes: [UTType] { wip([]) } // TODO: export to CSV?
 
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         dbg(configuration.contentType.debugDescription)
 
-        return FileWrapper() // avoid showing a save error to the user
+        // return FileWrapper() // avoid showing a save error to the user; this however does wind up clobbering the file
 
         switch configuration.contentType {
         case .parquette_csv:
@@ -275,11 +352,12 @@ final class ParquetteDocument: FileDocument {
 
 struct StatusPanel : View, ParquetteCommands {
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var docState: DocState
 
     var body: some View {
         HStack(alignment: .center) {
             Group {
-                if self.appState.result.resultTime == 0 {
+                if self.docState.result.resultTime == 0 {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
                         .controlSize(.small)
@@ -288,9 +366,8 @@ struct StatusPanel : View, ParquetteCommands {
                         .keyboardShortcut("r")
                 }
             }
-            .frame(width: 50)
 
-            Text(appState.statusText)
+            Text(docState.queryText)
                 .multilineTextAlignment(.leading)
                 .lineLimit(1)
                 .truncationMode(.tail)
@@ -300,27 +377,47 @@ struct StatusPanel : View, ParquetteCommands {
 
             performCancelButton()
                 .keyboardShortcut(".")
-                .opacity(self.appState.result.resultTime == 0 ? 1.0 : 0.0)
+                .opacity(self.docState.result.resultTime == 0 ? 1.0 : 0.0)
+
+            // the file/memory size labels
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    Image(systemName: "internaldrive.fill")
+                    Text(docState.fileMemoryText ?? "?")
+                }
+                .help(loc("The size of the current input file"))
+                HStack {
+                    Image(systemName: "memorychip")
+                    Text(docState.processMemoryText ?? "?")
+                }
+                .help(loc("The total amount of memory in use by the app"))
+            }
+            .font(Font.footnote.monospacedDigit())
+            .foregroundColor(Color.secondary)
+            .padding(.horizontal)
         }
         .font(Font.callout.monospacedDigit())
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.gray.cornerRadius(5).opacity(0.2))
         .frame(minWidth: 100, idealWidth: 450, maxWidth: 550) // note: seems to be fixed at the idealWidth
         .frame(height: 20)
-        .layoutPriority(1)
+        //.layoutPriority(1)
     }
 }
 
-extension AppState {
-    var statusText: String {
+extension DocState {
+    var queryText: String {
         if let resultTime = self.result.resultTime {
             if resultTime == 0 {
                 return loc("Querying…")
             } else if let resultCount = self.result.resultCount {
                 let countStr = NumberFormatter.localizedString(from: .init(value: resultCount), number: .decimal)
-                let timeStr = NumberFormatter.localizedString(from: .init(value: resultTime), number: .decimal)
 
-                return loc("\(countStr) results in \(timeStr) ms")
+                let timeStr = NumberFormatter.localizedString(from: .init(value: resultTime), number: .decimal)
+                // let timeStr2 = DateComponentsFormatter.interval.string(from: .init(resultTime) / 1000.0) // interval is in ms
+                // let timeStr = timeStr2 ?? ""
+
+                return loc("\(countStr) \(resultCount == 1 ? "result" : "results") in \(timeStr) ms")
             } else {
                 return loc("Querying…")
             }
@@ -328,6 +425,43 @@ extension AppState {
             return loc("Ready.")
         }
     }
+
+    /// The current status is the size of the current file
+    var fileMemoryText: String? {
+        guard let size = try? config.fileURL?.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
+            return nil
+        }
+        return ByteCountFormatter.string(fromByteCount: .init(size), countStyle: .file)
+    }
+
+    var processMemoryText: String? {
+        guard let footprint = Self.memoryFootprint() else {
+            return nil
+        }
+        return ByteCountFormatter.string(fromByteCount: .init(footprint), countStyle: .memory)
+
+    }
+
+    /// Thanks, Quinn: https://developer.apple.com/forums/thread/105088
+    private static func memoryFootprint() -> mach_vm_size_t? {
+        // The `TASK_VM_INFO_COUNT` and `TASK_VM_INFO_REV1_COUNT` macros are too
+        // complex for the Swift C importer, so we have to define them ourselves.
+        let TASK_VM_INFO_COUNT = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
+        let TASK_VM_INFO_REV1_COUNT = mach_msg_type_number_t(MemoryLayout.offset(of: \task_vm_info_data_t.min_address)! / MemoryLayout<integer_t>.size)
+        var info = task_vm_info_data_t()
+        var count = TASK_VM_INFO_COUNT
+        let kr = withUnsafeMutablePointer(to: &info) { infoPtr in
+            infoPtr.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { intPtr in
+                task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), intPtr, &count)
+            }
+        }
+        guard
+            kr == KERN_SUCCESS,
+            count >= TASK_VM_INFO_REV1_COUNT
+        else { return nil }
+        return info.phys_footprint
+    }
+
 }
 
 /// A button that can appear in either a toolbar or a menu
@@ -355,7 +489,7 @@ struct ActionButton : View {
 // MARK: Commands
 
 protocol ParquetteCommands where Self : View {
-    var appState: AppState { get }
+    var docState: DocState { get }
 }
 
 extension ParquetteCommands {
@@ -371,7 +505,7 @@ extension ParquetteCommands {
 extension ParquetteCommands {
     func performCancel() {
         dbg(wip("TODO"))
-        appState.operationQueue.cancelAllOperations()
+        docState.operationQueue.cancelAllOperations()
     }
 
     func performCancelButton() -> some View {
@@ -593,7 +727,7 @@ let colcount = 7
 
 
 struct ContentView: View, ParquetteCommands {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var docState: DocState
 
     var body: some View {
         contentBody
@@ -602,7 +736,7 @@ struct ContentView: View, ParquetteCommands {
     var contentBody: some View {
         NavigationView {
             List() {
-                Section(header: Text(wip("") /* appState.fileTitle */)) {
+                Section(header: Text(wip("") /* docState.fileTitle */)) {
                     ForEach(0..<colcount) { i in
                         Text("Colum \(i + 1)")
                     }
@@ -610,7 +744,7 @@ struct ContentView: View, ParquetteCommands {
             }
             .listStyle(SidebarListStyle())
             // .frame(minWidth: 180)
-            // .frame(minWidth: appState.config.fileURL == nil ? nil : 180, maxWidth: appState.config.fileURL == nil ? 0 : nil) // hide when no file
+            // .frame(minWidth: docState.config.fileURL == nil ? nil : 180, maxWidth: docState.config.fileURL == nil ? 0 : nil) // hide when no file
             .toolbar {
                 ToolbarItem {
                     ActionButton(title: loc("Toggle Sidebar"), icon: "sidebar.leading", render: .template, action: {
@@ -657,7 +791,7 @@ struct ContentView: View, ParquetteCommands {
                 }
         }
         .navigationViewStyle(DoubleColumnNavigationViewStyle())
-//        .sheet(item: .constant(appState.errors.first), onDismiss: { appState.errors.removeFirst() }) { error in
+//        .sheet(item: .constant(docState.errors.first), onDismiss: { docState.errors.removeFirst() }) { error in
 //            ErrorSheet(error: error)
 //        }
     }
@@ -711,7 +845,7 @@ extension QueryHistory : RawRepresentable {
 
 
 struct ParquetViewer: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var docState: DocState
 
     // registration_dttm, birthdate: thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: CDataInterface("The datatype \"Timestamp(Nanosecond, None)\" is still not supported in Rust implementation")', src/arrowz.rs:614:79
 
@@ -752,7 +886,7 @@ struct ParquetViewer: View {
                 .frame(width: 80)
 
                 Spacer()
-                Text(appState.ctx.validationMessage(sql: sql) ?? "")
+                Text(docState.ctx.validationMessage(sql: sql) ?? "")
                 Spacer()
 
                 ActionButton(title: loc("Execute"), icon: "play.fill", action: performQuery)
@@ -764,7 +898,7 @@ struct ParquetViewer: View {
                 if sqlVisible {
                     TextEditor(text: $sql)
                         .font(Font.custom("Menlo", size: 15, relativeTo: .body).bold())
-                        .foregroundColor((try? appState.ctx.validate(sql: sql)) == nil ? Color.orange : Color.primary)
+                        .foregroundColor((try? docState.ctx.validate(sql: sql)) == nil ? Color.orange : Color.primary)
                         .frame(idealHeight: 100)
                         .cornerRadius(5)
                         .padding()
@@ -776,12 +910,12 @@ struct ParquetViewer: View {
     func performQuery() {
         dbg("performQuery")
         let start = now()
-        let ctx = appState.ctx
+        let ctx = docState.ctx
 
-        appState.result.resultCount = nil
-        appState.result.resultTime = 0
+        docState.result.resultCount = nil
+        docState.result.resultTime = 0
 
-        appState.attempt(async: appState.useAsyncQuery) {
+        docState.attempt(async: docState.useAsyncQuery) {
             if let frame = try ctx.query(sql: sql) {
                 // TODO: collect all the columns, not just the first
                 let results = try frame.collectVector(index: wip(0))
@@ -797,11 +931,11 @@ struct ParquetViewer: View {
                         queryHistory.queries.removeFirst()
                     }
 
-                    appState.result.resultCount = results.bufferLength
-                    appState.result.vectors = [results]
-                    appState.result.resultTime = duration
-                    appState.result.resultID = .init()
-                    dbg("received \(appState.result.vectors.count) columns with \(appState.result.resultCount ?? -1) elements in \(appState.result.resultTime ?? 0)ms")
+                    docState.result.resultCount = results.bufferLength
+                    docState.result.vectors = [results]
+                    docState.result.resultTime = duration
+                    docState.result.resultID = .init()
+                    dbg("received \(docState.result.vectors.count) columns with \(docState.result.resultCount ?? -1) elements in \(docState.result.resultTime ?? 0)ms")
                 }
             }
         }
@@ -879,7 +1013,7 @@ private final class ArrowTableColumn : NSTableColumn {
 
 struct DataTableView : NSViewRepresentable {
     @Environment(\.controlSize) var controlSize
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var docState: DocState
 
     typealias NSViewType = NSScrollView
 
@@ -922,7 +1056,7 @@ struct DataTableView : NSViewRepresentable {
         }
 
         func reloadColumns() {
-            let results = self.appState.result
+            let results = self.docState.result
             let colCount = results.vectors.count
 
             let font = NSFont.monospacedDigitSystemFont(ofSize: controlSize.controlSize.systemFontSize, weight: .light)
@@ -968,9 +1102,9 @@ struct DataTableView : NSViewRepresentable {
             }
         }
 
-        if context.coordinator.result?.resultID != self.appState.result.resultID {
+        if context.coordinator.result?.resultID != self.docState.result.resultID {
             reloadColumns()
-            context.coordinator.result = self.appState.result
+            context.coordinator.result = self.docState.result
             dbg("reloading table with", context.coordinator.result?.resultCount, "rows")
             context.coordinator.tableView.reloadData()
         }
