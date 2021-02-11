@@ -25,7 +25,7 @@ jobs:
           submodules: true
 
       - name: SwiftArrow Tests
-        run: xcodebuild test -scheme ${{ TEST_NAME }}
+        run: xcodebuild test -scheme ${{ env.TEST_NAME }}
 
       # seems to hang on CI image…
       #- name: Parquette Tests
@@ -34,7 +34,7 @@ jobs:
       - name: "Archive"
         uses: devbotsxyz/xcode-archive@v1
         with:
-          scheme: ${{ APP_NAME }}
+          scheme: ${{ env.APP_NAME }}
 
       - name: "Import Certificate: Distribution"
         uses: devbotsxyz/import-signing-certificate@main
@@ -51,16 +51,16 @@ jobs:
 
       - name: "Create exportOptions.plist"
         run: 
-          echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>${{ TEAM_ID }}</string></dict></plist>' > ParquetteExportOptions.plist
+          echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>${{ env.TEAM_ID }}</string></dict></plist>' > ParquetteExportOptions.plist
           
       - name: "Export & Sign Release Build"
         run: 
-          xcodebuild -exportArchive -archivePath "${{ APP_NAME }}.xcarchive" -exportPath Export -exportOptionsPlist "${{ APP_NAME }}ExportOptions.plist"
+          xcodebuild -exportArchive -archivePath "${{ env.APP_NAME }}.xcarchive" -exportPath Export -exportOptionsPlist "${{ env.APP_NAME }}ExportOptions.plist"
 
       - name: "Notarize Release Build"
         uses: devbotsxyz/xcode-notarize@v1
         with:
-          product-path: "Export/${{ APP_NAME }}.app"
+          product-path: "Export/${{ env.APP_NAME }}.app"
           appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
 
@@ -71,13 +71,13 @@ jobs:
           verbose: true
 
       - name: Package for Distribution
-        run: ditto -c -k --keepParent "Export/${{ APP_NAME }}.app" "${{ APP_NAME }}.zip"
+        run: ditto -c -k --keepParent "Export/${{ env.APP_NAME }}.app" "${{ env.APP_NAME }}.zip"
 
       - name: Upload Build Artifact Zip
         uses: actions/upload-artifact@v2
         with:
           name: Build
-          path: ${{ APP_NAME }}.zip
+          path: ${{ env.APP_NAME }}.zip
         
       - name: Create Release
         id: create_release
@@ -98,7 +98,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ${{ APP_NAME }}.zip
+          asset_path: ${{ env.APP_NAME }}.zip
           asset_content_type: application/zip
 
 
