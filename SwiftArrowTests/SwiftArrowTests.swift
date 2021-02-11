@@ -7,6 +7,7 @@
 
 import XCTest
 import SwiftArrow
+import MiscKit
 
 /// Whether to run additional measurement & stress tests
 let stressTest = false
