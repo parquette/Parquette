@@ -1,7 +1,10 @@
 #!/bin/bash -e
 
 # translate Xcode's CONFIGURATION setting of "Release" or "Debug"
-CARGO_MODE=$(echo ${CONFIGURATION:-"debug"} | tr '[A-Z]' '[a-z]')
+#CARGO_MODE=$(echo ${CONFIGURATION:-"debug"} | tr '[A-Z]' '[a-z]')
+
+# always run in release mode (~20x faster datafusion performance)
+CARGO_MODE="release"
 
 # build for macOS10.12+
 export MACOSX_DEPLOYMENT_TARGET=10.12

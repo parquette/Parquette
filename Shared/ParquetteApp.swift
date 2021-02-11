@@ -10,11 +10,8 @@ import UniformTypeIdentifiers
 import SwiftArrow
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    let appState = AppState()
     private let startTime = now()
-
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        dbg("launched", notification.description, "in", startTime.millisFrom())
-    }
 
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
         false // we do not support creating new files
@@ -22,6 +19,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         dbg(notification.debugDescription)
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        dbg("launched", notification.description, "in", startTime.millisFrom())
+        appState.calculateMemoryUsage()
     }
 
     func applicationWillHide(_ notification: Notification) {
@@ -38,6 +40,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidUnhide(_ notification: Notification) {
         dbg(notification.debugDescription)
+        appState.calculateMemoryUsage()
     }
 
     func applicationWillBecomeActive(_ notification: Notification) {
@@ -46,6 +49,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidBecomeActive(_ notification: Notification) {
         dbg(notification.debugDescription)
+        appState.calculateMemoryUsage()
     }
 
     func applicationWillResignActive(_ notification: Notification) {
@@ -54,15 +58,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidResignActive(_ notification: Notification) {
         dbg(notification.debugDescription)
+        appState.calculateMemoryUsage()
     }
 
-    func applicationWillUpdate(_ notification: Notification) {
-        dbg(notification.debugDescription)
-    }
+//    func applicationWillUpdate(_ notification: Notification) {
+//        dbg(notification.debugDescription)
+//    }
 
-    func applicationDidUpdate(_ notification: Notification) {
-        dbg(notification.debugDescription)
-    }
+//    func applicationDidUpdate(_ notification: Notification) {
+//        dbg(notification.debugDescription)
+//    }
 
     func applicationWillTerminate(_ notification: Notification) {
         dbg(notification.debugDescription)
@@ -100,7 +105,6 @@ struct ParquetteAppContentView : View, ParquetteCommands {
 
 @main
 struct ParquetteApp: App {
-    @ObservedObject var appState = AppState()
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     @SceneBuilder var body: some Scene {
@@ -121,7 +125,7 @@ struct ParquetteApp: App {
 
     func createAppContent(fileConfig: FileDocumentConfiguration<ParquetteDocument>) -> some View {
         ParquetteAppContentView(docState: DocState(config: fileConfig))
-            .environmentObject(appState)
+            .environmentObject(appDelegate.appState)
             .withFileExporter()
     }
 }
@@ -185,14 +189,29 @@ extension UTType {
 let asyncQueryDefault = "asyncQuery"
 let asyncQueryDefaultValue = false
 
+/// The global application state
 final class AppState : ObservableObject {
     /// The amount of memory usage by the app, as most recently polled
-    @Published var memoryUsage: Int64 = 0
+    @Published var memoryUsage: mach_vm_size_t? = nil
 
     init() {
     }
+
+    var processMemoryText: String? {
+        guard let footprint = memoryUsage else {
+            return nil
+        }
+
+        return ByteCountFormatter.string(fromByteCount: .init(footprint), countStyle: .memory)
+
+    }
+
+    func calculateMemoryUsage() {
+        self.memoryUsage = memoryFootprint()
+    }
 }
 
+/// The per-document window state
 final class DocState : ObservableObject {
     let ctx = DFExecutionContext()
 
@@ -308,11 +327,15 @@ struct QueryResult {
     /// The amount of time the query took
     var resultTime: UInt? = nil
 
-    /// The number of results
-    var resultCount: Int? = nil
-
     /// The actual results
-    var vectors: [ArrowVector] = []
+    var results: ArrowResultSet? = nil
+}
+
+extension QueryResult {
+    /// The total number of results in the data set
+    var resultCount: Int? {
+        results?.columnSets.first?.count
+    }
 }
 
 final class ParquetteDocument: FileDocument {
@@ -388,7 +411,7 @@ struct StatusPanel : View, ParquetteCommands {
                 .help(loc("The size of the current input file"))
                 HStack {
                     Image(systemName: "memorychip")
-                    Text(docState.processMemoryText ?? "?")
+                    Text(appState.processMemoryText ?? "?")
                 }
                 .help(loc("The total amount of memory in use by the app"))
             }
@@ -432,34 +455,6 @@ extension DocState {
             return nil
         }
         return ByteCountFormatter.string(fromByteCount: .init(size), countStyle: .file)
-    }
-
-    var processMemoryText: String? {
-        guard let footprint = Self.memoryFootprint() else {
-            return nil
-        }
-        return ByteCountFormatter.string(fromByteCount: .init(footprint), countStyle: .memory)
-
-    }
-
-    /// Thanks, Quinn: https://developer.apple.com/forums/thread/105088
-    private static func memoryFootprint() -> mach_vm_size_t? {
-        // The `TASK_VM_INFO_COUNT` and `TASK_VM_INFO_REV1_COUNT` macros are too
-        // complex for the Swift C importer, so we have to define them ourselves.
-        let TASK_VM_INFO_COUNT = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
-        let TASK_VM_INFO_REV1_COUNT = mach_msg_type_number_t(MemoryLayout.offset(of: \task_vm_info_data_t.min_address)! / MemoryLayout<integer_t>.size)
-        var info = task_vm_info_data_t()
-        var count = TASK_VM_INFO_COUNT
-        let kr = withUnsafeMutablePointer(to: &info) { infoPtr in
-            infoPtr.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { intPtr in
-                task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), intPtr, &count)
-            }
-        }
-        guard
-            kr == KERN_SUCCESS,
-            count >= TASK_VM_INFO_REV1_COUNT
-        else { return nil }
-        return info.phys_footprint
     }
 
 }
@@ -846,6 +841,7 @@ extension QueryHistory : RawRepresentable {
 
 struct ParquetViewer: View {
     @EnvironmentObject var docState: DocState
+    @EnvironmentObject var appState: AppState
 
     // registration_dttm, birthdate: thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: CDataInterface("The datatype \"Timestamp(Nanosecond, None)\" is still not supported in Rust implementation")', src/arrowz.rs:614:79
 
@@ -910,15 +906,17 @@ struct ParquetViewer: View {
     func performQuery() {
         dbg("performQuery")
         let start = now()
-        let ctx = docState.ctx
 
-        docState.result.resultCount = nil
-        docState.result.resultTime = 0
+        let dst = self.docState
+        let ast = self.appState
 
-        docState.attempt(async: docState.useAsyncQuery) {
+        let ctx = dst.ctx
+
+        dst.result.resultTime = 0
+
+        dst.attempt(async: dst.useAsyncQuery) {
             if let frame = try ctx.query(sql: sql) {
-                // TODO: collect all the columns, not just the first
-                let results = try frame.collectVector(index: wip(0))
+                let results = try frame.collect()
 
                 onmain {
                     let duration = start.millisFrom()
@@ -931,11 +929,13 @@ struct ParquetViewer: View {
                         queryHistory.queries.removeFirst()
                     }
 
-                    docState.result.resultCount = results.bufferLength
-                    docState.result.vectors = [results]
-                    docState.result.resultTime = duration
-                    docState.result.resultID = .init()
-                    dbg("received \(docState.result.vectors.count) columns with \(docState.result.resultCount ?? -1) elements in \(docState.result.resultTime ?? 0)ms")
+                    dst.result.results = results
+                    dst.result.resultTime = duration
+                    dst.result.resultID = .init()
+
+                    ast.calculateMemoryUsage() // re-calc usage
+
+                    dbg("received \(dst.result.results?.columnSets.count ?? 0) columns with \(dst.result.resultCount ?? -1) elements in \(dst.result.resultTime ?? 0)ms")
                 }
             }
         }
@@ -967,10 +967,10 @@ extension NSControl.ControlSize {
 }
 
 private final class ArrowTableColumn : NSTableColumn {
-    let vector: ArrowVector
+    let columnSet: ArrowColumnSet
 
-    init(id: String, vector: ArrowVector) {
-        self.vector = vector
+    init(id: String, columnSet: ArrowColumnSet) {
+        self.columnSet = columnSet
         super.init(identifier: .init(id))
     }
 
@@ -978,30 +978,54 @@ private final class ArrowTableColumn : NSTableColumn {
         fatalError("init(coder:) has not been implemented")
     }
 
+    /// The arrow data type for this column
+    var dataType: ArrowDataType? {
+        columnSet.batches.first?.dataType
+    }
+
     func objectValue(at index: Int) -> NSObject? {
+        assert(index >= 0)
+        assert(index < columnSet.count)
+
+        var i = index
+        var vectorChunk: ArrowVector? = nil
+        for vec in columnSet.batches {
+            if i < vec.count {
+                vectorChunk = vec
+                break
+            } else {
+                i -= vec.count
+            }
+        }
+
+        guard let vec = vectorChunk else {
+            dbg("could not find vector for index", index)
+            return nil
+        }
+
         do {
-            switch vector.dataType {
+            switch vec.dataType {
             case .utf8:
-                return try String.BufferView(vector: vector)[index] as NSString?
+                return try String.BufferView(vector: vec)[i] as NSString?
             case .int8:
-                return try Int8.BufferView(vector: vector)[index] as NSNumber?
+                return try Int8.BufferView(vector: vec)[i] as NSNumber?
             case .int16:
-                return try Int16.BufferView(vector: vector)[index] as NSNumber?
+                return try Int16.BufferView(vector: vec)[i] as NSNumber?
             case .int32:
-                return try Int32.BufferView(vector: vector)[index] as NSNumber?
+                return try Int32.BufferView(vector: vec)[i] as NSNumber?
             case .int64:
-                return try Int64.BufferView(vector: vector)[index] as NSNumber?
+                return try Int64.BufferView(vector: vec)[i] as NSNumber?
             case .uint8:
-                return try UInt8.BufferView(vector: vector)[index] as NSNumber?
+                return try UInt8.BufferView(vector: vec)[i] as NSNumber?
             case .uint16:
-                return try UInt16.BufferView(vector: vector)[index] as NSNumber?
+                return try UInt16.BufferView(vector: vec)[i] as NSNumber?
             case .uint32:
-                return try UInt32.BufferView(vector: vector)[index] as NSNumber?
+                return try UInt32.BufferView(vector: vec)[i] as NSNumber?
             case .uint64:
-                return try UInt64.BufferView(vector: vector)[index] as NSNumber?
+                return try UInt64.BufferView(vector: vec)[i] as NSNumber?
 
             default:
-                throw SwiftArrowError.unsupportedDataType(vector.dataType)
+                throw SwiftArrowError.unsupportedDataType(vec.dataType)
             }
         } catch {
             dbg("error accessing index", index, error.localizedDescription)
@@ -1056,8 +1080,11 @@ struct DataTableView : NSViewRepresentable {
         }
 
         func reloadColumns() {
-            let results = self.docState.result
-            let colCount = results.vectors.count
+            guard let results = self.docState.result.results else {
+                return
+            }
+
+            let colCount = results.columnSets.count
 
             let font = NSFont.monospacedDigitSystemFont(ofSize: controlSize.controlSize.systemFontSize, weight: .light)
 
@@ -1069,9 +1096,9 @@ struct DataTableView : NSViewRepresentable {
             for i in 0..<colCount {
                 let id = "C\(i)"
 
-                let vec = results.vectors[i]
+                let columnSet = results.columnSets[i]
 
-                let col = ArrowTableColumn(id: id, vector: vec)
+                let col = ArrowTableColumn(id: id, columnSet: columnSet)
                 col.title = wip("Column \(i)") // TODO: extract name from column
 
                 // col.sortDescriptorPrototype = NSSortDescriptor(key: wip(id), ascending: true)
@@ -1081,7 +1108,7 @@ struct DataTableView : NSViewRepresentable {
                 col.headerCell.isEnabled = true
 
                 if let dataCell = col.dataCell as? NSCell {
-                    switch vec.dataType {
+                    switch col.dataType {
                     case .utf8, .utf8Large:
                         dataCell.formatter = nil // just strings
                         dataCell.alignment = .left

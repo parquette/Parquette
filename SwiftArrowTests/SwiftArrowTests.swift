@@ -393,6 +393,43 @@ class SwiftArrowTests: XCTestCase {
         try checkColumnType(ctx, column: "comments", dataType: .utf8, table: tbl)
     }
 
+    /// Perform queries against the taxi data from https://cran.r-project.org/web/packages/arrow/vignettes/dataset.html
+    /// and https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+    /// This is too big (~350mb) to commit to git, so only run the test if the file is present
+    func testTaxiData() throws {
+        let dataFile = "taxidata_2009.parquet"
+        let expectedCount: Int64 = 14_092_413 // 14M column elements
+
+        let url = URL(fileURLWithPath: dataFile, relativeTo: FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first)
+
+        if !FileManager.default.fileExists(atPath: url.path) {
+            throw XCTSkip("skipping absent \(dataFile)")
+        }
+
+        let ctx = DFExecutionContext()
+        try ctx.register(parquet: url, tableName: "taxidata")
+
+        do {
+            let sql = "select count(payment_type) from taxidata"
+            guard let result = try ctx.query(sql: sql) else {
+                return XCTFail("no results")
+            }
+
+            let vec = try result.collectVector(index: 0)
+            XCTAssertEqual(expectedCount, try Int64.BufferView(vector: vec)[0])
+        }
+
+        do {
+            // 431 batches
+            let sql = "select payment_type from taxidata"
+            guard let result = try ctx.query(sql: sql) else {
+                return XCTFail("no results")
+            }
+
+            XCTAssertEqual(.init(expectedCount), try result.collectionCount())
+        }
+    }
+
     func testParquetDataTypes() throws {
         for i in 1...5 {
             try testParquetDataType(index: i)
@@ -493,10 +530,9 @@ class SwiftArrowTests: XCTestCase {
 extension DFDataFrame {
     /// Executes the DataFrame and returns the count
     func collectionCount() throws -> Int {
-        try collectVector(index: 0).bufferLength
-        // try SwiftRustError.checking(datafusion_dataframe_collect_count(ptr))
+        // try collectVector(index: 0).bufferLength
+        try self.collect().columnSets.first?.count ?? 0
     }
-
 }
 
 

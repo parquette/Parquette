@@ -53,12 +53,12 @@ func JSONToArrow(arrow: NSDictionary, JSONFile: URL, arrowFile: URL) throws -> D
     return arrowData
 }
 
-struct SwiftRustError : LocalizedError {
+@usableFromInline struct SwiftRustError : LocalizedError {
 
-    var errorDescription: String?
+    @usableFromInline var errorDescription: String?
 
     /// Passes the given value through the SwiftRust error checking
-    static func checking<T>(_ value: T!) throws -> T! {
+    @usableFromInline static func checking<T>(_ value: T!) throws -> T! {
         let errlen = last_error_length()
         if errlen <= 0 { return value }
 
@@ -190,7 +190,7 @@ public class DFExecutionContext {
 }
 
 public class DFDataFrame {
-    let ptr: OpaquePointer
+    @usableFromInline let ptr: OpaquePointer
 
     init(ptr: OpaquePointer) {
         self.ptr = ptr
@@ -210,14 +210,49 @@ public class DFDataFrame {
     }
 
     /// Executes the DataFrame and returns the first column
+    @available(*, deprecated, message: "only returns the first batch; use collect() instead")
     public func collectVector(index: UInt) throws -> ArrowVector {
-        ArrowVector(ffi: try SwiftRustError.checking(datafusion_dataframe_collect_vector(ptr, index)).pointee)
+        try collect().columnSets[Int(index)].batches[0] // FIXME:
     }
 
-//    /// Executes the DataFrame and returns all the columns
-//    public func collectedAerays() throws -> ArrowVectorFFI {
-//        try SwiftRustError.checking(datafusion_dataframe_collect_vector(ptr, index))
-//    }
+    /// Executes the DataFrame and returns all the vectors
+    @inlinable public func collect() throws -> ArrowResultSet {
+        let vectorsPtr = try SwiftRustError.checking(datafusion_dataframe_collect_vectors(ptr))
+        let batchCount = datafusion_vectorset_batchcount(vectorsPtr)
+        let columnCount = datafusion_vectorset_columncount(vectorsPtr)
+
+        let vectors: [[ArrowVector]] = (0..<columnCount).map { columnIndex in
+            (0..<batchCount).map { batchIndex in
+                ArrowVector(ffi: datafusion_vectorset_element(vectorsPtr, columnIndex, batchIndex).pointee)
+            }
+        }
+
+        return ArrowResultSet(columnSets: vectors.map(ArrowColumnSet.init))
+    }
+}
+
+/// A series of arrow vectors representing columns of multiple batches
+public final class ArrowResultSet {
+    /// The columns in the results
+    public let columnSets: [ArrowColumnSet]
+
+    @usableFromInline init(columnSets: [ArrowColumnSet]) {
+        self.columnSets = columnSets
+    }
+}
+
+/// A set of multiple batches of a single column
+public final class ArrowColumnSet {
+    public let batches: [ArrowVector]
+
+    @usableFromInline init(batches: [ArrowVector]) {
+        self.batches = batches
+    }
+
+    /// The sum total of all elements in the column set
+    public var count: Int {
+        batches.reduce(0, { $0 + $1.count })
+    }
 }
 
 /// A wrapper for ArrowVectorFFI that manages deallocation, as per
@@ -226,7 +261,7 @@ public final class ArrowVector {
     @usableFromInline
     let ffi: ArrowVectorFFI
 
-    fileprivate init(ffi: ArrowVectorFFI) {
+    @usableFromInline init(ffi: ArrowVectorFFI) {
         self.ffi = ffi
     }
 
@@ -289,7 +324,13 @@ public final class ArrowVector {
     }
 
     /// The logical length of the array (i.e. its number of items).
+    @available(*, deprecated, renamed: "count")
     @inlinable public var bufferLength: Int {
+        count
+    }
+
+    /// The logical length of the array (i.e. its number of items).
+    @inlinable public var count: Int {
         .init(array.length)
     }
 
@@ -725,54 +766,3 @@ public enum ArrowDataType {
 //+us:I,J,...
 //sparse union with type ids I,J…
 }
-
-
-// MARK: Utilities
-
-/// Warning marker for a work-in-progress
-@available(*, deprecated, message: "work in progress")
-@inlinable func wip<T>(_ value: T) -> T {
-    value
-}
-
-#if canImport(OSLog)
-import OSLog
-
-/// debug message to NSLog only when NDEBUG is not set
-@inlinable public func dbg(level: OSLogType = .default, _ arg1: @autoclosure () throws -> CVarArg? = nil, _ arg2: @autoclosure () -> CVarArg? = nil, _ arg3: @autoclosure () -> CVarArg? = nil, _ arg4: @autoclosure () -> CVarArg? = nil, _ arg5: @autoclosure () -> CVarArg? = nil, _ arg6: @autoclosure () -> CVarArg? = nil, _ arg7: @autoclosure () -> CVarArg? = nil, _ arg8: @autoclosure () -> CVarArg? = nil, _ arg9: @autoclosure () -> CVarArg? = nil, _ arg10: @autoclosure () -> CVarArg? = nil, _ arg11: @autoclosure () -> CVarArg? = nil, _ arg12: @autoclosure () -> CVarArg? = nil, separator: String = " ", functionName: StaticString = #function, fileName: StaticString = #file, lineNumber: Int = #line) rethrows {
-    //#if DEBUG
-    let items = try [arg1(), arg2(), arg3(), arg4(), arg5(), arg6(), arg7(), arg8(), arg9(), arg10(), arg11(), arg12()]
-    let msg = items.compactMap({ $0 }).map({ String(describing: $0) }).joined(separator: separator)
-
-    // use just the file name
-    let filePath = fileName.description.split(separator: "/").last?.description ?? fileName.description
-
-    let message = "\(filePath):\(lineNumber) \(functionName): \(msg)"
-    // os_log("%{public}@", /* log: log, */ type: level, message)
-
-    os_log(level, "%{public}@", message)
-    //#endif
-}
-#endif
-
-
-#if canImport(Dispatch)
-extension Collection {
-    /// Executes the given block concurrently using `DispatchQueue.concurrentPerform`, returning the array of results
-    @inlinable public func qmap<T>(concurrent: Bool = true, block: (Element) throws -> (T)) throws -> [T] {
-        let queue = DispatchQueue(label: "resultsLock")
-
-        let items = Array(self)
-        var results: [Result<T, Error>?] = Array(repeating: nil, count: items.count)
-
-        DispatchQueue.concurrentPerform(iterations: items.count) { i in
-            let result = Result { try block(items[i]) }
-            queue.sync { results[i] = result }
-        }
-
-        // returns all the results, or throws the first error encountered
-        return try results.map { result in try result!.get() }
-    }
-}
-#endif
-

@@ -10,10 +10,7 @@ typedef struct ArrowFile ArrowFile;
 
 typedef struct DataFrameState DataFrameState;
 
-typedef struct SerdePoint {
-  int32_t x;
-  int32_t y;
-} SerdePoint;
+typedef struct VectorSetState VectorSetState;
 
 typedef struct ArrowVectorFFI {
   const FFI_ArrowArray *array;
@@ -21,6 +18,11 @@ typedef struct ArrowVectorFFI {
 } ArrowVectorFFI;
 
 typedef ArrowArray ExtArrowArray;
+
+/**
+ * Type alias for extewrnaization
+ */
+typedef struct VectorSetState VectorSet;
 
 typedef struct CallbackT_bool {
   void *userdata;
@@ -90,14 +92,6 @@ void arrow_to_json(void);
 
 void arrow_ffi_test(const FFI_ArrowArray *array, const FFI_ArrowSchema *schema);
 
-struct SerdePoint serde_demo(void);
-
-char *rust_hello(const char *to);
-
-void rust_hello_free(char *s);
-
-void load_arrow_file(char *fname);
-
 struct ArrowVectorFFI arrow_array_ffi_roundtrip(const struct ArrowVectorFFI *arrow);
 
 void arrow_array_ffi_arg_param_demo(FFI_ArrowArray buf, int64_t param);
@@ -134,8 +128,29 @@ void datafusion_arrow_destroy(ArrowArray *ptr);
 
 ExtArrowArray *datafusion_array_empty_create(void);
 
-struct ArrowVectorFFI *datafusion_dataframe_collect_vector(struct DataFrameState *ptr,
-                                                           uintptr_t index);
+VectorSet *datafusion_dataframe_collect_vectors(struct DataFrameState *ptr);
+
+/**
+ * Destroy a `VectorSet` once you are done with it.
+ */
+void datafusion_vectorset_destroy(VectorSet *ptr);
+
+/**
+ * Returns the number of vectors contained in the state
+ */
+uintptr_t datafusion_vectorset_batchcount(VectorSet *ptr);
+
+/**
+ * Returns the number of columns in the state
+ */
+uintptr_t datafusion_vectorset_columncount(VectorSet *ptr);
+
+/**
+ * Returns the vectors at the given index
+ */
+struct ArrowVectorFFI *datafusion_vectorset_element(VectorSet *ptr,
+                                                    uintptr_t column_index,
+                                                    uintptr_t batch_index);
 
 const FFI_ArrowArray *datafusion_array_array_get(ArrowArray array);
 

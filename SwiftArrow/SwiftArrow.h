@@ -66,14 +66,12 @@ typedef struct FFI_ArrowArray {
 //void async_operation(CompletedCallback callback);
 
 
-#define ArrowArray struct OpaqueArrowArray
+// #define Arc_Vec_ArrowVectorFFI struct Arc_Vec_ArrowVectorFFI
 
-//#define FFI_ArrowArray struct OpaqueFFI_ArrowArray
-//#define FFI_ArrowSchema struct OpaqueFFI_ArrowSchema
+#define ArrowArray struct OpaqueArrowArray
 
 #define ExecutionContext struct OpaqueExecutionContext
 
-#define Vec_RecordBatch struct OpaqueVec_RecordBatch
-
+//#define Arc_Vec_ArrowVectorFFI struct OpaqueArc_Vec_ArrowVectorFFI
 
 #import "arcolyte.h"
