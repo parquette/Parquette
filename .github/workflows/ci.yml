@@ -68,11 +68,20 @@ jobs:
       - name: Package for Distribution
         run: ditto -V -c -k --keepParent "Export/Parquette.app" "Parquette.zip"
         
-      - name: Upload Build
+      - name: Upload Build Artifact
         uses: actions/upload-artifact@v2
         with:
           name: Build
           path: Parquette.zip
+
+      - name: Upload Build Release
+        id: upload-manifest
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: Parquette.zip
 
 
       #- name: Archive production artifacts
