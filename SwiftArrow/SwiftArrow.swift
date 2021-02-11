@@ -218,12 +218,14 @@ public class DFDataFrame {
     /// Executes the DataFrame and returns all the vectors
     @inlinable public func collect() throws -> ArrowResultSet {
         let vectorsPtr = try SwiftRustError.checking(datafusion_dataframe_collect_vectors(ptr))
+        defer { datafusion_vectorset_destroy(vectorsPtr) }
+
         let batchCount = datafusion_vectorset_batchcount(vectorsPtr)
         let columnCount = datafusion_vectorset_columncount(vectorsPtr)
 
-        let vectors: [[ArrowVector]] = (0..<columnCount).map { columnIndex in
-            (0..<batchCount).map { batchIndex in
-                ArrowVector(ffi: datafusion_vectorset_element(vectorsPtr, columnIndex, batchIndex).pointee)
+        let vectors: [[ArrowVector]] = try (0..<columnCount).map { columnIndex in
+            try (0..<batchCount).map { batchIndex in
+                ArrowVector(ffi: try SwiftRustError.checking(datafusion_vectorset_element(vectorsPtr, columnIndex, batchIndex)).pointee)
             }
         }
 
@@ -244,14 +246,37 @@ public final class ArrowResultSet {
 /// A set of multiple batches of a single column
 public final class ArrowColumnSet {
     public let batches: [ArrowVector]
+    @usableFromInline let counts: [Int]
 
     @usableFromInline init(batches: [ArrowVector]) {
         self.batches = batches
+        self.counts = batches.map(\.count)
     }
 
     /// The sum total of all elements in the column set
-    public var count: Int {
-        batches.reduce(0, { $0 + $1.count })
+    @inlinable public var count: Int {
+        counts.reduce(0, +)
+    }
+
+    /// Returns the batch for the appropriate index
+    @inlinable public func vectorIndex(forAbsoluteIndex index: Int) -> (offset: Int, vector: ArrowVector)? {
+        var i = index
+        var vectorChunk: ArrowVector? = nil
+        for vec in self.batches {
+            if i < vec.count {
+                vectorChunk = vec
+                break
+            } else {
+                i -= vec.count
+            }
+        }
+
+        guard let vec = vectorChunk else {
+            dbg("could not find vector for index", index)
+            return nil
+        }
+
+        return (i, vec)
     }
 }
 

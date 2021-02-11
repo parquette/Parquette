@@ -77,9 +77,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         dbg(notification.debugDescription)
     }
 
-    func applicationDidChangeOcclusionState(_ notification: Notification) {
-        dbg(notification.debugDescription)
-    }
+//    func applicationDidChangeOcclusionState(_ notification: Notification) {
+//        dbg(notification.debugDescription)
+//    }
 
 }
 
@@ -357,7 +357,7 @@ final class ParquetteDocument: FileDocument {
     // static var writableContentTypes: [UTType] { wip([]) } // TODO: export to CSV?
 
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        dbg(configuration.contentType.debugDescription)
+        // dbg(configuration.contentType.debugDescription)
 
         // return FileWrapper() // avoid showing a save error to the user; this however does wind up clobbering the file
 
@@ -923,10 +923,10 @@ struct ParquetViewer: View {
 
                     // clear any previou history items with the same SQL
                     queryHistory.queries.removeAll { $0 == sql }
-                    queryHistory.queries.append(sql)
+                    queryHistory.queries.insert(sql, at: 0)
 
                     while queryHistory.queries.count > queryHistoryCount {
-                        queryHistory.queries.removeFirst()
+                        queryHistory.queries.removeLast()
                     }
 
                     dst.result.results = results
@@ -987,19 +987,8 @@ private final class ArrowTableColumn : NSTableColumn {
         assert(index >= 0)
         assert(index < columnSet.count)
 
-        var i = index
-        var vectorChunk: ArrowVector? = nil
-        for vec in columnSet.batches {
-            if i < vec.count {
-                vectorChunk = vec
-                break
-            } else {
-                i -= vec.count
-            }
-        }
-
-        guard let vec = vectorChunk else {
-            dbg("could not find vector for index", index)
+        guard let (i, vec) = columnSet.vectorIndex(forAbsoluteIndex: index) else {
+            dbg("no vector chunk for index", index)
             return nil
         }
 
@@ -1028,8 +1017,8 @@ private final class ArrowTableColumn : NSTableColumn {
                 throw SwiftArrowError.unsupportedDataType(vec.dataType)
             }
         } catch {
-            dbg("error accessing index", index, error.localizedDescription)
-            return loc("ERROR") as NSString
+            // dbg("error accessing index", index, "\(error)")
+            return "\(error)" as NSString
         }
     }
 }
@@ -1113,10 +1102,10 @@ struct DataTableView : NSViewRepresentable {
                         dataCell.formatter = nil // just strings
                         dataCell.alignment = .left
                     case .int8, .int16, .int32, .int64, .uint8, .uint16, .uint32, .uint64:
-                        dataCell.formatter = NumberFormatter()
+                        dataCell.formatter = NumberFormatter.integerFormatter
                         dataCell.alignment = .right
                     case .float16, .float32, .float64:
-                        dataCell.formatter = NumberFormatter()
+                        dataCell.formatter = NumberFormatter.decimalFormatter
                         dataCell.alignment = .right
                     default:
                         dataCell.alignment = .center
@@ -1204,4 +1193,18 @@ extension CFAbsoluteTime {
     @inlinable func millisFrom() -> UInt {
         UInt(max(0, (CFAbsoluteTimeGetCurrent() - self) * 1_000))
     }
+}
+
+extension NumberFormatter {
+    static let decimalFormatter: NumberFormatter = {
+        let fmt = NumberFormatter()
+        fmt.numberStyle = .decimal
+        return fmt
+    }()
+
+    static let integerFormatter: NumberFormatter = {
+        let fmt = NumberFormatter()
+        fmt.numberStyle = .decimal
+        return fmt
+    }()
 }
