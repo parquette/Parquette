@@ -1,5 +1,10 @@
 name: CI
 
+env:
+  APP_NAME: Parquette
+  TEST_NAME: SwiftArrow
+  TEAM_ID: 2HFBY6N8ZN
+
 on:
   push:
     branches: [ main ]
@@ -21,7 +26,7 @@ jobs:
           submodules: true
 
       - name: SwiftArrow Tests
-        run: xcodebuild test -scheme SwiftArrow
+        run: xcodebuild test -scheme ${{ TEST_NAME }}
 
       # seems to hang on CI image…
       #- name: Parquette Tests
@@ -30,7 +35,7 @@ jobs:
       - name: "Archive"
         uses: devbotsxyz/xcode-archive@v1
         with:
-          scheme: "Parquette"
+          scheme: ${{ APP_NAME }}
 
       - name: "Import Certificate: Distribution"
         uses: devbotsxyz/import-signing-certificate@main
@@ -43,45 +48,59 @@ jobs:
       #- name: "Export & Sign Release Build"
       #  uses: devbotsxyz/xcode-export-archive@master
       #  with:
-      #    scheme: "Parquette"
+      #    scheme: ${{ APP_NAME }}
 
       - name: "Create exportOptions.plist"
         run: 
-          echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>2HFBY6N8ZN</string></dict></plist>' > exportOptions.plist
+          echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>${{ TEAM_ID }}</string></dict></plist>' > ParquetteExportOptions.plist
           
       - name: "Export & Sign Release Build"
         run: 
-          xcodebuild -exportArchive -archivePath Parquette.xcarchive -exportPath Export -exportOptionsPlist exportOptions.plist 
+          xcodebuild -exportArchive -archivePath "${{ APP_NAME }}.xcarchive" -exportPath Export -exportOptionsPlist "${{ APP_NAME }}ExportOptions.plist"
 
       - name: "Notarize Release Build"
         uses: devbotsxyz/xcode-notarize@v1
         with:
-          product-path: "Export/Parquette.app"
+          product-path: "Export/${{ APP_NAME }}.app"
           appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
 
       - name: "Staple Release Build"
         uses: devbotsxyz/xcode-staple@v1
         with:
-          product-path: "Export/Parquette.app"
+          product-path: "Export/${{ APP_NAME }}.app"
+          verbose: true
 
       - name: Package for Distribution
-        run: ditto -V -c -k --keepParent "Export/Parquette.app" "Parquette.zip"
-        
-      - name: Upload Build Artifact
+        run: ditto -c -k --keepParent "Export/${{ APP_NAME }}.app" "${{ APP_NAME }}.zip"
+
+      - name: Upload Build Artifact Zip
         uses: actions/upload-artifact@v2
         with:
           name: Build
-          path: Parquette.zip
-
-      - name: Upload Build Release
+          path: ${{ APP_NAME }}.zip
+        
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.ref }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: true
+                  
+      - name: Upload Build Release Zip
         id: upload-manifest
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: Parquette.zip
+          asset_path: ${{ APP_NAME }}.zip
+          asset_content_type: application/zip
 
 
       #- name: Archive production artifacts
