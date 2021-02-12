@@ -14,7 +14,6 @@ jobs:
     env:
       APP_NAME: Parquette
       TEST_NAME: SwiftArrow
-      TEAM_ID: 2HFBY6N8ZN
     runs-on: macos-latest
     environment: Signing
     timeout-minutes: 120
@@ -24,12 +23,12 @@ jobs:
         with:
           submodules: true
 
-      - name: SwiftArrow Tests
-        run: xcodebuild test -scheme ${{ env.TEST_NAME }}
+      #- name: Framework Tests
+      #  run: xcodebuild test -scheme ${{ env.TEST_NAME }}
 
       # seems to hang on CI image…
-      #- name: Parquette Tests
-      #  run: xcodebuild test -scheme Parquette
+      #- name: App Tests
+      #  run: xcodebuild test -scheme ${{ env.APP_NAME }}
 
       - name: "Archive"
         uses: devbotsxyz/xcode-archive@v1
@@ -51,7 +50,7 @@ jobs:
 
       - name: "Create exportOptions.plist"
         run: 
-          echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>${{ env.TEAM_ID }}</string></dict></plist>' > ParquetteExportOptions.plist
+          echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>${{ secrets.TEAM_ID }}</string></dict></plist>' > "${{ env.APP_NAME }}ExportOptions.plist"
           
       - name: "Export & Sign Release Build"
         run: 
@@ -67,7 +66,7 @@ jobs:
       - name: "Staple Release Build"
         uses: devbotsxyz/xcode-staple@v1
         with:
-          product-path: "Export/${{env. APP_NAME }}.app"
+          product-path: "Export/${{env.APP_NAME }}.app"
           verbose: true
 
       - name: Package for Distribution
@@ -79,25 +78,33 @@ jobs:
           name: Build
           path: ${{ env.APP_NAME }}.zip
         
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ env.APP_NAME }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ github.ref }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: false
-          prerelease: true
-                  
-      - name: Upload Build Release Zip
-        id: upload-manifest
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          asset_path: ${{ env.APP_NAME }}.zip
-          asset_name: ${{ env.APP_NAME }}.zip
-          asset_content_type: application/zip
-          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+
+      #- name: Create Release
+      #  id: create_release
+      #  uses: actions/create-release@v1
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #    VERSION: ${{ github.ref }}
+      #  with:
+      #    tag_name: ${{ github.ref }}
+      #    release_name: ${{ github.ref }}
+      #    draft: false
+      #    prerelease: true
+      #
+      #- name: Upload Build Release Zip
+      #  id: upload-manifest
+      #  uses: actions/upload-release-asset@v1
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  with:
+      #    asset_path: ${{ env.APP_NAME }}.zip
+      #    asset_name: ${{ env.APP_NAME }}.zip
+      #    asset_content_type: application/zip
+      #    upload_url: ${{ steps.create_release.outputs.upload_url }} 
