@@ -22,7 +22,6 @@
 		49BA3F9425D04C580064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3F9325D04C580064DEEC /* arcolyte.h */; };
 		49BA3FA125D04CDB0064DEEC /* libarcolyte.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49BA3F9F25D04CCF0064DEEC /* libarcolyte.a */; };
 		49BA3FD725D053DD0064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3FD625D053DC0064DEEC /* arcolyte.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		49C214D325D65DD50030F8B2 /* Hubomatic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C214CD25D65DBF0030F8B2 /* Hubomatic.swift */; };
 		49F1D6DC25D5938A00F7F3A5 /* MiscKit in Frameworks */ = {isa = PBXBuildFile; productRef = 49F1D6DB25D5938A00F7F3A5 /* MiscKit */; };
 /* End PBXBuildFile section */
 
@@ -107,7 +106,6 @@
 		49BA3F9325D04C580064DEEC /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arcolyte.h; sourceTree = BUILT_PRODUCTS_DIR; };
 		49BA3F9F25D04CCF0064DEEC /* libarcolyte.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libarcolyte.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		49BA3FD625D053DC0064DEEC /* arcolyte.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arcolyte.h; sourceTree = SOURCE_ROOT; };
-		49C214CD25D65DBF0030F8B2 /* Hubomatic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hubomatic.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -233,7 +231,6 @@
 			children = (
 				492E72D125CCC170003C8D58 /* Info.plist */,
 				492E72D225CCC170003C8D58 /* macOS.entitlements */,
-				49C214CD25D65DBF0030F8B2 /* Hubomatic.swift */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
@@ -549,7 +546,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				49C214D325D65DD50030F8B2 /* Hubomatic.swift in Sources */,
 				492E72EA25CCC170003C8D58 /* ParquetteApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
