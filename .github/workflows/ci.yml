@@ -2,9 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    #branches: [ main ]
+    tags: v[1-9]+
   schedule:
     # run at 6AM & 6PM UTC
     - cron:  '0 6,18 * * *'
