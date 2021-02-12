@@ -5,7 +5,7 @@
 
 # always run in release mode (~20x faster datafusion performance)
 CARGO_MODE="release"
-CARGO_MODE="debug"
+#CARGO_MODE="debug"
 
 # build for macOS10.12+
 export MACOSX_DEPLOYMENT_TARGET=10.12
