@@ -851,7 +851,7 @@ struct ParquetViewer: View {
 
     // registration_dttm, birthdate: thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: CDataInterface("The datatype \"Timestamp(Nanosecond, None)\" is still not supported in Rust implementation")', src/arrowz.rs:614:79
 
-    @SceneStorage("sql") var sql = "select 1 + CAST('2' as BIGINT)"
+    @SceneStorage("sql") var sql = "select count(*) from data" // "select 1 + CAST('2' as BIGINT)"
     @SceneStorage("sqlVisible") var sqlVisible = true
     @SceneStorage("queryHistory") var queryHistory = QueryHistory()
     @AppStorage("queryHistoryCount") var queryHistoryCount = 20
