@@ -22,8 +22,8 @@ jobs:
         with:
           submodules: true
 
-      #- name: Framework Tests
-      #  run: xcodebuild test -scheme ${{ env.TEST_NAME }}
+      - name: Framework Tests
+        run: xcodebuild test -scheme ${{ env.TEST_NAME }}
 
       # seems to hang on CI image…
       #- name: App Tests
