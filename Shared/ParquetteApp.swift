@@ -94,6 +94,7 @@ struct ParquetteAppContentView : View, ParquetteCommands {
     @AppStorage("theme") private var theme = AppTheme.system
     @AppStorage("controlSize") private var controlScale = ControlScale.regular
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.undoManager) private var undoManager
 
     var body: some View {
         ContentView()
@@ -101,10 +102,10 @@ struct ParquetteAppContentView : View, ParquetteCommands {
             .environmentObject(docState)
             //.controlSize(controlScale.controlSize)
             .onChange(of: scenePhase) { phase in
-                dbg("scene phase")
+                dbg("scene phase", undoManager)
             }
             .onAppear {
-                dbg("appear")
+                dbg("disabling undo", undoManager)
             }
     }
 }
@@ -303,6 +304,25 @@ final class DocState : ObservableObject {
 
 
 extension JSContext {
+    @inlinable func checkException() throws {
+        if let exception = self.exception {
+            if let error = JSException(exception: exception.jsValueRef, ctx: self.jsGlobalContextRef) {
+                throw error
+            } else {
+                dbg("unconvertable JS exception")
+            }
+        }
+    }
+
+    /// Executes the JS against the context
+    @discardableResult public func execute(script: String) throws -> JSValue? {
+        let value = evaluateScript(script)
+        try checkException()
+        return value
+    }
+
+
+    /// Validates the JS against the context
     @inlinable func validate(script: String) throws -> Bool {
         let (valid, exception) = script.withCString { script in
             let stringRef = JSStringCreateWithUTF8CString(script)
@@ -311,12 +331,8 @@ extension JSContext {
             return (JSCheckScriptSyntax(jsGlobalContextRef, stringRef, nil, 0, &exception), exception)
         } as (Bool, JSValueRef?)
 
-        // for string errors, just throw it as an error
-        if let exception = exception, let ex = JSException(exception: exception, ctx: jsGlobalContextRef) {
-            throw ex
-        }
-
-        return exception == nil
+        try checkException()
+        return valid
     }
 }
 
@@ -343,8 +359,8 @@ struct QueryResult {
     /// The current unique ID of the results; new queries will always be assigned a new ID
     var resultID: UUID? = nil
 
-    /// The amount of time the query took
-    var resultTime: UInt? = nil
+    /// The amount of time the query took; -1 means a query is currently being performed
+    var resultTime: Int? = nil
 
     /// The actual results
     var results: ArrowResultSet? = nil
@@ -399,7 +415,7 @@ struct StatusPanel : View, ParquetteCommands {
     var body: some View {
         HStack(alignment: .center) {
             Group {
-                if self.docState.result.resultTime == 0 {
+                if self.docState.result.resultTime == -1 {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
                         .controlSize(.small)
@@ -419,7 +435,7 @@ struct StatusPanel : View, ParquetteCommands {
 
             performCancelButton()
                 .keyboardShortcut(".")
-                .opacity(self.docState.result.resultTime == 0 ? 1.0 : 0.0)
+                .opacity(self.docState.result.resultTime == -1 ? 1.0 : 0.0)
 
             // the file/memory size labels
             VStack(alignment: .leading, spacing: 2) {
@@ -449,10 +465,12 @@ struct StatusPanel : View, ParquetteCommands {
 
 extension DocState {
     var queryText: String {
+        if self.result.resultTime == -1 {
+            return loc("Querying…")
+        }
+
         if let resultTime = self.result.resultTime {
-            if resultTime == 0 {
-                return loc("Querying…")
-            } else if let resultCount = self.result.resultCount {
+            if let resultCount = self.result.resultCount {
                 let countStr = NumberFormatter.localizedString(from: .init(value: resultCount), number: .decimal)
 
                 let timeStr = NumberFormatter.localizedString(from: .init(value: resultTime), number: .decimal)
@@ -608,10 +626,13 @@ extension View {
 }
 
 struct SettingsView : View {
-    @AppStorage("reopenDocuments") private var reopenDocuments = true
+    //@AppStorage("reopenDocuments") private var reopenDocuments = true
     @AppStorage(asyncQueryDefault) private var asyncQuery = asyncQueryDefaultValue
     @AppStorage("theme") private var theme = AppTheme.system
     @AppStorage("controlSize") private var controlScale = ControlScale.regular
+    @AppStorage("NSQuitAlwaysKeepsWindows") private var quitAlwaysKeepsWindows = true
+
+
 
     private enum Tabs: Hashable {
         case general, appearance
@@ -651,8 +672,11 @@ struct SettingsView : View {
 
         Form {
             // Text(loc("Document"))
-            Toggle(loc("Re-Open Last Document"), isOn: $reopenDocuments)
+            Toggle(loc("Re-Open Last Document"), isOn: $quitAlwaysKeepsWindows)
+            // Toggle(loc("Re-Open Last Document"), isOn: $reopenDocuments)
             Toggle(loc("Query Asynchronously"), isOn: $asyncQuery)
+
+
             // Divider()
         }
     }
@@ -735,10 +759,33 @@ enum ControlScale : String, CaseIterable, Hashable {
 
 }
 
-
-@available(*, deprecated, message: "make columns dynamic")
-let colcount = 7
-
+extension ArrowColumnSet {
+    var icon: Image {
+        switch self.batches.first?.dataType {
+        case .none: return Image(systemName: "exclamationmark.square.fill")
+        case .null: return Image(systemName: "exclamationmark.sheild.fill")
+        case .boolean: return Image(systemName: "switch.2")
+        case .int8: return Image(systemName: "8.circle")
+        case .uint8: return Image(systemName: "8.circle.fill")
+        case .int16: return Image(systemName: "16.circle")
+        case .uint16: return Image(systemName: "16.circle.fill")
+        case .int32: return Image(systemName: "32.circle")
+        case .uint32: return Image(systemName: "32.circle.fill")
+        case .int64: return Image(systemName: "46.circle")
+        case .uint64: return Image(systemName: "46.circle.fill")
+        case .float16: return Image(systemName: "16.square")
+        case .float32: return Image(systemName: "32.square")
+        case .float64: return Image(systemName: "46.square")
+        case .binary: return Image(systemName: "seal")
+        case .binaryLarge: return Image(systemName: "seal.fill")
+        case .utf8: return Image(systemName: "textformat")
+        case .utf8Large: return Image(systemName: "textformat.size")
+        case .date32: return Image(systemName: "calendar.circle")
+        case .date64: return Image(systemName: "calendar.circle.fill")
+        case .time64: return Image(systemName: "timer.square")
+        }
+    }
+}
 
 struct ContentView: View, ParquetteCommands {
     @EnvironmentObject var docState: DocState
@@ -750,9 +797,11 @@ struct ContentView: View, ParquetteCommands {
     var contentBody: some View {
         NavigationView {
             List() {
-                Section(header: Text(wip("") /* docState.fileTitle */)) {
-                    ForEach(0..<colcount) { i in
-                        Text("Colum \(i + 1)")
+                Section(header: Text("Vectors")) {
+                    ForEach(self.docState.result.results?.columnSets ?? []) { columnSet in
+                        Label(
+                            title: { Text(columnSet.columnName ?? "???") },
+                            icon: { columnSet.icon })
                     }
                 }
             }
@@ -834,26 +883,26 @@ extension UInt {
 //}
 
 
-struct QueryHistory : Codable {
-    var queries: [String] = []
+struct StringListStorage : Codable {
+    var strings: [String] = []
 }
 
-extension QueryHistory : RawRepresentable {
+extension StringListStorage : RawRepresentable {
     init(rawValue: String) {
         if let data = rawValue.data(using: .utf8) {
             do {
-                queries = try JSONDecoder().decode([String].self, from: data)
+                strings = try JSONDecoder().decode([String].self, from: data)
             } catch {
-                dbg("error deserializing queries", queries)
-                self = .init(queries: [])
+                dbg("StringListStorage deserialize error", strings)
+                self = .init(strings: [])
             }
         } else {
-            self = .init(queries: [])
+            self = .init(strings: [])
         }
     }
 
     var rawValue: String {
-        (squelch(try String(data: JSONEncoder().encode(self.queries), encoding: .utf8)) ?? "[]") ?? "[]" // double optional: <Optional<OptionalString>>
+        (squelch(try String(data: JSONEncoder().encode(self.strings), encoding: .utf8)) ?? "[]") ?? "[]" // double optional: <Optional<OptionalString>>
     }
 }
 
@@ -869,8 +918,12 @@ struct ParquetViewer: View {
     @SceneStorage("sql") var sql = "select count(*) from data" // "select 1 + CAST('2' as BIGINT)"
     @SceneStorage("script") var script = "1+2"
     @SceneStorage("sqlVisible") var sqlVisible = true
-    @SceneStorage("queryHistory") var queryHistory = QueryHistory()
-    @AppStorage("queryHistoryCount") var queryHistoryCount = 20
+
+    @SceneStorage("sqlHistory") var sqlHistory = StringListStorage()
+    @AppStorage("sqlHistoryCount") var sqlHistoryCount = 20
+
+    @SceneStorage("scriptHistory") var scriptHistory = StringListStorage()
+    @AppStorage("scriptHistoryCount") var scriptHistoryCount = 20
 
     @Environment(\.font) var font
 
@@ -892,29 +945,50 @@ extension ParquetViewer {
             .buttonStyle(PlainButtonStyle())
             .labelStyle(IconOnlyLabelStyle())
 
-            MenuButton(loc("SQL:")) {
+            MenuButton(selectedTab == .sql ? loc("SQL:") : loc("JavaScript:")) {
                 ActionButton(title: loc("Execute"), icon: "play", action: performQuery)
-                Divider()
-                Text(loc("Recent Queries:"))
-                ForEach(queryHistory.queries, id: \.self) { query in
-                    ActionButton(title: query, icon: "magnifyingglass.circle") {
-                        sql = query
+
+                Group {
+                    Divider()
+                    Text(loc("Recent Queries:"))
+                    ForEach(sqlHistory.strings, id: \.self) { previousQuery in
+                        ActionButton(title: previousQuery, icon: "magnifyingglass.circle") {
+                            sql = previousQuery
+                        }
                     }
                 }
-                Divider()
-                ActionButton(title: loc("Clear Query History"), icon: "trash.circle") {
-                    queryHistory.queries.removeAll()
+
+                Group {
+                    Divider()
+                    Text(loc("Recent Scripts:"))
+                    ForEach(scriptHistory.strings, id: \.self) { previousScript in
+                        ActionButton(title: previousScript, icon: "magnifyingglass.circle") {
+                            script = previousScript
+                        }
+                    }
+                }
+
+                Group {
+                    Divider()
+
+                    ActionButton(title: loc("Clear Script History"), icon: "trash.circle.fill") {
+                        scriptHistory.strings.removeAll()
+                    }
+
+                    ActionButton(title: loc("Clear SQL History"), icon: "trash.circle") {
+                        sqlHistory.strings.removeAll()
+                    }
                 }
             }
             .menuButtonStyle(PullDownMenuButtonStyle())
-            .frame(width: 80)
+            .frame(width: 200)
 
             Spacer()
             Text(docState.ctx.validationMessage(sql: sql) ?? "")
             Spacer()
 
-            ActionButton(title: loc("Execute"), icon: "play.fill", action: performQuery)
-                .help(loc("Executed the query (CMD-Return)"))
+            ActionButton(title: loc("Execute"), icon: "play.fill", action: performConsoleCommand)
+                .help(loc("Executed the console command (CMD-Return)"))
                 .keyboardShortcut(.return, modifiers: [.command])
                 .labelStyle(IconOnlyLabelStyle()) // TODO: change to menu comment shortcut
         }
@@ -927,16 +1001,16 @@ extension ParquetViewer {
             TabView(selection: $selectedTab) {
                 SQLView()
                     .tabItem {
+
                         Label(loc("SQL"), systemImage: "ladybug.fill")
-                            .labelStyle(IconOnlyLabelStyle())
+                            // .labelStyle(IconOnlyLabelStyle()) // icons never don't show up in tabs for some reason
                             .help(loc("SQL Console"))
                     }
                     .tag(ConsoleTab.sql)
                 JSCView()
                     .tabItem {
-                        Label(loc("JsvaScript"), systemImage: "ant.fill")
-                            .labelStyle(IconOnlyLabelStyle())
-                            .help(loc("JsvaScript Console"))
+                        Label(loc("JSC"), systemImage: "ant.fill")
+                            .help(loc("JavaScript Console"))
                     }
                     .tag(ConsoleTab.jsc)
             }
@@ -967,6 +1041,51 @@ extension ParquetViewer {
             .padding()
     }
 
+    func performConsoleCommand() {
+        dbg(selectedTab)
+        switch selectedTab {
+        case .sql: return performQuery()
+        case .jsc: return performScript()
+        }
+    }
+
+    func performScript() {
+        dbg("performScript")
+        let start = now()
+        let dst = self.docState
+        let ast = self.appState
+
+        guard let jsc = dst.jsc else {
+            return dbg("no jsc in doc")
+        }
+
+        dst.result.resultTime = -1
+
+        let script = self.script
+
+        dst.attempt(async: dst.useAsyncQuery) {
+            let result = try jsc.execute(script: script)
+
+            // dbg("received \(dst.result.results?.columnSets.count ?? 0) columns with \(dst.result.resultCount ?? -1) elements in \(dst.result.resultTime ?? 0)ms")
+
+            onmain {
+                dst.result.resultTime = .init(start.millisFrom())
+                addScriptHistory(script)
+
+                dbg("recevied result", result)
+
+                guard let result = result else { return dbg("no results") }
+
+//                    dst.result.results = results
+                dst.result.resultID = .init()
+
+                self.script = self.script + "\n // -> \(result)\n"
+
+                ast.calculateMemoryUsage() // re-calc usage
+            }
+        }
+    }
+
     func performQuery() {
         dbg("performQuery")
         let start = now()
@@ -976,34 +1095,54 @@ extension ParquetViewer {
 
         let ctx = dst.ctx
 
-        dst.result.resultTime = 0
+        let sql = self.sql
 
+
+        dst.result.resultTime = -1 // indicate that we are querying…
         dst.attempt(async: dst.useAsyncQuery) {
-            if let frame = try ctx.query(sql: sql) {
-                let results = try frame.collectResults()
+            let frame = try ctx.query(sql: sql)
+            addQueryHistory(sql)
+            let results = try frame?.collectResults()
 
-                onmain {
-                    let duration = start.millisFrom()
+            onmain {
+                dst.result.resultTime = .init(start.millisFrom())
 
-                    // clear any previou history items with the same SQL
-                    queryHistory.queries.removeAll { $0 == sql }
-                    queryHistory.queries.insert(sql, at: 0)
-
-                    while queryHistory.queries.count > queryHistoryCount {
-                        queryHistory.queries.removeLast()
-                    }
-
-                    dst.result.results = results
-                    dst.result.resultTime = duration
-                    dst.result.resultID = .init()
-
-                    ast.calculateMemoryUsage() // re-calc usage
-
-                    dbg("received \(dst.result.results?.columnSets.count ?? 0) columns with \(dst.result.resultCount ?? -1) elements in \(dst.result.resultTime ?? 0)ms")
+                guard let results = results else {
+                    return dbg("no query results")
                 }
+
+                dst.result.results = results
+                dst.result.resultID = .init()
+
+                ast.calculateMemoryUsage() // re-calc usage
+
+                dbg("received \(dst.result.results?.columnSets.count ?? 0) columns with \(dst.result.resultCount ?? -1) elements in \(dst.result.resultTime ?? 0)ms")
             }
         }
     }
+
+    func addQueryHistory(_ sql: String) {
+        // clear any previous history items with the same SQL
+        sqlHistory.strings.removeAll { $0 == sql }
+        sqlHistory.strings.insert(sql, at: 0)
+
+        while sqlHistory.strings.count > sqlHistoryCount {
+            sqlHistory.strings.removeLast()
+        }
+
+    }
+
+    func addScriptHistory(_ script: String) {
+        // clear any previous history items with the same SQL
+        scriptHistory.strings.removeAll { $0 == sql }
+        scriptHistory.strings.insert(sql, at: 0)
+
+        while scriptHistory.strings.count > scriptHistoryCount {
+            scriptHistory.strings.removeLast()
+        }
+
+    }
+
 }
 
 
@@ -1030,6 +1169,13 @@ extension NSControl.ControlSize {
     }
 }
 
+extension ArrowColumnSet {
+    var columnName: String? {
+        wip(batches.compactMap(\.name).first) // column name isn't always set
+
+    }
+}
+
 private final class ArrowTableColumn : NSTableColumn {
     let columnSet: ArrowColumnSet
 
@@ -1044,7 +1190,12 @@ private final class ArrowTableColumn : NSTableColumn {
 
     /// The arrow data type for this column
     var dataType: ArrowDataType? {
-        columnSet.batches.first?.dataType
+        columnSet.batches.compactMap(\.dataType).first
+    }
+
+    /// The arrow column name for this
+    var columnName: String? {
+        columnSet.columnName
     }
 
     func objectValue(at index: Int) -> NSObject? {
@@ -1371,5 +1522,3 @@ struct LocalError : LocalizedError, Identifiable {
         (error as NSError).helpAnchor
     }
 }
-
-

@@ -239,7 +239,8 @@ public final class ArrowResultSet {
 }
 
 /// A set of multiple batches of a single column
-public final class ArrowColumnSet {
+public final class ArrowColumnSet : Identifiable {
+    public let id = UUID()
     public let batches: [ArrowVector]
     @usableFromInline let counts: [Int]
 
