@@ -335,12 +335,12 @@ extension JSContext {
         return val
     }
 
-    /// Deletes a property from an object.
-    @inlinable func deleteProperty(inObject object: JSObjectRef!, propertyName: JSStringRef!) throws {
-        let _ = try withJSException {
-            JSObjectDeleteProperty(jsGlobalContextRef, object, propertyName, &$0)
-        }
-    }
+//    /// Deletes a property from an object.
+//    @inlinable func deleteProperty(inObject object: JSObjectRef!, propertyName: JSStringRef!) throws {
+//        let _ = try withJSException {
+//            JSObjectDeleteProperty(jsGlobalContextRef, object, propertyName, &$0)
+//        }
+//    }
 
     /// Returns `true` if the given object (defaults to the global object) has the specified property defined
     @inlinable func hasProperty(_ name: CFString, this: JSObjectRef? = nil) -> Bool {
@@ -356,49 +356,49 @@ extension JSContext {
         return value
     }
 
-    /// Passes the given data as the named property for the duration of the block closure.
-    /// - Note: Care must be taken to avoid retaining the data in the JavaScriptCore context, since the underlying pointer will not be valid beyond the scope of the block
-    @inlinable func withArrayBufferData<T>(data: Data, named name: String = JSContext.makeTemporaryPropName(), block: (String) throws -> T) rethrows -> T {
-        let count = data.count
-        var data = data
-
-        return try data.withUnsafeMutableBytes { ptr in
-            let deallocator: JSTypedArrayBytesDeallocator = { ptr, ctx in
-                // unnecessary, since the pointer will pass out
-                // ptr?.deallocate()
-            }
-
-            var ex : JSValueRef?
-            let obj = JSObjectMakeArrayBufferWithBytesNoCopy(jsGlobalContextRef, ptr.baseAddress, count, deallocator, nil, &ex)
-            if let ex = ex { if let error = JSException(exception: ex, ctx: jsGlobalContextRef) { throw error } }
-
-//            guard let objValue = obj else {
-//                throw err("unexpected null result in withArrayBufferData")
+//    /// Passes the given data as the named property for the duration of the block closure.
+//    /// - Note: Care must be taken to avoid retaining the data in the JavaScriptCore context, since the underlying pointer will not be valid beyond the scope of the block
+//    @inlinable func withArrayBufferData<T>(data: Data, named name: String = JSContext.makeTemporaryPropName(), block: (String) throws -> T) rethrows -> T {
+//        let count = data.count
+//        var data = data
+//
+//        return try data.withUnsafeMutableBytes { ptr in
+//            let deallocator: JSTypedArrayBytesDeallocator = { ptr, ctx in
+//                // unnecessary, since the pointer will pass out
+//                // ptr?.deallocate()
 //            }
-
-            return try withPropertyValue(objValue, named: name, block: block)
-        }
-    }
+//
+//            var ex : JSValueRef?
+//            let obj = JSObjectMakeArrayBufferWithBytesNoCopy(jsGlobalContextRef, ptr.baseAddress, count, deallocator, nil, &ex)
+//            if let ex = ex { if let error = JSException(exception: ex, ctx: jsGlobalContextRef) { throw error } }
+//
+////            guard let objValue = obj else {
+////                throw err("unexpected null result in withArrayBufferData")
+////            }
+//
+//            return try withPropertyValue(objValue, named: name, block: block)
+//        }
+//    }
 
     /// Retruns a random temporary variable name
     @inlinable static func makeTemporaryPropName() -> String {
         "_v" + UUID().uuidString.replacingOccurrences(of: "-", with: "")
     }
 
-    /// Performs the given closure with the temporarily assigned propertyname
-    /// - Note: Care must be taken to avoid retaining the data in the JavaScriptCore context, since the underlying pointer will not be valid beyond the scope of the block
-    @inlinable func withPropertyValue<T>(_ obj: JSObjectRef, named name: String = JSContext.makeTemporaryPropName(), block: (String) throws -> T) throws -> T {
-        let pname = JSStringCreateWithUTF8CString(name)
-        defer { JSStringRelease(pname) }
-
-        try setProperty(inObject: jsGlobalContextRef, propertyName: pname, value: obj, attributes: .init(kJSPropertyAttributeReadOnly))
-
-        defer {
-            try? deleteProperty(inObject: jsGlobalContextRef, propertyName: pname) // cannot throw in defer
-        }
-
-        return try block(name)
-    }
+//    /// Performs the given closure with the temporarily assigned propertyname
+//    /// - Note: Care must be taken to avoid retaining the data in the JavaScriptCore context, since the underlying pointer will not be valid beyond the scope of the block
+//    @inlinable func withPropertyValue<T>(_ obj: JSObjectRef, named name: String = JSContext.makeTemporaryPropName(), block: (String) throws -> T) throws -> T {
+//        let pname = JSStringCreateWithUTF8CString(name)
+//        defer { JSStringRelease(pname) }
+//
+//        try setProperty(inObject: jsGlobalContextRef, propertyName: pname, value: obj, attributes: .init(kJSPropertyAttributeReadOnly))
+//
+//        defer {
+//            try? deleteProperty(inObject: jsGlobalContextRef, propertyName: pname) // cannot throw in defer
+//        }
+//
+//        return try block(name)
+//    }
 
     /// Validates the JS against the context
     @inlinable func validate(script: String) throws -> Bool {
