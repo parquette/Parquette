@@ -380,6 +380,7 @@ extension JSContext {
 //        }
 //    }
 
+    
     /// Retruns a random temporary variable name
     @inlinable static func makeTemporaryPropName() -> String {
         "_v" + UUID().uuidString.replacingOccurrences(of: "-", with: "")
