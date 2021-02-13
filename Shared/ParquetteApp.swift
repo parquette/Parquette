@@ -9,6 +9,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import MiscKit
 import SwiftArrow
+import JavaScriptCore
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     let appState = AppState()
@@ -31,48 +32,48 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         appState.calculateMemoryUsage()
     }
 
-//    func applicationWillHide(_ notification: Notification) {
-//        dbg(notification.debugDescription)
-//    }
+    //    func applicationWillHide(_ notification: Notification) {
+    //        dbg(notification.debugDescription)
+    //    }
 
-//    func applicationDidHide(_ notification: Notification) {
-//        dbg(notification.debugDescription)
-//    }
+    //    func applicationDidHide(_ notification: Notification) {
+    //        dbg(notification.debugDescription)
+    //    }
 
-//    func applicationWillUnhide(_ notification: Notification) {
-//        dbg(notification.debugDescription)
-//    }
+    //    func applicationWillUnhide(_ notification: Notification) {
+    //        dbg(notification.debugDescription)
+    //    }
 
     func applicationDidUnhide(_ notification: Notification) {
-//        dbg(notification.debugDescription)
+        //        dbg(notification.debugDescription)
         appState.calculateMemoryUsage()
     }
 
     func applicationWillBecomeActive(_ notification: Notification) {
-//        dbg(notification.debugDescription)
+        //        dbg(notification.debugDescription)
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
-//        dbg(notification.debugDescription)
+        //        dbg(notification.debugDescription)
         appState.calculateMemoryUsage()
     }
 
-//    func applicationWillResignActive(_ notification: Notification) {
-//        dbg(notification.debugDescription)
-//    }
+    //    func applicationWillResignActive(_ notification: Notification) {
+    //        dbg(notification.debugDescription)
+    //    }
 
     func applicationDidResignActive(_ notification: Notification) {
-//        dbg(notification.debugDescription)
+        //        dbg(notification.debugDescription)
         appState.calculateMemoryUsage()
     }
 
-//    func applicationWillUpdate(_ notification: Notification) {
-//        dbg(notification.debugDescription)
-//    }
+    //    func applicationWillUpdate(_ notification: Notification) {
+    //        dbg(notification.debugDescription)
+    //    }
 
-//    func applicationDidUpdate(_ notification: Notification) {
-//        dbg(notification.debugDescription)
-//    }
+    //    func applicationDidUpdate(_ notification: Notification) {
+    //        dbg(notification.debugDescription)
+    //    }
 
     func applicationWillTerminate(_ notification: Notification) {
         dbg(notification.debugDescription)
@@ -82,9 +83,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         dbg(notification.debugDescription)
     }
 
-//    func applicationDidChangeOcclusionState(_ notification: Notification) {
-//        dbg(notification.debugDescription)
-//    }
+    //    func applicationDidChangeOcclusionState(_ notification: Notification) {
+    //        dbg(notification.debugDescription)
+    //    }
 
 }
 
@@ -139,8 +140,8 @@ struct ParquetteApp: App {
 extension View {
     func withFileExporter() -> some View {
         wip(self)
-            // TODO
-            // .fileExporter(isPresented: T##Binding<Bool>, documents: T##Collection, contentType: T##UTType, onCompletion: T##(Result<[URL], Error>) -> Void)
+        // TODO
+        // .fileExporter(isPresented: T##Binding<Bool>, documents: T##Collection, contentType: T##UTType, onCompletion: T##(Result<[URL], Error>) -> Void)
     }
 }
 
@@ -220,6 +221,7 @@ final class AppState : ObservableObject {
 /// The per-document window state
 final class DocState : ObservableObject {
     let ctx = DFExecutionContext()
+    let jsc = JSContext()
 
     @Published var config: FileDocumentConfiguration<ParquetteDocument>
     @Published var result = QueryResult()
@@ -255,8 +257,8 @@ final class DocState : ObservableObject {
         }
 
         // not needed when sandboxed
-//        let accessing = fileURL.startAccessingSecurityScopedResource()
-//        defer { if accessing { fileURL.stopAccessingSecurityScopedResource() } }
+        //        let accessing = fileURL.startAccessingSecurityScopedResource()
+        //        defer { if accessing { fileURL.stopAccessingSecurityScopedResource() } }
 
         switch fileType {
         case .parquette_parquet:
@@ -300,28 +302,39 @@ final class DocState : ObservableObject {
 }
 
 
-struct LocalError : LocalizedError, Identifiable {
-    let id: UUID
-    let error: Error
+extension JSContext {
+    @inlinable func validate(script: String) throws -> Bool {
+        let (valid, exception) = script.withCString { script in
+            let stringRef = JSStringCreateWithUTF8CString(script)
+            defer { JSStringRelease(stringRef) }
+            var exception: JSValueRef? = nil
+            return (JSCheckScriptSyntax(jsGlobalContextRef, stringRef, nil, 0, &exception), exception)
+        } as (Bool, JSValueRef?)
 
-    /// A localized message describing what error occurred.
-    var errorDescription: String? {
-        (error as NSError).localizedDescription
+        // for string errors, just throw it as an error
+        if let exception = exception, let ex = JSException(exception: exception, ctx: jsGlobalContextRef) {
+            throw ex
+        }
+
+        return exception == nil
     }
+}
 
-    /// A localized message describing the reason for the failure.
-    var failureReason: String? {
-        (error as NSError).localizedFailureReason
-    }
 
-    /// A localized message describing how one might recover from the failure.
-    var recoverySuggestion: String? {
-        (error as NSError).localizedRecoverySuggestion
-    }
+/// Convert the JSStringRef to a String; note that the JSStringRef is not freed
+@inlinable public func jsStringToString(_ jstr: JSStringRef?) -> String {
+    // JSStringRef A UTF16 character buffer. The fundamental string representation in JavaScript
+    let len = JSStringGetMaximumUTF8CStringSize(jstr)
+    if len <= 0 { return "" }
 
-    /// A localized message providing "help" text if the user requests help.
-    var helpAnchor: String? {
-        (error as NSError).helpAnchor
+    let buf = UnsafeMutablePointer<Int8>.allocate(capacity: len)
+    let _: Int = JSStringGetUTF8CString(jstr, buf, len) // TODO: do we need to utilize the actual length?
+
+    if let sstr = String(validatingUTF8: buf) {
+        buf.deallocate()
+        return sstr
+    } else {
+        return ""
     }
 }
 
@@ -617,19 +630,19 @@ struct SettingsView : View {
             })
 
             // crashes when switching tabs a couple of times
-//            documentSettingsView()
-//                .padding()
-//                .tabItem({
-//                    Label(loc("General"), systemImage: "gearshape.2.fill")
-//                })
-//                .tag(Tabs.general)
-//
-//            appearanceSettingsView()
-//                .padding()
-//                .tabItem({
-//                    Label(loc("Appearance"), systemImage: "eye.fill")
-//                })
-//                .tag(Tabs.appearance)
+            //            documentSettingsView()
+            //                .padding()
+            //                .tabItem({
+            //                    Label(loc("General"), systemImage: "gearshape.2.fill")
+            //                })
+            //                .tag(Tabs.general)
+            //
+            //            appearanceSettingsView()
+            //                .padding()
+            //                .tabItem({
+            //                    Label(loc("Appearance"), systemImage: "eye.fill")
+            //                })
+            //                .tag(Tabs.appearance)
         }
         .tabViewStyle(DefaultTabViewStyle())
     }
@@ -792,9 +805,9 @@ struct ContentView: View, ParquetteCommands {
                 }
         }
         .navigationViewStyle(DoubleColumnNavigationViewStyle())
-//        .sheet(item: .constant(docState.errors.first), onDismiss: { docState.errors.removeFirst() }) { error in
-//            ErrorSheet(error: error)
-//        }
+        //        .sheet(item: .constant(docState.errors.first), onDismiss: { docState.errors.removeFirst() }) { error in
+        //            ErrorSheet(error: error)
+        //        }
     }
 }
 
@@ -851,7 +864,10 @@ struct ParquetViewer: View {
 
     // registration_dttm, birthdate: thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: CDataInterface("The datatype \"Timestamp(Nanosecond, None)\" is still not supported in Rust implementation")', src/arrowz.rs:614:79
 
+    @State var selectedTab = ConsoleTab.sql
+
     @SceneStorage("sql") var sql = "select count(*) from data" // "select 1 + CAST('2' as BIGINT)"
+    @SceneStorage("script") var script = "1+2"
     @SceneStorage("sqlVisible") var sqlVisible = true
     @SceneStorage("queryHistory") var queryHistory = QueryHistory()
     @AppStorage("queryHistoryCount") var queryHistoryCount = 20
@@ -861,52 +877,94 @@ struct ParquetViewer: View {
     var body: some View {
         VSplitView {
             DataTableView()
+            ConsoleTabView()
+        }
+    }
+}
 
-            GroupBox(label: HStack(alignment: .firstTextBaseline) {
-                ActionButton(title: loc("Toggle SQL View"), icon: "rectangle.bottomthird.inset.fill", render: .template) {
-                    sqlVisible.toggle()
-                }
-                .foregroundColor(sqlVisible ? .accentColor : .secondary)
-                .buttonStyle(PlainButtonStyle())
-                .labelStyle(IconOnlyLabelStyle())
-
-                MenuButton(loc("SQL:")) {
-                    ActionButton(title: loc("Execute"), icon: "play", action: performQuery)
-                    Divider()
-                    Text(loc("Recent Queries:"))
-                    ForEach(queryHistory.queries, id: \.self) { query in
-                        ActionButton(title: query, icon: "magnifyingglass.circle") {
-                            sql = query
-                        }
-                    }
-                    Divider()
-                    ActionButton(title: loc("Clear Query History"), icon: "trash.circle") {
-                        queryHistory.queries.removeAll()
-                    }
-                }
-                .menuButtonStyle(PullDownMenuButtonStyle())
-                .frame(width: 80)
-
-                Spacer()
-                Text(docState.ctx.validationMessage(sql: sql) ?? "")
-                Spacer()
-
-                ActionButton(title: loc("Execute"), icon: "play.fill", action: performQuery)
-                    .help(loc("Executed the query (CMD-Return)"))
-                    .keyboardShortcut(.return, modifiers: [.command])
-                    .labelStyle(IconOnlyLabelStyle()) // TODO: change to menu comment shortcut
+extension ParquetViewer {
+    func ConsoleActionsBar() -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            ActionButton(title: loc("Toggle Consoles"), icon: "rectangle.bottomthird.inset.fill", render: .template) {
+                sqlVisible.toggle()
             }
-            .padding()) {
-                if sqlVisible {
-                    TextEditor(text: $sql)
-                        .font(Font.custom("Menlo", size: 15, relativeTo: .body).bold())
-                        .foregroundColor((try? docState.ctx.validate(sql: sql)) == nil ? Color.orange : Color.primary)
-                        .frame(idealHeight: 100)
-                        .cornerRadius(5)
-                        .padding()
+            .foregroundColor(sqlVisible ? .accentColor : .secondary)
+            .buttonStyle(PlainButtonStyle())
+            .labelStyle(IconOnlyLabelStyle())
+
+            MenuButton(loc("SQL:")) {
+                ActionButton(title: loc("Execute"), icon: "play", action: performQuery)
+                Divider()
+                Text(loc("Recent Queries:"))
+                ForEach(queryHistory.queries, id: \.self) { query in
+                    ActionButton(title: query, icon: "magnifyingglass.circle") {
+                        sql = query
+                    }
                 }
+                Divider()
+                ActionButton(title: loc("Clear Query History"), icon: "trash.circle") {
+                    queryHistory.queries.removeAll()
+                }
+            }
+            .menuButtonStyle(PullDownMenuButtonStyle())
+            .frame(width: 80)
+
+            Spacer()
+            Text(docState.ctx.validationMessage(sql: sql) ?? "")
+            Spacer()
+
+            ActionButton(title: loc("Execute"), icon: "play.fill", action: performQuery)
+                .help(loc("Executed the query (CMD-Return)"))
+                .keyboardShortcut(.return, modifiers: [.command])
+                .labelStyle(IconOnlyLabelStyle()) // TODO: change to menu comment shortcut
+        }
+    }
+
+
+    func ConsoleTabView() -> some View {
+        Group {
+            ConsoleActionsBar()
+            TabView(selection: $selectedTab) {
+                SQLView()
+                    .tabItem {
+                        Label(loc("SQL"), systemImage: "ladybug.fill")
+                            .labelStyle(IconOnlyLabelStyle())
+                            .help(loc("SQL Console"))
+                    }
+                    .tag(ConsoleTab.sql)
+                JSCView()
+                    .tabItem {
+                        Label(loc("JsvaScript"), systemImage: "ant.fill")
+                            .labelStyle(IconOnlyLabelStyle())
+                            .help(loc("JsvaScript Console"))
+                    }
+                    .tag(ConsoleTab.jsc)
             }
         }
+    }
+}
+
+enum ConsoleTab {
+    case sql
+    case jsc
+}
+
+extension ParquetViewer {
+
+    func JSCView() -> some View {
+        TextEditor(text: $script)
+            .font(Font.custom("Menlo", size: 15, relativeTo: .body).bold())
+            .foregroundColor((try? docState.jsc?.validate(script: script)) == nil ? Color.red : Color.primary)
+            .cornerRadius(5)
+            .padding()
+    }
+
+    func SQLView() -> some View {
+        TextEditor(text: $sql)
+            .font(Font.custom("Menlo", size: 15, relativeTo: .body).bold())
+            .foregroundColor((try? docState.ctx.validate(sql: sql)) == nil ? Color.orange : Color.primary)
+            .cornerRadius(5)
+            .padding()
     }
 
     func performQuery() {
@@ -1214,3 +1272,104 @@ extension NumberFormatter {
         return fmt
     }()
 }
+
+// MARK: Error Handling
+
+
+public enum JSErrors : Error, CustomDebugStringConvertible {
+    case valueNotObject(String)
+    case objectNotFunction(String)
+
+    @inlinable public var debugDescription: String {
+        switch self {
+        case .valueNotObject(let x): return "Value was not an object: '\(x)'"
+        case .objectNotFunction(let x): return "Object was not a function: '\(x)'"
+        }
+    }
+}
+
+public struct JSException : LocalizedError {
+    public let _domain: String = "JavaScriptContext"
+    public let _code: Int = 0
+    public let name: String
+    public let message: String
+    public let line: Int
+    public let file: String
+    public let stack: String
+
+    public init?(exception: JSValueRef?, ctx: JSContextRef) {
+        // extact "line" and "sourceURL" standard exception properties
+        let pline = JSStringCreateWithUTF8CString("line")
+        if pline != nil {
+            defer { JSStringRelease(pline) }
+            let jline = JSObjectGetProperty(ctx, exception, pline, nil)
+            if jline != nil {
+                let line = JSValueToNumber(ctx, jline, nil)
+                if !line.isNaN {
+                    self.line = Int(line)
+                } else {
+                    self.line = 0
+                }
+            } else {
+                self.line = 0
+            }
+        } else {
+            self.line = 0
+        }
+
+        func getStringProperty(_ prop: String, obj: JSObjectRef?) -> String? {
+            let jprop = JSStringCreateWithUTF8CString(prop)
+            if jprop != nil {
+                defer { JSStringRelease(jprop) }
+                let jvalue = JSObjectGetProperty(ctx, obj, jprop, nil)
+                let jstring = JSValueToStringCopy(ctx, jvalue, nil)
+                defer { JSStringRelease(jstring) }
+                return jsStringToString(jstring!)
+            } else {
+                return nil
+            }
+        }
+
+        guard let name = getStringProperty("name", obj: exception) else { return nil }
+        self.name = name
+        guard let message = getStringProperty("message", obj: exception) else { return nil }
+        self.message = message
+        guard let sourceURL = getStringProperty("sourceURL", obj: exception) else { return nil }
+        self.file = sourceURL
+        guard let stack = getStringProperty("stack", obj: exception) else { return nil }
+        self.stack = stack
+    }
+
+    public var errorDescription: String? {
+        message
+    }
+
+}
+
+
+struct LocalError : LocalizedError, Identifiable {
+    let id: UUID
+    let error: Error
+
+    /// A localized message describing what error occurred.
+    var errorDescription: String? {
+        (error as NSError).localizedDescription
+    }
+
+    /// A localized message describing the reason for the failure.
+    var failureReason: String? {
+        (error as NSError).localizedFailureReason
+    }
+
+    /// A localized message describing how one might recover from the failure.
+    var recoverySuggestion: String? {
+        (error as NSError).localizedRecoverySuggestion
+    }
+
+    /// A localized message providing "help" text if the user requests help.
+    var helpAnchor: String? {
+        (error as NSError).helpAnchor
+    }
+}
+
+
