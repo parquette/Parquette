@@ -314,13 +314,91 @@ extension JSContext {
         }
     }
 
+    @inlinable func setProperty(_ name: String, _ val: JSValueRef) throws {
+        let pname = JSStringCreateWithUTF8CString(name)
+        defer { JSStringRelease(pname) }
+        var ex: JSValueRef? = nil
+        JSObjectSetProperty(jsGlobalContextRef, jsGlobalContextRef, pname, val, JSPropertyAttributes(kJSPropertyAttributeNone), &ex)
+        if let ex = ex {
+            if let error = JSException(exception: ex, ctx: jsGlobalContextRef) { throw error }
+        }
+    }
+
+    @inlinable func getProperty(_ name: String) throws -> JSValueRef? {
+        let pname = JSStringCreateWithUTF8CString(name)
+        defer { JSStringRelease(pname) }
+        var ex: JSValueRef? = nil
+        let val = JSObjectGetProperty(jsGlobalContextRef, jsGlobalContextRef, pname, &ex)
+        if let ex = ex {
+            if let error = JSException(exception: ex, ctx: jsGlobalContextRef) { throw error }
+        }
+        return val
+    }
+
+    /// Deletes a property from an object.
+    @inlinable func deleteProperty(inObject object: JSObjectRef!, propertyName: JSStringRef!) throws {
+        let _ = try withJSException {
+            JSObjectDeleteProperty(jsGlobalContextRef, object, propertyName, &$0)
+        }
+    }
+
+    /// Returns `true` if the given object (defaults to the global object) has the specified property defined
+    @inlinable func hasProperty(_ name: CFString, this: JSObjectRef? = nil) -> Bool {
+        let propName: JSStringRef = JSStringCreateWithCFString(name)
+        defer { JSStringRelease(propName) }
+        return JSObjectHasProperty(jsGlobalContextRef, this ?? jsGlobalContextRef, propName)
+    }
+
     /// Executes the JS against the context
     @discardableResult public func execute(script: String) throws -> JSValue? {
-        let value = evaluateScript(script)
+        let value = evaluateScript(" { " + script + "; };")
         try checkException()
         return value
     }
 
+    /// Passes the given data as the named property for the duration of the block closure.
+    /// - Note: Care must be taken to avoid retaining the data in the JavaScriptCore context, since the underlying pointer will not be valid beyond the scope of the block
+    @inlinable func withArrayBufferData<T>(data: Data, named name: String = JSContext.makeTemporaryPropName(), block: (String) throws -> T) rethrows -> T {
+        let count = data.count
+        var data = data
+
+        return try data.withUnsafeMutableBytes { ptr in
+            let deallocator: JSTypedArrayBytesDeallocator = { ptr, ctx in
+                // unnecessary, since the pointer will pass out
+                // ptr?.deallocate()
+            }
+
+            var ex : JSValueRef?
+            let obj = JSObjectMakeArrayBufferWithBytesNoCopy(jsGlobalContextRef, ptr.baseAddress, count, deallocator, nil, &ex)
+            if let ex = ex { if let error = JSException(exception: ex, ctx: jsGlobalContextRef) { throw error } }
+
+//            guard let objValue = obj else {
+//                throw err("unexpected null result in withArrayBufferData")
+//            }
+
+            return try withPropertyValue(objValue, named: name, block: block)
+        }
+    }
+
+    /// Retruns a random temporary variable name
+    @inlinable static func makeTemporaryPropName() -> String {
+        "_v" + UUID().uuidString.replacingOccurrences(of: "-", with: "")
+    }
+
+    /// Performs the given closure with the temporarily assigned propertyname
+    /// - Note: Care must be taken to avoid retaining the data in the JavaScriptCore context, since the underlying pointer will not be valid beyond the scope of the block
+    @inlinable func withPropertyValue<T>(_ obj: JSObjectRef, named name: String = JSContext.makeTemporaryPropName(), block: (String) throws -> T) throws -> T {
+        let pname = JSStringCreateWithUTF8CString(name)
+        defer { JSStringRelease(pname) }
+
+        try setProperty(inObject: jsGlobalContextRef, propertyName: pname, value: obj, attributes: .init(kJSPropertyAttributeReadOnly))
+
+        defer {
+            try? deleteProperty(inObject: jsGlobalContextRef, propertyName: pname) // cannot throw in defer
+        }
+
+        return try block(name)
+    }
 
     /// Validates the JS against the context
     @inlinable func validate(script: String) throws -> Bool {
@@ -1059,11 +1137,14 @@ extension ParquetViewer {
             return dbg("no jsc in doc")
         }
 
-        dst.result.resultTime = -1
-
         let script = self.script
 
+        dst.result.resultTime = -1
         dst.attempt(async: dst.useAsyncQuery) {
+            defer {
+                onmain { dst.result.resultTime = .init(start.millisFrom()) }
+            }
+
             let result = try jsc.execute(script: script)
 
             // dbg("received \(dst.result.results?.columnSets.count ?? 0) columns with \(dst.result.resultCount ?? -1) elements in \(dst.result.resultTime ?? 0)ms")
@@ -1079,7 +1160,7 @@ extension ParquetViewer {
 //                    dst.result.results = results
                 dst.result.resultID = .init()
 
-                self.script = self.script + "\n // -> \(result)\n"
+                self.script = self.script + "\n// \(result)\n"
 
                 ast.calculateMemoryUsage() // re-calc usage
             }
@@ -1105,8 +1186,6 @@ extension ParquetViewer {
             let results = try frame?.collectResults()
 
             onmain {
-                dst.result.resultTime = .init(start.millisFrom())
-
                 guard let results = results else {
                     return dbg("no query results")
                 }
