@@ -81,7 +81,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          files: ${{ env.APP_NAME }}.zip
+          body_path: RELEASE_NOTES.md
+          files: |
+            RELEASE_NOTES.md
+            ${{ env.APP_NAME }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
