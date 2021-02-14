@@ -55,12 +55,12 @@ jobs:
         run: 
           xcodebuild -exportArchive -archivePath "${{ env.APP_NAME }}.xcarchive" -exportPath Export -exportOptionsPlist "${{ env.APP_NAME }}ExportOptions.plist"
 
-
       # https://developer.apple.com/documentation/xcode/notarizing_macos_software_before_distribution/resolving_common_notarization_issues
       - name: "Notarize Release Build"
-        uses: hubomatic/hubomat@v9
+        uses: hubomatic/hubomat@v14
         with:
-          verbose: true
+          verbose: false
+          timeout: 120 # minutes
           product-path: "Export/${{ env.APP_NAME }}.app"
           appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
