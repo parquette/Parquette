@@ -380,7 +380,7 @@ extension JSContext {
 //        }
 //    }
 
-    
+
     /// Retruns a random temporary variable name
     @inlinable static func makeTemporaryPropName() -> String {
         "_v" + UUID().uuidString.replacingOccurrences(of: "-", with: "")
@@ -1185,6 +1185,9 @@ extension ParquetViewer {
             let frame = try ctx.query(sql: sql)
             addQueryHistory(sql)
             let results = try frame?.collectResults()
+            defer {
+                onmain { dst.result.resultTime = .init(start.millisFrom()) }
+            }
 
             onmain {
                 guard let results = results else {

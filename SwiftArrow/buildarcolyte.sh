@@ -1,4 +1,5 @@
 #!/bin/bash -e
+# Marc Prud'hommeaux
 
 # translate Xcode's CONFIGURATION setting of "Release" or "Debug"
 #CARGO_MODE=$(echo ${CONFIGURATION:-"debug"} | tr '[A-Z]' '[a-z]')
