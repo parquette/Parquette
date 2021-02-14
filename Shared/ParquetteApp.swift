@@ -6,10 +6,40 @@
 //
 
 import SwiftUI
-import UniformTypeIdentifiers
 import MiscKit
+import HubOMatic
 import SwiftArrow
 import JavaScriptCore
+import UniformTypeIdentifiers
+
+@main
+struct ParquetteApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
+    @SceneBuilder var body: some Scene {
+        Group {
+            DocumentGroup(viewing: ParquetteDocument.self, viewer: createAppContent)
+            DocumentGroup(newDocument: ParquetteDocument(), editor: createAppContent)
+        }
+        .commands {
+            SidebarCommands()
+            ToolbarCommands()
+        }
+
+
+        Settings {
+            SettingsView()
+        }
+    }
+
+    func createAppContent(fileConfig: FileDocumentConfiguration<ParquetteDocument>) -> some View {
+        ParquetteAppContentView(docState: DocState(config: fileConfig))
+            .frame(idealWidth: 700, idealHeight: 700)
+            .environmentObject(appDelegate.appState)
+            .withFileExporter()
+    }
+}
+
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     let appState = AppState()
@@ -107,34 +137,6 @@ struct ParquetteAppContentView : View, ParquetteCommands {
             .onAppear {
                 dbg("disabling undo", undoManager)
             }
-    }
-}
-
-@main
-struct ParquetteApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-
-    @SceneBuilder var body: some Scene {
-        Group {
-            DocumentGroup(viewing: ParquetteDocument.self, viewer: createAppContent)
-            DocumentGroup(newDocument: ParquetteDocument(), editor: createAppContent)
-        }
-        .commands {
-            SidebarCommands()
-            ToolbarCommands()
-        }
-
-
-        Settings {
-            SettingsView()
-        }
-    }
-
-    func createAppContent(fileConfig: FileDocumentConfiguration<ParquetteDocument>) -> some View {
-        ParquetteAppContentView(docState: DocState(config: fileConfig))
-            .frame(idealWidth: 700, idealHeight: 700)
-            .environmentObject(appDelegate.appState)
-            .withFileExporter()
     }
 }
 

@@ -2,11 +2,20 @@
   "object": {
     "pins": [
       {
+        "package": "HubOMatic",
+        "repositoryURL": "https://github.com/hubomatic/HubOMatic.git",
+        "state": {
+          "branch": "main",
+          "revision": "35b18d3bcf8168094c7b114bf3419863e9a0a149",
+          "version": null
+        }
+      },
+      {
         "package": "MiscKit",
         "repositoryURL": "https://github.com/glimpseio/MiscKit",
         "state": {
           "branch": "main",
-          "revision": "fb75eea8c0c013428758a429f1e48b0ff3a8e5d2",
+          "revision": "e88b7f94def6658f1921cf6750a2aa7821f0b8f7",
           "version": null
         }
       }

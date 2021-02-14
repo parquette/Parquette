@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4916C15E25D979BA001BC1B5 /* HubOMatic in Frameworks */ = {isa = PBXBuildFile; productRef = 4916C15D25D979BA001BC1B5 /* HubOMatic */; };
+		4916C17325D980FF001BC1B5 /* HubOMatic in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 4916C15D25D979BA001BC1B5 /* HubOMatic */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		4916C17525D98106001BC1B5 /* MiscKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4916C17425D98106001BC1B5 /* MiscKit */; };
+		4916C17625D98106001BC1B5 /* MiscKit in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 4916C17425D98106001BC1B5 /* MiscKit */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		49175ED925BF6139003E9FEF /* SwiftArrow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; };
 		49175EDE25BF6139003E9FEF /* SwiftArrowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49175EDD25BF6139003E9FEF /* SwiftArrowTests.swift */; };
 		49175EE025BF6139003E9FEF /* SwiftArrow.h in Headers */ = {isa = PBXBuildFile; fileRef = 49175ED225BF6138003E9FEF /* SwiftArrow.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -63,7 +67,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				4916C17625D98106001BC1B5 /* MiscKit in Embed Frameworks */,
 				492E730625CCC1B9003C8D58 /* SwiftArrow.framework in Embed Frameworks */,
+				4916C17325D980FF001BC1B5 /* HubOMatic in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -138,7 +144,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4916C17525D98106001BC1B5 /* MiscKit in Frameworks */,
 				492E730525CCC1B9003C8D58 /* SwiftArrow.framework in Frameworks */,
+				4916C15E25D979BA001BC1B5 /* HubOMatic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,6 +361,10 @@
 				492E730825CCC1B9003C8D58 /* PBXTargetDependency */,
 			);
 			name = Parquette;
+			packageProductDependencies = (
+				4916C15D25D979BA001BC1B5 /* HubOMatic */,
+				4916C17425D98106001BC1B5 /* MiscKit */,
+			);
 			productName = "Parquette (macOS)";
 			productReference = 492E72CF25CCC170003C8D58 /* Parquette.app */;
 			productType = "com.apple.product-type.application";
@@ -436,15 +448,16 @@
 			mainGroup = 49175EC525BF6138003E9FEF;
 			packageReferences = (
 				49F1D6DA25D5938A00F7F3A5 /* XCRemoteSwiftPackageReference "MiscKit" */,
+				4916C15C25D979BA001BC1B5 /* XCRemoteSwiftPackageReference "HubOMatic" */,
 			);
 			productRefGroup = 49175ED025BF6138003E9FEF /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				492E72CE25CCC170003C8D58 /* Parquette */,
+				492E72C725CCC170003C8D58 /* Parquette (iOS) */,
 				49175ECE25BF6138003E9FEF /* SwiftArrow */,
 				49175ED725BF6139003E9FEF /* SwiftArrowTests */,
-				492E72C725CCC170003C8D58 /* Parquette (iOS) */,
-				492E72CE25CCC170003C8D58 /* Parquette */,
 				492E72D625CCC170003C8D58 /* Tests iOS */,
 				492E72E125CCC170003C8D58 /* Tests macOS */,
 			);
@@ -884,7 +897,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 2HFBY6N8ZN;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = macOS/Info.plist;
@@ -911,7 +924,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 2HFBY6N8ZN;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = macOS/Info.plist;
@@ -1089,6 +1102,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		4916C15C25D979BA001BC1B5 /* XCRemoteSwiftPackageReference "HubOMatic" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hubomatic/HubOMatic.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		49F1D6DA25D5938A00F7F3A5 /* XCRemoteSwiftPackageReference "MiscKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/glimpseio/MiscKit";
@@ -1100,6 +1121,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4916C15D25D979BA001BC1B5 /* HubOMatic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4916C15C25D979BA001BC1B5 /* XCRemoteSwiftPackageReference "HubOMatic" */;
+			productName = HubOMatic;
+		};
+		4916C17425D98106001BC1B5 /* MiscKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49F1D6DA25D5938A00F7F3A5 /* XCRemoteSwiftPackageReference "MiscKit" */;
+			productName = MiscKit;
+		};
 		49F1D6DB25D5938A00F7F3A5 /* MiscKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 49F1D6DA25D5938A00F7F3A5 /* XCRemoteSwiftPackageReference "MiscKit" */;
