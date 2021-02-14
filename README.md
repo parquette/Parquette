@@ -7,5 +7,8 @@ Download the latest build from https://github.com/parquette/parquette/releases/l
 
 The app can open `.csv`. & `.parquet` files and execute rudimentary SQL. 
 
-(screenshot.png)
+A good example file is a 515MB [NYC April 2010 Taxi Data](https://ursa-labs-taxi-data.s3.us-east-2.amazonaws.com/2010/004/data.parquet) parquet file. See (https://cran.r-project.org/web/packages/arrow/vignettes/dataset.html) for schema info.
+
+![Screenshot](screenshot.png "Scren shot")
+
 
