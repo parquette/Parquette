@@ -80,6 +80,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4916C11E25D8DE98001BC1B5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		49175ECF25BF6138003E9FEF /* SwiftArrow.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SwiftArrow.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		49175ED225BF6138003E9FEF /* SwiftArrow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwiftArrow.h; sourceTree = "<group>"; };
 		49175ED325BF6138003E9FEF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -161,6 +162,7 @@
 		49175EC525BF6138003E9FEF = {
 			isa = PBXGroup;
 			children = (
+				4916C11E25D8DE98001BC1B5 /* README.md */,
 				497CA76F25CCAB7C00180E77 /* arcolyte */,
 				49175ED125BF6138003E9FEF /* SwiftArrow */,
 				49175EDC25BF6139003E9FEF /* SwiftArrowTests */,
