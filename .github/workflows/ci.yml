@@ -96,10 +96,11 @@ jobs:
         
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           body_path: RELEASE_NOTES.md
           files: |
+            CHANGELOG.md
             RELEASE_NOTES.md
             ${{ env.APP_NAME }}.zip
         env:
