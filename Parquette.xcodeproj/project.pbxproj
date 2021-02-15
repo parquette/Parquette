@@ -21,6 +21,8 @@
 		492E72F025CCC170003C8D58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 492E72C325CCC170003C8D58 /* Assets.xcassets */; };
 		492E730525CCC1B9003C8D58 /* SwiftArrow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; };
 		492E730625CCC1B9003C8D58 /* SwiftArrow.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		4988726125DB2B7800430ABD /* MiscKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4988726025DB2B7800430ABD /* MiscKit */; };
+		4988726225DB2B7800430ABD /* MiscKit in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 4988726025DB2B7800430ABD /* MiscKit */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		49BA3F9425D04C580064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3F9325D04C580064DEEC /* arcolyte.h */; };
 		49BA3FA125D04CDB0064DEEC /* libarcolyte.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49BA3F9F25D04CCF0064DEEC /* libarcolyte.a */; };
 		49BA3FD725D053DD0064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3FD625D053DC0064DEEC /* arcolyte.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -28,8 +30,6 @@
 		49CC894025D9A4F500EA5AA8 /* MiscKit in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 49CC893E25D9A4F500EA5AA8 /* MiscKit */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		49CC895825D9BFCC00EA5AA8 /* MiscKit in Frameworks */ = {isa = PBXBuildFile; productRef = 49CC895725D9BFCC00EA5AA8 /* MiscKit */; };
 		49CC895A25D9BFCC00EA5AA8 /* MiscKit in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 49CC895725D9BFCC00EA5AA8 /* MiscKit */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		49FB23C725DB0FC800AEEAC8 /* MiscKit in Frameworks */ = {isa = PBXBuildFile; productRef = 49FB23C625DB0FC800AEEAC8 /* MiscKit */; };
-		49FB23C825DB0FC800AEEAC8 /* MiscKit in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 49FB23C625DB0FC800AEEAC8 /* MiscKit */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,7 +70,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				49FB23C825DB0FC800AEEAC8 /* MiscKit in Embed Frameworks */,
+				4988726225DB2B7800430ABD /* MiscKit in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -146,7 +146,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49BA3FA125D04CDB0064DEEC /* libarcolyte.a in Frameworks */,
-				49FB23C725DB0FC800AEEAC8 /* MiscKit in Frameworks */,
+				4988726125DB2B7800430ABD /* MiscKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,7 +332,7 @@
 			);
 			name = SwiftArrow;
 			packageProductDependencies = (
-				49FB23C625DB0FC800AEEAC8 /* MiscKit */,
+				4988726025DB2B7800430ABD /* MiscKit */,
 			);
 			productName = SwiftArrow;
 			productReference = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */;
@@ -766,7 +766,6 @@
 			buildSettings = {
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
@@ -785,7 +784,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/arcolyte/target",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MODULEMAP_FILE = SwiftArrow/SwiftArrow.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = net.parquette.SwiftArrow;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -801,7 +799,6 @@
 			buildSettings = {
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
@@ -820,7 +817,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/arcolyte/target",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MODULEMAP_FILE = SwiftArrow/SwiftArrow.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = net.parquette.SwiftArrow;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -1157,17 +1153,17 @@
 			package = 4916C15C25D979BA001BC1B5 /* XCRemoteSwiftPackageReference "HubOMatic" */;
 			productName = HubOMatic;
 		};
+		4988726025DB2B7800430ABD /* MiscKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49F1D6DA25D5938A00F7F3A5 /* XCRemoteSwiftPackageReference "MiscKit" */;
+			productName = MiscKit;
+		};
 		49CC893E25D9A4F500EA5AA8 /* MiscKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 49F1D6DA25D5938A00F7F3A5 /* XCRemoteSwiftPackageReference "MiscKit" */;
 			productName = MiscKit;
 		};
 		49CC895725D9BFCC00EA5AA8 /* MiscKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 49F1D6DA25D5938A00F7F3A5 /* XCRemoteSwiftPackageReference "MiscKit" */;
-			productName = MiscKit;
-		};
-		49FB23C625DB0FC800AEEAC8 /* MiscKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 49F1D6DA25D5938A00F7F3A5 /* XCRemoteSwiftPackageReference "MiscKit" */;
 			productName = MiscKit;
