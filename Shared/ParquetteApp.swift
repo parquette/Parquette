@@ -1607,5 +1607,3 @@ struct LocalError : LocalizedError, Identifiable {
         (error as NSError).helpAnchor
     }
 }
-
-
