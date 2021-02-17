@@ -15,7 +15,7 @@ jobs:
       TEST_NAME: SwiftArrow
     runs-on: macos-latest
     environment: Signing
-    timeout-minutes: 120
+    timeout-minutes: 45
     steps:
       - name: "Checkout Project"
         uses: actions/checkout@v2
@@ -62,8 +62,6 @@ jobs:
         run:
           xcodebuild -exportArchive -archivePath "Export/${{ env.APP_NAME }}.xcarchive" -exportPath Export/ -exportOptionsPlist "Export/${{ env.APP_NAME }}ExportOptions.plist"
 
-
-      # https://developer.apple.com/documentation/xcode/notarizing_macos_software_before_distribution/resolving_common_notarization_issues
       - name: "Notarize App"
         uses: hubomatic/hubomat@v0.0.10
         with:
@@ -78,19 +76,11 @@ jobs:
           appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
 
-      #- name: "Notarize Release Build"
-      #  uses: devbotsxyz/xcode-notarize@v1
-      #  with:
-      #    verbose: true
-      #    product-path: "Export/${{ env.APP_NAME }}.app"
-      #    appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
-      #    appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
-
 
       - name: "Staple Release Build"
         uses: devbotsxyz/xcode-staple@v1
         with:
-          product-path: "Export/${{env.APP_NAME }}.app"
+          product-path: "Export/${{ env.APP_NAME }}.app"
           verbose: true
 
       - name: Package for Distribution
