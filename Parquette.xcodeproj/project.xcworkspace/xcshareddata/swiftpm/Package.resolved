@@ -12,10 +12,10 @@
       },
       {
         "package": "MiscKit",
-        "repositoryURL": "https://github.com/glimpseio/MiscKit",
+        "repositoryURL": "https://github.com/glimpseio/MiscKit.git",
         "state": {
           "branch": "main",
-          "revision": "e88b7f94def6658f1921cf6750a2aa7821f0b8f7",
+          "revision": "db9db351319b7b606f558c9286665a8c13d17002",
           "version": null
         }
       },

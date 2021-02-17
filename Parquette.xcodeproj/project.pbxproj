@@ -20,6 +20,7 @@
 		492E72F025CCC170003C8D58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 492E72C325CCC170003C8D58 /* Assets.xcassets */; };
 		492E730525CCC1B9003C8D58 /* SwiftArrow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; };
 		492E730625CCC1B9003C8D58 /* SwiftArrow.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		49927FF925DCD7C3006E6B73 /* MiscKit in Frameworks */ = {isa = PBXBuildFile; productRef = 49927FF825DCD7C3006E6B73 /* MiscKit */; };
 		49BA3F9425D04C580064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3F9325D04C580064DEEC /* arcolyte.h */; };
 		49BA3FA125D04CDB0064DEEC /* libarcolyte.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49BA3F9F25D04CCF0064DEEC /* libarcolyte.a */; };
 		49BA3FD725D053DD0064DEEC /* arcolyte.h in Headers */ = {isa = PBXBuildFile; fileRef = 49BA3FD625D053DC0064DEEC /* arcolyte.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -135,6 +136,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49BA3FA125D04CDB0064DEEC /* libarcolyte.a in Frameworks */,
+				49927FF925DCD7C3006E6B73 /* MiscKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,6 +320,7 @@
 			);
 			name = SwiftArrow;
 			packageProductDependencies = (
+				49927FF825DCD7C3006E6B73 /* MiscKit */,
 			);
 			productName = SwiftArrow;
 			productReference = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */;
@@ -463,6 +466,7 @@
 			packageReferences = (
 				4916C15C25D979BA001BC1B5 /* XCRemoteSwiftPackageReference "HubOMatic" */,
 				491EDA1525DCD21800360CCD /* XCRemoteSwiftPackageReference "Sparkle" */,
+				49927FF725DCD7C3006E6B73 /* XCRemoteSwiftPackageReference "MiscKit" */,
 			);
 			productRefGroup = 49175ED025BF6138003E9FEF /* Products */;
 			projectDirPath = "";
@@ -1130,6 +1134,14 @@
 				version = "1.25.0-rc2";
 			};
 		};
+		49927FF725DCD7C3006E6B73 /* XCRemoteSwiftPackageReference "MiscKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/glimpseio/MiscKit.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1137,6 +1149,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 491EDA1525DCD21800360CCD /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
+		};
+		49927FF825DCD7C3006E6B73 /* MiscKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49927FF725DCD7C3006E6B73 /* XCRemoteSwiftPackageReference "MiscKit" */;
+			productName = MiscKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
