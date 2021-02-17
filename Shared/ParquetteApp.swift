@@ -11,6 +11,7 @@ import HubOMatic
 import SwiftArrow
 import JavaScriptCore
 import UniformTypeIdentifiers
+import Sparkle
 
 @main
 struct ParquetteApp: App {
@@ -44,7 +45,8 @@ struct ParquetteApp: App {
 class AppDelegate: NSObject, NSApplicationDelegate {
     let appState = AppState()
     private let startTime = now()
-
+    private let updater = SUUpdater.shared()
+    
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         true
     }
