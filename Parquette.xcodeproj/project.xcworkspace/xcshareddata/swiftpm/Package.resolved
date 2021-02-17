@@ -1,0 +1,34 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "HubOMatic",
+        "repositoryURL": "https://github.com/hubomatic/HubOMatic.git",
+        "state": {
+          "branch": "main",
+          "revision": "35b18d3bcf8168094c7b114bf3419863e9a0a149",
+          "version": null
+        }
+      },
+      {
+        "package": "MiscKit",
+        "repositoryURL": "https://github.com/glimpseio/MiscKit",
+        "state": {
+          "branch": "main",
+          "revision": "e88b7f94def6658f1921cf6750a2aa7821f0b8f7",
+          "version": null
+        }
+      },
+      {
+        "package": "Sparkle",
+        "repositoryURL": "https://github.com/sparkle-project/Sparkle",
+        "state": {
+          "branch": null,
+          "revision": "07b044dd8f304b3d05a6242a3f4c55ffb08d3f61",
+          "version": "1.25.0-rc2"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

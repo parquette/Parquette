@@ -21,6 +21,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
+          fetch-depth: 0 # https://github.com/actions/checkout/issues/100
+
 
       - name: Framework Tests
         run: xcodebuild test -scheme ${{ env.TEST_NAME }}
@@ -29,10 +31,13 @@ jobs:
       #- name: App Tests
       #  run: xcodebuild test -scheme ${{ env.APP_NAME }}
 
-      - name: "Archive"
-        uses: devbotsxyz/xcode-archive@v1
-        with:
-          scheme: ${{ env.APP_NAME }}
+      - name: Set steps.taginfo.outputs.tagname to current release
+        id: taginfo
+        run: echo ::set-output name=tagname::${GITHUB_REF#refs/*/}
+
+      - name: Set steps.revinfo.outputs.buildnumber to current rev-list count
+        id: revinfo
+        run: echo "::set-output name=buildnumber::$(git rev-list --count ${{ steps.taginfo.outputs.tagname }})"
 
       - name: "Import Certificate: Distribution"
         uses: devbotsxyz/import-signing-certificate@main
@@ -40,6 +45,12 @@ jobs:
           certificate-data: ${{ secrets.DISTRIBUTION_CERTIFICATE_DATA }}
           certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
           keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+
+      - name: "Archive"
+        uses: devbotsxyz/xcode-archive@v1
+        with:
+          scheme: ${{ env.APP_NAME }}
 
       # seems to be missing the teamID, so export manually below…
       #- name: "Export & Sign Release Build"
