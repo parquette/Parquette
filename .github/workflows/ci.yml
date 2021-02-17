@@ -51,6 +51,8 @@ jobs:
           mkdir -p Export/
           echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>${{ secrets.TEAM_ID }}</string></dict></plist>' > "Export/${{ env.APP_NAME }}ExportOptions.plist"
           echo '<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"><channel><item><enclosure sparkle:version="${{ steps.revinfo.outputs.buildnumber }}" sparkle:shortVersionString="${{ steps.taginfo.outputs.tagname }}" url="https://github.com/${{ env.ORG_NAME }}/${{ env.APP_NAME }}/releases/download/${{ steps.taginfo.outputs.tagname }}/${{ env.APP_NAME }}.zip"></enclosure></item></channel></rss>' > Export/appcast.xml
+          cat Export/appcast.xml
+
 
       - name: "Build Archive"
         run:
@@ -62,7 +64,7 @@ jobs:
 
 
       # https://developer.apple.com/documentation/xcode/notarizing_macos_software_before_distribution/resolving_common_notarization_issues
-      - name: "Notarize Release Build"
+      - name: "Notarize App"
         uses: hubomatic/hubomat@v0.0.10
         with:
           verbose: false
