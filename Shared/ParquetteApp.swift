@@ -643,7 +643,8 @@ extension ParquetteCommands {
 
 extension ParquetteCommands {
     func performInfo() {
-        dbg(wip("TODO"))
+        dbg()
+        SUUpdater.shared()?.checkForUpdates(nil)
     }
 
     func performInfoButton() -> some View {
