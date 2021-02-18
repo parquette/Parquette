@@ -24,12 +24,19 @@ struct ParquetteApp: App {
         .commands {
             SidebarCommands()
             ToolbarCommands()
+            CommandGroup(after: CommandGroupPlacement.appInfo, addition: checkForUpdatesButton)
+            CommandGroup(after: CommandGroupPlacement.help, addition: checkForUpdatesButton)
         }
 
 
         Settings {
             SettingsView()
         }
+    }
+
+    func checkForUpdatesButton() -> some View {
+        Button(loc("Check for Updates")) { SUUpdater.shared()?.checkForUpdates(nil) }
+            .disabled(Bundle.main.shortVersionString == nil || Bundle.main.buildVersionString == nil)
     }
 
     func createAppContent(fileConfig: FileDocumentConfiguration<ParquetteDocument>) -> some View {
@@ -1610,4 +1617,13 @@ struct LocalError : LocalizedError, Identifiable {
     }
 }
 
+
+public extension Bundle {
+    /// Returns the `CFBundleShortVersionString` from the dictionary
+    var shortVersionString: String? { object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String }
+
+    /// Returns the `kCFBundleVersionKey` from the dictionary, which corresponds to the build number
+    var buildVersionString: String? { object(forInfoDictionaryKey: kCFBundleVersionKey as String) as? String }
+
+}
 
