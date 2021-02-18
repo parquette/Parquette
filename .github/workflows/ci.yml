@@ -14,6 +14,8 @@ jobs:
       APP_NAME: Parquette
       ORG_NAME: parquette
       TEST_NAME: SwiftArrow
+      CONFIGURATION: Debug
+
     runs-on: macos-latest
     environment: Signing
     timeout-minutes: 55
@@ -24,9 +26,6 @@ jobs:
           submodules: true
           fetch-depth: 0 # https://github.com/actions/checkout/issues/100
 
-
-      - name: Framework Tests
-        run: xcodebuild test -scheme ${{ env.TEST_NAME }}
 
       # cannot test until macos-11.0 is available in GitHub Actions
       #- name: App Tests
@@ -57,13 +56,12 @@ jobs:
 
       - name: "Build Archive"
         run:
-          xcodebuild archive -scheme "${{ env.APP_NAME }}" -archivePath "Export/${{ env.APP_NAME }}.xcarchive" COMPILER_INDEX_STORE_ENABLE="NO" MARKETING_VERSION="${{ steps.taginfo.outputs.tagname }}" PRODUCT_VERSION="${{ steps.revinfo.outputs.buildnumber }}"
+          xcodebuild archive -configuration "${{ env.CONFIGURATION }}" -scheme "${{ env.APP_NAME }}" -archivePath "Export/${{ env.APP_NAME }}.xcarchive" COMPILER_INDEX_STORE_ENABLE="NO" MARKETING_VERSION="${{ steps.taginfo.outputs.tagname }}" PRODUCT_VERSION="${{ steps.revinfo.outputs.buildnumber }}"
  
       - name: "Print Archive Size"
         run:
           du -skh "Export/${{ env.APP_NAME }}.xcarchive"
 
-         
       - name: "Export Archive"
         run:
           xcodebuild -exportArchive -archivePath "Export/${{ env.APP_NAME }}.xcarchive" -exportPath Export/ -exportOptionsPlist "Export/${{ env.APP_NAME }}ExportOptions.plist"
@@ -91,6 +89,10 @@ jobs:
 
       - name: Package for Distribution
         run: ditto -c -k --keepParent "Export/${{ env.APP_NAME }}.app" "Export/${{ env.APP_NAME }}.zip"
+
+      # moved down past distribution temporarily
+      - name: Framework Tests
+        run: xcodebuild test -scheme ${{ env.TEST_NAME }}
 
       - name: Upload Build Artifact Zip
         uses: actions/upload-artifact@v2
