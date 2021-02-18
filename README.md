@@ -12,3 +12,5 @@ A good example file is a 515MB [NYC April 2010 Taxi Data](https://ursa-labs-taxi
 ![Screenshot](screenshot.png "Scren shot")
 
 Limitations: Currently the interface only supports utf8 and int* types, so any floating point calculations need to be cast to ints to show up in the interface. E.g.: `select cast(max(tip_amount) as bigint), cast(avg(fare_amount) as bigint) from data`
+
+
