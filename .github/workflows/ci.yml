@@ -39,6 +39,9 @@ jobs:
         id: revinfo
         run: echo "::set-output name=buildnumber::$(git rev-list --count ${{ steps.taginfo.outputs.tagname }})"
 
+      - name: Framework Tests
+        run: xcodebuild test -scheme ${{ env.TEST_NAME }}
+
       - name: "Configure Export"
         run: |
           mkdir -p Export/
@@ -92,10 +95,6 @@ jobs:
       - name: Package for Distribution
         run: ditto -c -k --keepParent "Export/${{ env.APP_NAME }}.app" "Export/${{ env.APP_NAME }}.zip"
 
-      # moved down past distribution temporarily
-      - name: Framework Tests
-        run: xcodebuild test -scheme ${{ env.TEST_NAME }}
-
       - name: Upload Build Artifact Zip
         uses: actions/upload-artifact@v2
         with:
@@ -113,6 +112,8 @@ jobs:
             Export/${{ env.APP_NAME }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
 
 
 
