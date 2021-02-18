@@ -62,6 +62,12 @@ jobs:
         run:
           du -skh "Export/${{ env.APP_NAME }}.xcarchive"
 
+      - name: Upload Debug Archive
+        uses: actions/upload-artifact@v2
+        with:
+          name: Export
+          path: Export/
+
       - name: "Export Archive"
         run:
           xcodebuild -verbose -exportArchive -archivePath "Export/${{ env.APP_NAME }}.xcarchive" -exportPath Export/ -exportOptionsPlist "Export/${{ env.APP_NAME }}ExportOptions.plist"
