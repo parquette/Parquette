@@ -12,6 +12,7 @@ jobs:
   Build:
     env:
       APP_NAME: Parquette
+      ORG_NAME: parquette
       TEST_NAME: SwiftArrow
     runs-on: macos-latest
     environment: Signing
@@ -57,7 +58,12 @@ jobs:
       - name: "Build Archive"
         run:
           xcodebuild archive -scheme "${{ env.APP_NAME }}" -archivePath "Export/${{ env.APP_NAME }}.xcarchive" COMPILER_INDEX_STORE_ENABLE="NO" MARKETING_VERSION="${{ steps.taginfo.outputs.tagname }}" PRODUCT_VERSION="${{ steps.revinfo.outputs.buildnumber }}"
-          
+ 
+      - name: "Print Archive Size"
+        run:
+          du -skh "Export/${{ env.APP_NAME }}.xcarchive"
+
+         
       - name: "Export Archive"
         run:
           xcodebuild -exportArchive -archivePath "Export/${{ env.APP_NAME }}.xcarchive" -exportPath Export/ -exportOptionsPlist "Export/${{ env.APP_NAME }}ExportOptions.plist"
