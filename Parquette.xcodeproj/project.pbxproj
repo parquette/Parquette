@@ -911,7 +911,6 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -921,7 +920,6 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.1;
-				MARKETING_VERSION = 0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = net.parquette.Parquette;
 				PRODUCT_NAME = Parquette;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -939,7 +937,6 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -949,7 +946,6 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.1;
-				MARKETING_VERSION = 0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = net.parquette.Parquette;
 				PRODUCT_NAME = Parquette;
 				PROVISIONING_PROFILE_SPECIFIER = "";
