@@ -39,13 +39,6 @@ jobs:
         id: revinfo
         run: echo "::set-output name=buildnumber::$(git rev-list --count ${{ steps.taginfo.outputs.tagname }})"
 
-      - name: "Import Certificate: Distribution"
-        uses: devbotsxyz/import-signing-certificate@main
-        with:
-          certificate-data: ${{ secrets.DISTRIBUTION_CERTIFICATE_DATA }}
-          certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
-          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
-
       - name: "Configure Export"
         run: |
           mkdir -p Export/
@@ -67,6 +60,14 @@ jobs:
         with:
           name: Export
           path: Export/
+
+      - name: "Import Certificate: Distribution"
+        uses: devbotsxyz/import-signing-certificate@main
+        with:
+          certificate-data: ${{ secrets.DISTRIBUTION_CERTIFICATE_DATA }}
+          certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
+          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+
 
       - name: "Export Archive"
         run:
