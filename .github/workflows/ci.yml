@@ -14,7 +14,7 @@ jobs:
       APP_NAME: Parquette
       ORG_NAME: parquette
       TEST_NAME: SwiftArrow
-      CONFIGURATION: Debug
+      CONFIGURATION: Release
 
     runs-on: macos-latest
     environment: Signing
@@ -55,12 +55,7 @@ jobs:
         run:
           du -skh "Export/${{ env.APP_NAME }}.xcarchive"
 
-      - name: Upload Debug Archive
-        uses: actions/upload-artifact@v2
-        with:
-          name: Export
-          path: Export/
-
+      # note that this needs to be done right before the export, or else the keychain may re-lock after a timeout (default: 30 seconds)
       - name: "Import Certificate: Distribution"
         uses: devbotsxyz/import-signing-certificate@main
         with:
