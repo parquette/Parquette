@@ -1321,6 +1321,10 @@ private final class ArrowTableColumn : NSTableColumn {
                 return try UInt32.BufferView(vector: vec)[i] as NSNumber?
             case .uint64:
                 return try UInt64.BufferView(vector: vec)[i] as NSNumber?
+            case .float32:
+                return try Float32.BufferView(vector: vec)[i] as NSNumber?
+            case .float64:
+                return try Float64.BufferView(vector: vec)[i] as NSNumber?
 
             default:
                 throw SwiftArrowError.unsupportedDataType(vec.dataType)
