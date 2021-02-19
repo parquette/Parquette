@@ -420,7 +420,6 @@ class SwiftArrowTests: XCTestCase {
             XCTAssertEqual(expectedCount, try Int64.BufferView(vector: vec)[0])
         }
 
-        
         do {
             // 431 batches
             let sql = "select payment_type from taxidata"
