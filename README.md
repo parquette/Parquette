@@ -3,7 +3,7 @@
 
 Prototype of embedding Arrow & DataFusion Rust libraries in a Swift macOS app via cbindgen interfaces and sharing the zero-copy arrays with Rust's wasm-bindgen JavaScript equivalent.
 
-Download the latest build from https://github.com/parquette/parquette/releases/latest/. It is deployed frequently and automatically incorporates the latest DataFusion 4.0.0-SNAPSHOT (https://docs.rs/datafusion/).
+The app runs on macOS 11.1 (universal ARM & Intel). Download the latest released [`Parquette.zip`](https://github.com/parquette/Parquette/releases/latest/download/Parquette.zip) and install by dragging the expanded `Parquette.app` into your `Applications` folder. It is deployed frequently and automatically incorporates the latest DataFusion 4.0.0-SNAPSHOT (https://docs.rs/datafusion/) from the Apache Arrow project.
 
 The app can open `.csv`. & `.parquet` files and execute rudimentary SQL. 
 
@@ -11,6 +11,6 @@ A good example file is a 515MB [NYC April 2010 Taxi Data](https://ursa-labs-taxi
 
 ![Screenshot](screenshot.png "Scren shot")
 
-Limitations: Currently the interface only supports utf8 and int* types, so any floating point calculations need to be cast to ints to show up in the interface. E.g.: `select cast(max(tip_amount) as bigint), cast(avg(fare_amount) as bigint) from data`
+Limitations: Currently the interface only supports utf8 and numeric types, so date & time queries will report an error.
 
 
