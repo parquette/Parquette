@@ -720,7 +720,8 @@ struct SettingsView : View {
     @AppStorage(asyncQueryDefault) private var asyncQuery = asyncQueryDefaultValue
     @AppStorage("theme") private var theme = AppTheme.system
     @AppStorage("controlSize") private var controlScale = ControlScale.regular
-    @AppStorage("NSQuitAlwaysKeepsWindows") private var quitAlwaysKeepsWindows = true
+    // seems to cause sandboxing issues…
+    //@AppStorage("NSQuitAlwaysKeepsWindows") private var quitAlwaysKeepsWindows = true
 
 
 
@@ -762,7 +763,7 @@ struct SettingsView : View {
 
         Form {
             // Text(loc("Document"))
-            Toggle(loc("Re-Open Last Document"), isOn: $quitAlwaysKeepsWindows)
+            // Toggle(loc("Re-Open Last Document"), isOn: $quitAlwaysKeepsWindows)
             // Toggle(loc("Re-Open Last Document"), isOn: $reopenDocuments)
             Toggle(loc("Query Asynchronously"), isOn: $asyncQuery)
 
