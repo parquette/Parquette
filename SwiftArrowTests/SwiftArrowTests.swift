@@ -396,10 +396,10 @@ class SwiftArrowTests: XCTestCase {
 
     /// Perform queries against the taxi data from https://cran.r-project.org/web/packages/arrow/vignettes/dataset.html
     /// and https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
-    /// This is too big (~350mb) to commit to git, so only run the test if the file is present
+    /// This is too big (~500MB) to commit to git, so only run the test if the file at is present https://ursa-labs-taxi-data.s3.us-east-2.amazonaws.com/2010/04/data.parquet in the ~/Downloads/ folder.
     func testTaxiData() throws {
-        let dataFile = "taxidata_2009.parquet"
-        let expectedCount: Int64 = 14_092_413 // 14M column elements
+        let dataFile = "taxidata-2010-04.parquet"
+        let expectedCount: Int64 = 15_144_990 // 15M column elements
 
         let url = URL(fileURLWithPath: dataFile, relativeTo: FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first)
 
