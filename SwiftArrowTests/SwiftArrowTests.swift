@@ -123,8 +123,8 @@ class SwiftArrowTests: XCTestCase {
         try simpleQueryTest(.int16)
         try simpleQueryTest(.int32)
         try simpleQueryTest(.int64)
-//        try simpleQueryTest(.float32)
-//        try simpleQueryTest(.float64)
+        try simpleQueryTest(.float32)
+        try simpleQueryTest(.float64)
 //        try simpleQueryTest(.date32)
 //        try simpleQueryTest(.date64)
 
@@ -141,11 +141,8 @@ class SwiftArrowTests: XCTestCase {
         switch type {
         case .utf8: sql = "select '1'"
         case .boolean: sql = "select CAST (1 AS \(sqlType))"
-        case .int16: sql = "select CAST (1 AS \(sqlType))"
-        case .int32: sql = "select CAST (1 AS \(sqlType))"
-        case .int64: sql = "select CAST (1 AS \(sqlType))"
-        case .float32: sql = "select CAST (1 AS \(sqlType))"
-        case .float64: sql = "select CAST (1 AS \(sqlType))"
+        case .int16, .int32, .int64: sql = "select CAST (1 AS \(sqlType))"
+        case .float32, .float64: sql = "select CAST (1 AS \(sqlType))"
         default: return XCTFail("unhandled type: \(type)")
         }
 
@@ -398,6 +395,7 @@ class SwiftArrowTests: XCTestCase {
     /// and https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
     /// This is too big (~500MB) to commit to git, so only run the test if the file at is present https://ursa-labs-taxi-data.s3.us-east-2.amazonaws.com/2010/04/data.parquet in the ~/Downloads/ folder.
     func testTaxiData() throws {
+        // curl -o ${HOME}/Downloads/taxidata-2010-04.parquet https://ursa-labs-taxi-data.s3.us-east-2.amazonaws.com/2010/04/data.parquet
         let dataFile = "taxidata-2010-04.parquet"
         let expectedCount: Int64 = 15_144_990 // 15M column elements
 
@@ -428,6 +426,25 @@ class SwiftArrowTests: XCTestCase {
             }
 
             XCTAssertEqual(.init(expectedCount), try result.collectionCount())
+        }
+
+        do {
+            let sql = "SELECT passenger_count, MIN(fare_amount), MAX(fare_amount), SUM(fare_amount) FROM tripdata GROUP BY passenger_count"
+            guard let result = try ctx.query(sql: sql) else {
+                return XCTFail("no results")
+            }
+
+            XCTAssertEqual(1, try result.collectionCount())
+        }
+
+
+        do {
+            let sql = "select count(payment_type) as num, payment_type, avg(fare_amount), avg(tip_amount), avg(tip_amount) / avg(fare_amount) from data group by payment_type order by num desc"
+            guard let result = try ctx.query(sql: sql) else {
+                return XCTFail("no results")
+            }
+
+            XCTAssertEqual(1, try result.collectionCount())
         }
     }
 

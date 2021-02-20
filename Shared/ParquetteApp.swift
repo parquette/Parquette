@@ -83,16 +83,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     //    }
 
     func applicationDidUnhide(_ notification: Notification) {
-        //        dbg(notification.debugDescription)
+        //dbg(notification.debugDescription)
         appState.calculateMemoryUsage()
     }
 
     func applicationWillBecomeActive(_ notification: Notification) {
-        //        dbg(notification.debugDescription)
+        //dbg(notification.debugDescription)
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
-        //        dbg(notification.debugDescription)
+        //dbg(notification.debugDescription)
         appState.calculateMemoryUsage()
     }
 
@@ -117,9 +117,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         dbg(notification.debugDescription)
     }
 
-    func applicationDidChangeScreenParameters(_ notification: Notification) {
-        dbg(notification.debugDescription)
-    }
+//    func applicationDidChangeScreenParameters(_ notification: Notification) {
+//        dbg(notification.debugDescription)
+//    }
 
     //    func applicationDidChangeOcclusionState(_ notification: Notification) {
     //        dbg(notification.debugDescription)

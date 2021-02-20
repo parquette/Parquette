@@ -284,11 +284,21 @@ public final class ArrowVector {
 
     @usableFromInline init(ffi: ArrowVectorFFI) {
         self.ffi = ffi
+
+        parseMetadata()
     }
 
     deinit {
         ffi.array.pointee.release(OpaquePointer(ffi.array))
         ffi.schema.pointee.release(OpaquePointer(ffi.schema))
+    }
+
+    func parseMetadata() {
+        let md: UnsafePointer<Int8>? = schema.metadata
+
+//        print("### parsing metadata", md.flatMap(String.init(cString:)))
+//        print("### column name", schema.name)
+//        print("### md char", md!.pointee)
     }
 
     // MARK: Schema Functions
@@ -306,6 +316,17 @@ public final class ArrowVector {
     }
 
     @inlinable public var metadata: String? {
+        // int32: number of key/value pairs (noted N below)
+        // int32: byte length of key 0
+        // key 0 (not null-terminated)
+        // int32: byte length of value 0
+        // value 0 (not null-terminated)
+        // ...
+        // int32: byte length of key N - 1
+        // key N - 1 (not null-terminated)
+        // int32: byte length of value N - 1
+        // value N - 1 (not null-terminated)
+
         wip(nil) // “This string is not null-terminated but follows a specific format…” – http://arrow.apache.org/docs/format/CDataInterface.html#c.ArrowSchema.metadata
         // schema.metadata.flatMap(String.init(cString:))
     }
@@ -629,6 +650,43 @@ public enum ArrowDataType {
         }
     }
 
+    /* Rust impl:
+     /// maps a DataType `format` to a [DataType](arrow::datatypes::DataType).
+     /// See https://arrow.apache.org/docs/format/CDataInterface.html#data-type-description-format-strings
+     fn to_datatype(format: &str) -> Result<DataType> {
+         Ok(match format {
+             "n" => DataType::Null,
+             "b" => DataType::Boolean,
+             "c" => DataType::Int8,
+             "C" => DataType::UInt8,
+             "s" => DataType::Int16,
+             "S" => DataType::UInt16,
+             "i" => DataType::Int32,
+             "I" => DataType::UInt32,
+             "l" => DataType::Int64,
+             "L" => DataType::UInt64,
+             "e" => DataType::Float16,
+             "f" => DataType::Float32,
+             "g" => DataType::Float64,
+             "z" => DataType::Binary,
+             "Z" => DataType::LargeBinary,
+             "u" => DataType::Utf8,
+             "U" => DataType::LargeUtf8,
+             "tdD" => DataType::Date32,
+             "tdm" => DataType::Date64,
+             "tts" => DataType::Time32(TimeUnit::Second),
+             "ttm" => DataType::Time32(TimeUnit::Millisecond),
+             "ttu" => DataType::Time64(TimeUnit::Microsecond),
+             "ttn" => DataType::Time64(TimeUnit::Nanosecond),
+             _ => {
+                 return Err(ArrowError::CDataInterface(
+                     "The datatype \"{}\" is still not supported in Rust implementation"
+                         .to_string(),
+                 ))
+             }
+         })
+     }
+     */
     var formatCode: String {
         switch self {
         case .null: return "n"
