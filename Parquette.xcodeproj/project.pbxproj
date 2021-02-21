@@ -868,7 +868,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = net.parquette.Parquette;
 				PRODUCT_NAME = Parquette;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -892,7 +891,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = net.parquette.Parquette;
 				PRODUCT_NAME = Parquette;
 				PROVISIONING_PROFILE_SPECIFIER = "";
