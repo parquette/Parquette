@@ -7,10 +7,7 @@
 
 import XCTest
 import SwiftArrow
-import OSLog
-
-@available(OSX 11.0, *)
-@usableFromInline let log = Logger(subsystem: "SwiftArrow", category: "SwiftArrow")
+import MiscKit
 
 /// Whether to run additional measurement & stress tests
 let stressTest = false
@@ -33,7 +30,7 @@ class SwiftArrowTests: XCTestCase {
     func testLoadArrow() throws {
         for i in 1...5 {
             let url = try sampleFile(ext: "csv", i)
-            log.debug("loading url: \(url.lastPathComponent)")
+            dbg("loading url: \(url.lastPathComponent)")
             XCTAssertNoThrow(try ArrowCSV(fileURL: url).load())
         }
 
@@ -45,22 +42,22 @@ class SwiftArrowTests: XCTestCase {
             let sema: DispatchSemaphore
             init(_ sema: DispatchSemaphore) {
                 self.sema = sema
-                log.debug("start of test lifetime")
+                dbg("start of test lifetime")
             }
 
             deinit {
-                log.debug("end of test lifetime")
+                dbg("end of test lifetime")
             }
 
             func completed(_ success: Bool) {
-                log.debug("the async operation has completed with result \(success)")
+                dbg("the async operation has completed with result \(success)")
                 sema.signal()
             }
         }
 
         func startOperation(_ sema: DispatchSemaphore) {
             let test = LifetimeExample(sema)
-            log.debug("starting async operation")
+            dbg("starting async operation")
             invokeCallbackBool(millis: 1) { [test] success in
                 test.completed(success)
             }
@@ -156,7 +153,7 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(1, try df.collectionCount())
 
         let schemaArray: ArrowVector = try df.collectVector(index: 0)
-        // log.debug(schemaArray.array.debugDescription)
+        // dbg(schemaArray.array.debugDescription)
 
         XCTAssertEqual(schemaArray.bufferCount, type == .utf8 ? 3 : 2)
         XCTAssertEqual(schemaArray.count, 1)
@@ -177,7 +174,7 @@ class SwiftArrowTests: XCTestCase {
 
         let sql = literalSQL ?? "select CAST (\(sqlValue) AS \(sqlType)) as COL"
 
-        //log.debug("executing", sql)
+        //dbg("executing", sql)
 
         guard let df = try ctx.query(sql: sql) else {
             XCTFail("no return frame")
@@ -517,7 +514,7 @@ class SwiftArrowTests: XCTestCase {
 
         DispatchQueue.concurrentPerform(iterations: num) { i in
             let index = i + 1 // csv files go from 1...5
-            // log.debug("registering source", index)
+            // dbg("registering source", index)
             do {
                 switch ext {
                 case "csv":

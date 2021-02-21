@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4909279025E1EBD700C05A4C /* HubOMatic in Frameworks */ = {isa = PBXBuildFile; productRef = 4909278F25E1EBD700C05A4C /* HubOMatic */; };
-		4909279525E1EE2E00C05A4C /* MiscKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4909279425E1EE2E00C05A4C /* MiscKit */; };
+		490927AF25E1FD4F00C05A4C /* MiscKit in Frameworks */ = {isa = PBXBuildFile; productRef = 490927AE25E1FD4F00C05A4C /* MiscKit */; };
 		49175ED925BF6139003E9FEF /* SwiftArrow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; };
 		49175EDE25BF6139003E9FEF /* SwiftArrowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49175EDD25BF6139003E9FEF /* SwiftArrowTests.swift */; };
 		49175EE025BF6139003E9FEF /* SwiftArrow.h in Headers */ = {isa = PBXBuildFile; fileRef = 49175ED225BF6138003E9FEF /* SwiftArrow.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -136,6 +136,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49BA3FA125D04CDB0064DEEC /* libarcolyte.a in Frameworks */,
+				490927AF25E1FD4F00C05A4C /* MiscKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,7 +159,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4909279525E1EE2E00C05A4C /* MiscKit in Frameworks */,
 				492E730525CCC1B9003C8D58 /* SwiftArrow.framework in Frameworks */,
 				4909279025E1EBD700C05A4C /* HubOMatic in Frameworks */,
 			);
@@ -320,6 +320,7 @@
 			);
 			name = SwiftArrow;
 			packageProductDependencies = (
+				490927AE25E1FD4F00C05A4C /* MiscKit */,
 			);
 			productName = SwiftArrow;
 			productReference = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */;
@@ -380,7 +381,6 @@
 			name = Parquette;
 			packageProductDependencies = (
 				4909278F25E1EBD700C05A4C /* HubOMatic */,
-				4909279425E1EE2E00C05A4C /* MiscKit */,
 			);
 			productName = "Parquette (macOS)";
 			productReference = 492E72CF25CCC170003C8D58 /* Parquette.app */;
@@ -1139,7 +1139,7 @@
 			package = 4916C15C25D979BA001BC1B5 /* XCRemoteSwiftPackageReference "HubOMatic" */;
 			productName = HubOMatic;
 		};
-		4909279425E1EE2E00C05A4C /* MiscKit */ = {
+		490927AE25E1FD4F00C05A4C /* MiscKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 49927FF725DCD7C3006E6B73 /* XCRemoteSwiftPackageReference "MiscKit" */;
 			productName = MiscKit;
