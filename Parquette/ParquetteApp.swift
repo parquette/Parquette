@@ -29,7 +29,6 @@ struct ParquetteApp: App {
             CommandGroup(after: CommandGroupPlacement.help, addition: checkForUpdatesButton)
         }
 
-
         Settings {
             SettingsView()
         }
@@ -471,7 +470,7 @@ final class ParquetteDocument: FileDocument {
     }
 
     required init(configuration: ReadConfiguration) throws {
-        guard let ext = configuration.contentType.parquetteExtension else {
+        guard let _ = configuration.contentType.parquetteExtension else {
             throw ParquetteError.unsupportedContentType(configuration.contentType)
         }
         self.contentType = configuration.contentType
