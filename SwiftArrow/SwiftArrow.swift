@@ -6,7 +6,14 @@
 //
 
 import Foundation
-import MiscKit
+import OSLog
+
+@available(OSX 11.0, *)
+@usableFromInline let log = Logger(subsystem: "SwiftArrow", category: "SwiftArrow")
+
+/// GlueDemo Work-in-progress; note of the given todo item
+@available(*, deprecated, message: "work-in-progress")
+@discardableResult @usableFromInline func wip<T>(_ t: T, _ values: Any...) -> T { return t }
 
 public enum SwiftArrowError : Error {
     case general
@@ -268,7 +275,9 @@ public final class ArrowColumnSet : Identifiable {
         }
 
         guard let vec = vectorChunk else {
-            dbg("could not find vector for index", index)
+            if #available(OSX 11.0, *) {
+                log.debug("could not find vector for index: \(index)")
+            }
             return nil
         }
 

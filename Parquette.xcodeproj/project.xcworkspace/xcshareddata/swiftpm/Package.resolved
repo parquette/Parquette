@@ -5,9 +5,9 @@
         "package": "HubOMatic",
         "repositoryURL": "https://github.com/hubomatic/HubOMatic.git",
         "state": {
-          "branch": "main",
-          "revision": "35b18d3bcf8168094c7b114bf3419863e9a0a149",
-          "version": null
+          "branch": null,
+          "revision": "7ed291c5e95f9e04fa3340e555e7a8a0d0b4492d",
+          "version": "0.0.8"
         }
       },
       {

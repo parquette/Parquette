@@ -6,14 +6,15 @@
 //
 
 import SwiftUI
-import MiscKit
 import SwiftArrow
 import JavaScriptCore
 import UniformTypeIdentifiers
-import Sparkle
+import HubOMatic
+import MiscKit
 
 @main
 struct ParquetteApp: App {
+    @StateObject var hub: HubOMatic = HubOMatic.create(.github()).start()
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     @SceneBuilder var body: some Scene {
@@ -35,8 +36,7 @@ struct ParquetteApp: App {
     }
 
     func checkForUpdatesButton() -> some View {
-        Button(loc("Check for Updates")) { SUUpdater.shared()?.checkForUpdates(nil) }
-            .disabled(Bundle.main.shortVersionString == nil || Bundle.main.buildVersionString == nil)
+        hub.checkForUpdateButton()
     }
 
     func createAppContent(fileConfig: FileDocumentConfiguration<ParquetteDocument>) -> some View {
@@ -48,10 +48,10 @@ struct ParquetteApp: App {
 }
 
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate {
     let appState = AppState()
     private let startTime = now()
-    private let updater = SUUpdater.shared()
+    private let updater = HubOMatic.create(.github()).start()
     
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         true
@@ -651,7 +651,6 @@ extension ParquetteCommands {
 extension ParquetteCommands {
     func performInfo() {
         dbg()
-        SUUpdater.shared()?.checkForUpdates(nil)
     }
 
     func performInfoButton() -> some View {

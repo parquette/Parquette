@@ -7,7 +7,10 @@
 
 import XCTest
 import SwiftArrow
-import MiscKit
+import OSLog
+
+@available(OSX 11.0, *)
+@usableFromInline let log = Logger(subsystem: "SwiftArrow", category: "SwiftArrow")
 
 /// Whether to run additional measurement & stress tests
 let stressTest = false
@@ -30,7 +33,7 @@ class SwiftArrowTests: XCTestCase {
     func testLoadArrow() throws {
         for i in 1...5 {
             let url = try sampleFile(ext: "csv", i)
-            dbg("loading url:", url.lastPathComponent)
+            log.debug("loading url: \(url.lastPathComponent)")
             XCTAssertNoThrow(try ArrowCSV(fileURL: url).load())
         }
 
@@ -42,22 +45,22 @@ class SwiftArrowTests: XCTestCase {
             let sema: DispatchSemaphore
             init(_ sema: DispatchSemaphore) {
                 self.sema = sema
-                dbg("start of test lifetime")
+                log.debug("start of test lifetime")
             }
 
             deinit {
-                dbg("end of test lifetime")
+                log.debug("end of test lifetime")
             }
 
             func completed(_ success: Bool) {
-                dbg("the async operation has completed with result \(success)")
+                log.debug("the async operation has completed with result \(success)")
                 sema.signal()
             }
         }
 
         func startOperation(_ sema: DispatchSemaphore) {
             let test = LifetimeExample(sema)
-            dbg("starting async operation")
+            log.debug("starting async operation")
             invokeCallbackBool(millis: 1) { [test] success in
                 test.completed(success)
             }
@@ -153,7 +156,7 @@ class SwiftArrowTests: XCTestCase {
         XCTAssertEqual(1, try df.collectionCount())
 
         let schemaArray: ArrowVector = try df.collectVector(index: 0)
-        // dbg(schemaArray.array.debugDescription)
+        // log.debug(schemaArray.array.debugDescription)
 
         XCTAssertEqual(schemaArray.bufferCount, type == .utf8 ? 3 : 2)
         XCTAssertEqual(schemaArray.count, 1)
@@ -174,7 +177,7 @@ class SwiftArrowTests: XCTestCase {
 
         let sql = literalSQL ?? "select CAST (\(sqlValue) AS \(sqlType)) as COL"
 
-        //dbg("executing", sql)
+        //log.debug("executing", sql)
 
         guard let df = try ctx.query(sql: sql) else {
             XCTFail("no return frame")
@@ -308,7 +311,7 @@ class SwiftArrowTests: XCTestCase {
     }
 
     @discardableResult func results<T>(count: Int = stressTest ? 999 : 1, concurrent: Bool = true, block: (Int) throws -> T) throws -> [T] {
-        try (1...count).qmap(concurrent: concurrent, block: block)
+        try (1...count).qmap(concurrent: concurrent, transform: block)
     }
 
     /// Creates a context with various sample data registered.
@@ -429,7 +432,7 @@ class SwiftArrowTests: XCTestCase {
         }
 
         do {
-            let sql = "SELECT passenger_count, MIN(fare_amount), MAX(fare_amount), SUM(fare_amount) FROM tripdata GROUP BY passenger_count"
+            let sql = "SELECT passenger_count, MIN(fare_amount), MAX(fare_amount), SUM(fare_amount) FROM data GROUP BY passenger_count"
             guard let result = try ctx.query(sql: sql) else {
                 return XCTFail("no results")
             }
@@ -514,7 +517,7 @@ class SwiftArrowTests: XCTestCase {
 
         DispatchQueue.concurrentPerform(iterations: num) { i in
             let index = i + 1 // csv files go from 1...5
-            // dbg("registering source", index)
+            // log.debug("registering source", index)
             do {
                 switch ext {
                 case "csv":
@@ -586,3 +589,52 @@ extension XCTestCase {
     }
 }
 #endif
+
+public extension Collection {
+    /// Map the elements of this sequence concurrently (non-throwing version)
+    @inlinable func qmap<T>(concurrent: Bool, transform: (Element) -> T) -> [T] {
+        if !concurrent { return map(transform) }
+
+        var (array, accessLock) = (ContiguousArray(self), os_unfair_lock_s())
+        let num = array.count
+        var (results, resultsLock) = (Array<T>(repeating: Optional.none!, count: num), os_unfair_lock_s())
+
+        DispatchQueue.concurrentPerform(iterations: num) { index in
+            os_unfair_lock_lock(&accessLock)
+            let element = array[index]
+            os_unfair_lock_unlock(&accessLock)
+
+            let value = transform(element)
+
+            os_unfair_lock_lock(&resultsLock)
+            results[index] = value
+            os_unfair_lock_unlock(&resultsLock)
+        }
+
+        return results
+    }
+
+    /// Map the elements of this sequence concurrently (throwing version)
+    @inlinable func qmap<T>(concurrent: Bool, transform: (Element) throws -> T) throws -> [T] {
+        if !concurrent { return try map(transform) }
+
+        var (array, accessLock) = (ContiguousArray(self), os_unfair_lock_s())
+        let num = array.count
+        var (results, resultsLock) = (Array<Result<T?, Error>>(repeating: Result.success(nil), count: num), os_unfair_lock_s())
+
+        DispatchQueue.concurrentPerform(iterations: num) { index in
+            os_unfair_lock_lock(&accessLock)
+            let element = array[index]
+            os_unfair_lock_unlock(&accessLock)
+
+            let value: Result<T?, Error> = Result { try transform(element) }
+
+            os_unfair_lock_lock(&resultsLock)
+            results[index] = value
+            os_unfair_lock_unlock(&resultsLock)
+        }
+
+        return try results.map { try $0.get()! }
+    }
+}
+
