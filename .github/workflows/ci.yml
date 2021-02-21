@@ -52,7 +52,7 @@ jobs:
 
       - name: "Build Archive"
         run:
-          xcodebuild archive -configuration "${{ env.CONFIGURATION }}" -scheme "${{ env.APP_NAME }}" -archivePath "Export/${{ env.APP_NAME }}.xcarchive" COMPILER_INDEX_STORE_ENABLE="NO" MARKETING_VERSION="${{ steps.taginfo.outputs.tagname }}" PRODUCT_VERSION="${{ steps.revinfo.outputs.buildnumber }}"
+          xcodebuild archive -configuration "${{ env.CONFIGURATION }}" -scheme "${{ env.APP_NAME }}" -archivePath "Export/${{ env.APP_NAME }}.xcarchive" COMPILER_INDEX_STORE_ENABLE="NO" MARKETING_VERSION="${{ steps.taginfo.outputs.tagname }}" PRODUCT_VERSION="${{ steps.revinfo.outputs.buildnumber }}" CURRENT_PROJECT_VERSION="${{ steps.revinfo.outputs.buildnumber }}"
  
       - name: "Print Archive Size"
         run:
