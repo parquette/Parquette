@@ -19,7 +19,7 @@ jobs:
 
     runs-on: macos-latest
     environment: Signing
-    timeout-minutes: 55
+    timeout-minutes: 120
     steps:
       - name: "Checkout Project"
         uses: actions/checkout@v2

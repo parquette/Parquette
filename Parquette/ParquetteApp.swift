@@ -1004,7 +1004,7 @@ struct ParquetViewer: View {
 
     @State var selectedTab = ConsoleTab.sql
 
-    @SceneStorage("sql") var sql = "select count(*) from data" // "select 1 + CAST('2' as BIGINT)"
+    @SceneStorage("sql") var sql = "select 'W', 'e', 3-2, 'c', sin(3.14159), concat('m', 'e'), '!'" // "select count(*) from data" // "select 1 + CAST('2' as BIGINT)"
     @SceneStorage("script") var script = "1+2"
     @SceneStorage("sqlVisible") var sqlVisible = true
 
