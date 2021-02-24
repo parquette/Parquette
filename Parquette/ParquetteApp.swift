@@ -11,6 +11,8 @@ import JavaScriptCore
 import UniformTypeIdentifiers
 import HubOMatic
 import MiscKit
+import HighlightedTextEditor
+
 
 @main
 struct ParquetteApp: App {
@@ -1116,7 +1118,7 @@ enum ConsoleTab {
 extension ParquetViewer {
 
     func JSCView() -> some View {
-        TextEditor(text: $script)
+        HighlightedTextEditor(text: $script, highlightRules: .markdown)
             .font(Font.custom("Menlo", size: 15, relativeTo: .body).bold())
             .foregroundColor((try? docState.jsc?.validate(script: script)) == nil ? Color.red : Color.primary)
             .cornerRadius(5)
@@ -1124,7 +1126,7 @@ extension ParquetViewer {
     }
 
     func SQLView() -> some View {
-        TextEditor(text: $sql)
+        HighlightedTextEditor(text: $sql, highlightRules: .markdown)
             .font(Font.custom("Menlo", size: 15, relativeTo: .body).bold())
             .foregroundColor((try? docState.ctx.validate(sql: sql)) == nil ? Color.orange : Color.primary)
             .cornerRadius(5)

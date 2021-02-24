@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4904C59225E4386900A2E031 /* HighlightedTextEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 4904C59125E4386900A2E031 /* HighlightedTextEditor */; };
 		4909279025E1EBD700C05A4C /* HubOMatic in Frameworks */ = {isa = PBXBuildFile; productRef = 4909278F25E1EBD700C05A4C /* HubOMatic */; };
 		490927AF25E1FD4F00C05A4C /* MiscKit in Frameworks */ = {isa = PBXBuildFile; productRef = 490927AE25E1FD4F00C05A4C /* MiscKit */; };
 		49175ED925BF6139003E9FEF /* SwiftArrow.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49175ECF25BF6138003E9FEF /* SwiftArrow.framework */; };
@@ -160,6 +161,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				492E730525CCC1B9003C8D58 /* SwiftArrow.framework in Frameworks */,
+				4904C59225E4386900A2E031 /* HighlightedTextEditor in Frameworks */,
 				4909279025E1EBD700C05A4C /* HubOMatic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -381,6 +383,7 @@
 			name = Parquette;
 			packageProductDependencies = (
 				4909278F25E1EBD700C05A4C /* HubOMatic */,
+				4904C59125E4386900A2E031 /* HighlightedTextEditor */,
 			);
 			productName = "Parquette (macOS)";
 			productReference = 492E72CF25CCC170003C8D58 /* Parquette.app */;
@@ -466,6 +469,7 @@
 			packageReferences = (
 				4916C15C25D979BA001BC1B5 /* XCRemoteSwiftPackageReference "HubOMatic" */,
 				49927FF725DCD7C3006E6B73 /* XCRemoteSwiftPackageReference "MiscKit" */,
+				4904C59025E4386900A2E031 /* XCRemoteSwiftPackageReference "HighlightedTextEditor" */,
 			);
 			productRefGroup = 49175ED025BF6138003E9FEF /* Products */;
 			projectDirPath = "";
@@ -1113,6 +1117,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		4904C59025E4386900A2E031 /* XCRemoteSwiftPackageReference "HighlightedTextEditor" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kyle-n/HighlightedTextEditor";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.7.0;
+			};
+		};
 		4916C15C25D979BA001BC1B5 /* XCRemoteSwiftPackageReference "HubOMatic" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/hubomatic/HubOMatic.git";
@@ -1132,6 +1144,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4904C59125E4386900A2E031 /* HighlightedTextEditor */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4904C59025E4386900A2E031 /* XCRemoteSwiftPackageReference "HighlightedTextEditor" */;
+			productName = HighlightedTextEditor;
+		};
 		4909278F25E1EBD700C05A4C /* HubOMatic */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4916C15C25D979BA001BC1B5 /* XCRemoteSwiftPackageReference "HubOMatic" */;

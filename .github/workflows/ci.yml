@@ -46,7 +46,6 @@ jobs:
       - name: "Configure Export"
         run: |
           mkdir -p Export/
-          echo '<plist version="1.0"><dict><key>method</key><string>developer-id</string><key>teamID</key><string>${{ secrets.TEAM_ID }}</string></dict></plist>' > "Export/${{ env.APP_NAME }}ExportOptions.plist"
           echo '<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"><channel><item><enclosure sparkle:version="${{ steps.revinfo.outputs.buildnumber }}" sparkle:shortVersionString="${{ steps.taginfo.outputs.tagname }}" url="https://github.com/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}/releases/download/${{ steps.taginfo.outputs.tagname }}/${{ env.APP_NAME }}.zip"></enclosure></item></channel></rss>' > Export/appcast.xml
           cat Export/appcast.xml
 
@@ -54,46 +53,21 @@ jobs:
         run:
           xcodebuild archive -configuration "${{ env.CONFIGURATION }}" -scheme "${{ env.APP_NAME }}" -archivePath "Export/${{ env.APP_NAME }}.xcarchive" COMPILER_INDEX_STORE_ENABLE="NO" MARKETING_VERSION="${{ steps.taginfo.outputs.tagname }}" PRODUCT_VERSION="${{ steps.revinfo.outputs.buildnumber }}" CURRENT_PROJECT_VERSION="${{ steps.revinfo.outputs.buildnumber }}"
  
-      - name: "Print Archive Size"
-        run:
-          du -skh "Export/${{ env.APP_NAME }}.xcarchive"
-
-      # note that this needs to be done right before the export, or else the keychain may re-lock after a timeout (default: 30 seconds)
-      - name: "Import Certificate: Distribution"
-        uses: devbotsxyz/import-signing-certificate@main
-        with:
-          certificate-data: ${{ secrets.DISTRIBUTION_CERTIFICATE_DATA }}
-          certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
-          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
-
-
-      - name: "Export Archive"
-        run:
-          xcodebuild -verbose -exportArchive -archivePath "Export/${{ env.APP_NAME }}.xcarchive" -exportPath Export/ -exportOptionsPlist "Export/${{ env.APP_NAME }}ExportOptions.plist"
-
       - name: "Notarize App"
-        uses: hubomatic/hubomat@v0.0.10
+        uses: hubomatic/hubomat@v0.1.0
         with:
           verbose: false
           timeout: 120 # minutes
+          team-id: ${{ secrets.TEAM_ID }}
+          export-path: "Export/"
+          archive-path: "Export/${{ env.APP_NAME }}.xcarchive"
           product-path: "Export/${{ env.APP_NAME }}.app"
           artifact-path: "Export/${{ env.APP_NAME }}.zip"
-          team-id: ${{ secrets.TEAM_ID }}
           keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
           certificate-data: ${{ secrets.DISTRIBUTION_CERTIFICATE_DATA }}
           certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
           appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
-
-
-      - name: "Staple Release Build"
-        uses: devbotsxyz/xcode-staple@v1
-        with:
-          product-path: "Export/${{ env.APP_NAME }}.app"
-          verbose: true
-
-      - name: Package for Distribution
-        run: ditto -c -k --keepParent "Export/${{ env.APP_NAME }}.app" "Export/${{ env.APP_NAME }}.zip"
 
       - name: Upload Build Artifact Zip
         uses: actions/upload-artifact@v2
