@@ -21,6 +21,11 @@ jobs:
     environment: Signing
     timeout-minutes: 120
     steps:
+      - name: "Cancel Previous Runs"
+        uses: styfle/cancel-workflow-action@0.8.0
+        with:
+          access_token: ${{ github.token }}
+
       - name: "Checkout Project"
         uses: actions/checkout@v2
         with:
@@ -32,13 +37,11 @@ jobs:
       #- name: App Tests
       #  run: xcodebuild test -scheme ${{ env.APP_NAME }}
 
-      - name: Set steps.taginfo.outputs.tagname to current release
-        id: taginfo
-        run: echo ::set-output name=tagname::${GITHUB_REF#refs/*/}
-
-      - name: Set steps.revinfo.outputs.buildnumber to current rev-list count
-        id: revinfo
-        run: echo "::set-output name=buildnumber::$(git rev-list --count ${{ steps.taginfo.outputs.tagname }})"
+      - name: "Configure Versions"
+        id: config
+        run: |
+          echo "::set-output name=tagname::${GITHUB_REF#refs/*/}"
+          echo "::set-output name=buildnumber::$(git rev-list --count ${GITHUB_REF#refs/*/})"
 
       - name: Framework Tests
         run: xcodebuild test -scheme ${{ env.TEST_NAME }}
@@ -46,37 +49,40 @@ jobs:
       - name: "Configure Export"
         run: |
           mkdir -p Export/
-          echo '<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"><channel><item><enclosure sparkle:version="${{ steps.revinfo.outputs.buildnumber }}" sparkle:shortVersionString="${{ steps.taginfo.outputs.tagname }}" url="https://github.com/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}/releases/download/${{ steps.taginfo.outputs.tagname }}/${{ env.APP_NAME }}.zip"></enclosure></item></channel></rss>' > Export/appcast.xml
+          echo '<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"><channel><item><enclosure sparkle:version="${{ steps.config.outputs.buildnumber }}" sparkle:shortVersionString="${{ steps.config.outputs.tagname }}" url="https://github.com/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}/releases/download/${{ steps.config.outputs.tagname }}/${{ env.APP_NAME }}.zip"></enclosure></item></channel></rss>' > Export/appcast.xml
           cat Export/appcast.xml
 
       - name: "Build Archive"
         run:
-          xcodebuild archive -configuration "${{ env.CONFIGURATION }}" -scheme "${{ env.APP_NAME }}" -archivePath "Export/${{ env.APP_NAME }}.xcarchive" COMPILER_INDEX_STORE_ENABLE="NO" MARKETING_VERSION="${{ steps.taginfo.outputs.tagname }}" PRODUCT_VERSION="${{ steps.revinfo.outputs.buildnumber }}" CURRENT_PROJECT_VERSION="${{ steps.revinfo.outputs.buildnumber }}"
+          xcodebuild archive -configuration "${{ env.CONFIGURATION }}" -scheme "${{ env.APP_NAME }}" -archivePath "Export/${{ env.APP_NAME }}.xcarchive" COMPILER_INDEX_STORE_ENABLE="NO" MARKETING_VERSION="${{ steps.config.outputs.tagname }}" PRODUCT_VERSION="${{ steps.config.outputs.buildnumber }}" CURRENT_PROJECT_VERSION="${{ steps.config.outputs.buildnumber }}"
  
-      - name: "Notarize App"
-        uses: hubomatic/hubomat@0.1.0
+      - name: "Notarize"
+        uses: hubomatic/hubomat@0.1.5
         with:
           verbose: false
           timeout: 120 # minutes
-          team-id: ${{ secrets.TEAM_ID }}
+
           export-path: "Export/"
           archive-path: "Export/${{ env.APP_NAME }}.xcarchive"
           product-path: "Export/${{ env.APP_NAME }}.app"
           artifact-path: "Export/${{ env.APP_NAME }}.zip"
-          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
-          certificate-data: ${{ secrets.DISTRIBUTION_CERTIFICATE_DATA }}
-          certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
+
+          team-id: ${{ secrets.TEAM_ID }}
           appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
 
-      - name: Upload Build Artifact Zip
+          certificate-data: ${{ secrets.DISTRIBUTION_CERTIFICATE_DATA }}
+          certificate-passphrase: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSPHRASE }}
+          keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v2
         with:
           name: Build
           path: Export/${{ env.APP_NAME }}.zip
            
         
-      - name: Release
+      - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
