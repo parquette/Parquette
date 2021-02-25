@@ -62,7 +62,7 @@ jobs:
             CURRENT_PROJECT_VERSION="${{ steps.config.outputs.buildnumber }}"
  
       - name: "Notarize"
-        uses: hubomatic/hubomat@0.1.5
+        uses: hubomatic/hubomat@0.1.7
         with:
           verbose: false
           timeout: 120 # minutes
