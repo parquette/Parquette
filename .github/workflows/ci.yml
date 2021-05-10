@@ -5,9 +5,9 @@ on:
   push:
     branches: '*'
     tags: '*'
-  schedule:
+  #schedule:
     # run at 6AM & 6PM UTC
-    - cron:  '0 6,18 * * *'
+    #- cron:  '0 6,18 * * *'
 
 jobs:
   Build:
