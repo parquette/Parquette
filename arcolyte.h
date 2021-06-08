@@ -174,3 +174,4 @@ void datafusion_context_register_parquet(ExecutionContext *ptr,
 void callback_bool_after(uint64_t millis, CallbackBool callback);
 
 void callback_int64_after(uint64_t millis, int64_t value, CallbackInt64 callback);
+
